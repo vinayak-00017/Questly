@@ -5,6 +5,7 @@ import {
   boolean,
   integer,
   serial,
+  date,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -36,16 +37,38 @@ export const quest = pgTable("quest", {
 
 export const task = pgTable("task", {
   id: serial("id").primaryKey(),
-  questId: integer("quest_id")
+  userId: text("user_id")
     .notNull()
-    .references(() => quest.id, { onDelete: "cascade" }),
+    .references(() => user.id, { onDelete: "cascade" }),
+  recurringTaskId: integer("recurring_task_id").references(
+    () => recurringTask.id
+  ),
   title: text("title").notNull(),
   description: text("description"),
-  completed: boolean("completed").default(false),
-  order: integer("order"),
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
-  xpReward: integer("xp_reward").default(2),
+  date: date("date").notNull(), // the day the task is active
+  completed: boolean("completed").notNull().default(false),
+  isTimeTracked: boolean("is_time_tracked").notNull().default(false),
+  plannedDuration: integer("planned_duration"),
+  actualDuration: integer("actual_duration"),
+  xpPerMinute: integer("xp_per_minute"),
+  xpReward: integer("xp_reward"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+export const recurringTask = pgTable("recurring_task", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  recurrenceRule: text("recurrence_rule").notNull(), // e.g., 'daily', 'mon-fri'
+  isTimeTracked: boolean("is_time_tracked").notNull().default(false),
+  plannedDuration: integer("planned_duration"), // in minutes
+  xpPerMinute: integer("xp_per_minute"), // required if time-tracked
+  xpReward: integer("xp_reward"), // required if NOT time-tracked
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 //Auth schema

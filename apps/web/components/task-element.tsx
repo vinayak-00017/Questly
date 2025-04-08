@@ -16,7 +16,14 @@ const TaskElement = ({
   return (
     <div
       className="border-2 rounded-2xl p-2 flex  items-center"
-      onClick={handleTaskClick}
+      onClick={(e) => {
+        const checkboxElement = e.currentTarget.querySelector(
+          '[data-slot="checkbox"]'
+        );
+        if (!checkboxElement?.contains(e.target as Node)) {
+          handleTaskClick();
+        }
+      }}
     >
       <Checkbox checked={isChecked} onCheckedChange={setIsChecked} />
       <div className="px-2">{task}</div>
