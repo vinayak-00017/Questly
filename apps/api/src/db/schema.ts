@@ -23,7 +23,7 @@ export const user = pgTable("user", {
 
 //Questly schema
 export const quest = pgTable("quest", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
@@ -36,7 +36,7 @@ export const quest = pgTable("quest", {
 });
 
 export const task = pgTable("task", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -45,7 +45,7 @@ export const task = pgTable("task", {
   ),
   title: text("title").notNull(),
   description: text("description"),
-  date: date("date").notNull(), // the day the task is active
+  date: date("date"), // the day the task is active
   completed: boolean("completed").notNull().default(false),
   isTimeTracked: boolean("is_time_tracked").notNull().default(false),
   plannedDuration: integer("planned_duration"),
