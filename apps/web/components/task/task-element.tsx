@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Checkbox } from "./ui/checkbox";
+import React from "react";
+import { Checkbox } from "../ui/checkbox";
 
 const TaskElement = ({
   task,
@@ -10,9 +10,6 @@ const TaskElement = ({
   isChecked: boolean;
   setIsChecked: (checked: boolean) => void;
 }) => {
-  const handleTaskClick = () => {
-    setIsChecked(!isChecked);
-  };
   return (
     <div
       className="border-2 rounded-2xl p-2 flex  items-center"
@@ -21,11 +18,16 @@ const TaskElement = ({
           '[data-slot="checkbox"]'
         );
         if (!checkboxElement?.contains(e.target as Node)) {
-          handleTaskClick();
+          setIsChecked(!isChecked);
         }
       }}
     >
-      <Checkbox checked={isChecked} onCheckedChange={setIsChecked} />
+      <Checkbox
+        checked={isChecked}
+        onCheckedChange={(event) => {
+          setIsChecked(!!event);
+        }}
+      />
       <div className="px-2">{task}</div>
     </div>
   );

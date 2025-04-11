@@ -1,6 +1,6 @@
 "use client";
 
-import TaskList from "@/components/task-list";
+import TaskList from "@/components/task/task-list";
 import { Button } from "@/components/ui/button";
 import { authClient, useSession } from "@/lib/auth-client";
 import { useQuery } from "@tanstack/react-query";
@@ -28,8 +28,6 @@ export default function Home() {
       // }
     });
   };
-  console.log(isPending);
-  console.log(session?.user.name);
 
   if (isLoading) return <p>loading...</p>;
 
