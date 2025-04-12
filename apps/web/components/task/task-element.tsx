@@ -5,10 +5,12 @@ const TaskElement = ({
   task,
   isChecked,
   setIsChecked,
+  points,
 }: {
   task: string;
   isChecked: boolean;
   setIsChecked: (checked: boolean) => void;
+  points: number;
 }) => {
   return (
     <div
@@ -28,7 +30,13 @@ const TaskElement = ({
           setIsChecked(!!event);
         }}
       />
-      <div className="px-2">{task}</div>
+      <div className="flex w-full justify-between">
+        <div className="px-2">{task}</div>
+        <div className="flex">
+          <div>Points:</div>
+          <div>{points}</div>
+        </div>
+      </div>
     </div>
   );
 };

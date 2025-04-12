@@ -8,11 +8,12 @@ const router = express.Router();
 
 router.post("/", requireAuth, async (req, res) => {
   try {
-    const { title } = req.body;
+    const { title, basePoints } = req.body;
     const userId = (req as AuthenticatedRequest).userId;
     const newTask = {
       id: Date.now().toString(),
       title: title,
+      basePoints,
       userId,
     };
 

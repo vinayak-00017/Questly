@@ -36,6 +36,20 @@
       "when": 1744185047955,
       "tag": "0004_needy_sprite",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1744429948256,
+      "tag": "0005_early_supernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1744430009941,
+      "tag": "0006_cheerful_gabe_jones",
+      "breakpoints": true
     }
   ]
 }

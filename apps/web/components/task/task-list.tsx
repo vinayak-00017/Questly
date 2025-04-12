@@ -5,7 +5,7 @@ import TaskElement from "./task-element";
 import { useTasks } from "@/hooks/useTasks";
 import TaskInput from "./task-input";
 import { AnimatedList, AnimatedListItem } from "../magicui/animated-list";
-import { Task } from "../../../../packages/common-types/task";
+import { UserTask } from "../../../../packages/types/src/task";
 
 const TaskList = () => {
   const {
@@ -16,6 +16,12 @@ const TaskList = () => {
     addTask,
     updateCompletedState,
     isPending,
+    points,
+    setPoints,
+    isTimeTracked,
+    setIsTimeTracked,
+    plannedDuration,
+    setPlannedDuration,
   } = useTasks();
 
   if (isLoading) {
@@ -25,10 +31,16 @@ const TaskList = () => {
   return (
     <div className="flex flex-col items-center w-full gap-6">
       <TaskInput
+        points={points}
+        onPointsChange={setPoints}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onSubmit={addTask}
         isPending={isPending}
+        isTimeTracked={isTimeTracked}
+        onTimeTrackChange={setIsTimeTracked}
+        plannedDuration={plannedDuration}
+        onDurationChange={setPlannedDuration}
       />
 
       {tasks.length === 0 ? (
@@ -41,17 +53,26 @@ const TaskList = () => {
             .sort((a, b) => {
               // First factor: completed status (incomplete tasks first)
               if (a.completed !== b.completed) {
-                return a.completed ? -1 : 1; // False (incomplete) comes first
+                return a.completed ? -1 : 1; // Incomplete tasks first
               }
 
-              // Second factor: most recently updated first
+              // Second factor: points value (higher points first)
+              const pointsA = a.points || a.basePoints || 0;
+              const pointsB = b.points || b.basePoints || 0;
+
+              if (pointsA !== pointsB) {
+                return pointsA - pointsB; // Higher points first (descending order)
+              }
+
+              // Third factor: most recently updated first
               const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(0);
               const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(0);
               return dateB.getTime() - dateA.getTime(); // Descending order (newest first)
             })
-            .map((taskItem: Task, index: number) => (
+            .map((taskItem: UserTask, index: number) => (
               <AnimatedListItem key={taskItem.id || `task-${index}`}>
                 <TaskElement
+                  points={taskItem.basePoints}
                   task={taskItem.title}
                   isChecked={!!taskItem.completed}
                   setIsChecked={(e) => updateCompletedState(taskItem.id, e)}

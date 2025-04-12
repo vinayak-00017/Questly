@@ -1,8 +1,8 @@
 import { BASE_URL } from "@/config";
-import { Task, TaskWithPriority } from "../../../packages/common-types/task";
+import { AddTask, UserTask } from "../../../packages/types/src/task";
 
 export const taskApi = {
-  addTask: async (taskData: TaskWithPriority) => {
+  addTask: async (taskData: AddTask) => {
     const response = await fetch(`${BASE_URL}/tasks`, {
       method: "POST",
       headers: {
@@ -24,7 +24,7 @@ export const taskApi = {
     return response.json();
   },
 
-  updateTask: async (taskId: string, updates: Partial<TaskWithPriority>) => {
+  updateTask: async (taskId: string, updates: Partial<UserTask>) => {
     console.log(updates);
     const response = await fetch(`${BASE_URL}/tasks/${taskId}`, {
       method: "PATCH",

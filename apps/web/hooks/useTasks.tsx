@@ -1,12 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { taskApi } from "@/services/task-api";
-import { Task } from "../../../packages/common-types/task";
+import {
+  AddTask,
+  addTaskSchema,
+  UserTask,
+} from "../../../packages/types/src/task";
 import { useState } from "react";
 
 export function useTasks() {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [points, setPoints] = useState(1);
+  const [isTimeTracked, setIsTimeTracked] = useState(false);
+  const [plannedDuration, setPlannedDuration] = useState(30);
 
   // Query to fetch tasks
   const { data: tasks = [], isLoading } = useQuery({
@@ -22,7 +28,7 @@ export function useTasks() {
       updates,
     }: {
       taskId: string;
-      updates: Partial<Task>;
+      updates: Partial<UserTask>;
     }) => taskApi.updateTask(taskId, updates),
     onMutate: async ({ taskId, updates }) => {
       // Cancel in-flight queries to prevent race conditions
@@ -35,7 +41,7 @@ export function useTasks() {
       queryClient.setQueryData(["tasks"], (old: any) => {
         return {
           ...old,
-          tasks: old.tasks.map((t: Task) =>
+          tasks: old.tasks.map((t: UserTask) =>
             t.id === taskId ? { ...t, ...updates } : t
           ),
         };
@@ -55,14 +61,23 @@ export function useTasks() {
   // Mutation to add a new task
   const addTaskMutation = useMutation({
     mutationFn: () => {
-      if (!title.trim()) {
-        throw new Error("Task title cannot be empty");
+      const taskInput: AddTask = {
+        title,
+        basePoints: points,
+      };
+
+      const result = addTaskSchema.safeParse(taskInput);
+      if (!result.success) {
+        const errorMessage =
+          result.error.errors[0]?.message || "Invalid task data";
+        throw new Error(errorMessage);
       }
-      return taskApi.addTask({ title, points });
+      return taskApi.addTask(taskInput);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       setTitle("");
+      setPoints(1);
     },
     onError: (error: any) => {
       console.error("Error adding task:", error.message);
@@ -82,6 +97,12 @@ export function useTasks() {
     isLoading,
     title,
     setTitle,
+    points,
+    setPoints,
+    isTimeTracked,
+    setIsTimeTracked,
+    plannedDuration,
+    setPlannedDuration,
     addTask: () => {
       if (!title.trim()) {
         alert("Task title cannot be empty");

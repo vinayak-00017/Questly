@@ -32,7 +32,7 @@ export const quest = pgTable("quest", {
   updatedAt: timestamp("updated_at").notNull(),
   dueDate: timestamp("due_date"),
   completed: boolean("completed").default(false),
-  xpReward: integer("xp_reward").default(10),
+  xpReward: integer("xp_reward").default(100),
 });
 
 export const task = pgTable("task", {
@@ -50,7 +50,7 @@ export const task = pgTable("task", {
   isTimeTracked: boolean("is_time_tracked").notNull().default(false),
   plannedDuration: integer("planned_duration"),
   actualDuration: integer("actual_duration"),
-  xpPerMinute: integer("xp_per_minute"),
+  basePoints: integer("base_points").notNull().default(1),
   xpReward: integer("xp_reward"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -65,7 +65,7 @@ export const recurringTask = pgTable("recurring_task", {
   recurrenceRule: text("recurrence_rule").notNull(), // e.g., 'daily', 'mon-fri'
   isTimeTracked: boolean("is_time_tracked").notNull().default(false),
   plannedDuration: integer("planned_duration"), // in minutes
-  xpPerMinute: integer("xp_per_minute"), // required if time-tracked
+  basePoints: integer("base_points").notNull().default(1),
   xpReward: integer("xp_reward"), // required if NOT time-tracked
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
