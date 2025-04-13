@@ -63,10 +63,10 @@ export const recurringTask = pgTable("recurring_task", {
   title: text("title").notNull(),
   description: text("description"),
   recurrenceRule: text("recurrence_rule").notNull(), // e.g., 'daily', 'mon-fri'
+  endDate: date("end_date"),
   isTimeTracked: boolean("is_time_tracked").notNull().default(false),
   plannedDuration: integer("planned_duration"), // in minutes
   basePoints: integer("base_points").notNull().default(1),
-  xpReward: integer("xp_reward"), // required if NOT time-tracked
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

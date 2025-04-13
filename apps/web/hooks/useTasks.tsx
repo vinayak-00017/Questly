@@ -12,7 +12,7 @@ export function useTasks() {
   const [title, setTitle] = useState("");
   const [points, setPoints] = useState(1);
   const [isTimeTracked, setIsTimeTracked] = useState(false);
-  const [plannedDuration, setPlannedDuration] = useState(30);
+  const [plannedDuration, setPlannedDuration] = useState(60);
 
   // Query to fetch tasks
   const { data: tasks = [], isLoading } = useQuery({
@@ -64,6 +64,8 @@ export function useTasks() {
       const taskInput: AddTask = {
         title,
         basePoints: points,
+        isTimeTracked,
+        plannedDuration,
       };
 
       const result = addTaskSchema.safeParse(taskInput);

@@ -1,6 +1,7 @@
 "use client";
 
 import TaskList from "@/components/task/task-list";
+import TaskProgress from "@/components/task/task-progress";
 import { Button } from "@/components/ui/button";
 import { authClient, useSession } from "@/lib/auth-client";
 import { useQuery } from "@tanstack/react-query";
@@ -36,8 +37,9 @@ export default function Home() {
       <Button onClick={signIn}>signIn</Button>
       {/* <div>hi{isPending}</div>
       <div>{session?.user.name}</div> */}
-      <div className="flex justify-center">
+      <div className="flex w-full justify-center ">
         <TaskList></TaskList>
+        <TaskProgress></TaskProgress>
       </div>
     </div>
   );

@@ -8,13 +8,15 @@ const router = express.Router();
 
 router.post("/", requireAuth, async (req, res) => {
   try {
-    const { title, basePoints } = req.body;
+    const { title, basePoints, isTimeTracked, plannedDuration } = req.body;
     const userId = (req as AuthenticatedRequest).userId;
     const newTask = {
       id: Date.now().toString(),
       title: title,
       basePoints,
       userId,
+      isTimeTracked,
+      plannedDuration,
     };
 
     await db.insert(task).values(newTask);
@@ -49,7 +51,7 @@ router.get("/", requireAuth, async (req, res) => {
 
 router.patch("/:id", requireAuth, async (req, res) => {
   try {
-    const updatedFields = req.body;
+    const updatedFields = { ...req.body, updatedAt: new Date() };
     const taskId = req.params.id;
     const userId = (req as AuthenticatedRequest).userId;
     await db

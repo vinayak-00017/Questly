@@ -29,7 +29,7 @@ const TaskList = () => {
   }
 
   return (
-    <div className="flex flex-col items-center w-full gap-6">
+    <div className="flex flex-col w-3/5 items-center  gap-6 mx-20">
       <TaskInput
         points={points}
         onPointsChange={setPoints}
@@ -72,7 +72,15 @@ const TaskList = () => {
             .map((taskItem: UserTask, index: number) => (
               <AnimatedListItem key={taskItem.id || `task-${index}`}>
                 <TaskElement
-                  points={taskItem.basePoints}
+                  points={
+                    taskItem.isTimeTracked && taskItem.plannedDuration
+                      ? Math.round(
+                          taskItem.basePoints *
+                            (taskItem.plannedDuration / 60) *
+                            100
+                        ) / 100
+                      : taskItem.basePoints
+                  }
                   task={taskItem.title}
                   isChecked={!!taskItem.completed}
                   setIsChecked={(e) => updateCompletedState(taskItem.id, e)}

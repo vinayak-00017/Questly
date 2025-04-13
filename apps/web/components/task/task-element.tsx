@@ -31,7 +31,11 @@ const TaskElement = ({
         }}
       />
       <div className="flex w-full justify-between">
-        <div className="px-2">{task}</div>
+        <div
+          className={`px-2 ${isChecked ? "line-through text-muted-foreground" : ""}`}
+        >
+          {task}
+        </div>
         <div className="flex">
           <div>Points:</div>
           <div>{points}</div>
