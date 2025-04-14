@@ -6,6 +6,7 @@ import {
   integer,
   serial,
   date,
+  PgTableWithColumns,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -22,17 +23,19 @@ export const user = pgTable("user", {
 });
 
 //Questly schema
-export const quest = pgTable("quest", {
+export const quest: PgTableWithColumns<any> = pgTable("quest", {
   id: text("id").primaryKey(),
   userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
-  isMainQuest: boolean("is_main_quest").default(false),
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
+  type: text("type").$type<"main" | "daily" | "side">().notNull(),
+  parentQuestId: text("parent_quest_id").references(() => quest.id), // Optional parent
+  recurrenceRule: text("recurrence_rule"), // Only for recurring daily/side quests
   dueDate: timestamp("due_date"),
   completed: boolean("completed").default(false),
-  xpReward: integer("xp_reward").default(100),
+  xpReward: integer("xp_reward").default(50),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const task = pgTable("task", {
