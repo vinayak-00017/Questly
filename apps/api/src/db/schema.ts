@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -6,7 +7,6 @@ import {
   integer,
   serial,
   date,
-  PgTableWithColumns,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -23,20 +23,29 @@ export const user = pgTable("user", {
 });
 
 //Questly schema
-export const quest: PgTableWithColumns<any> = pgTable("quest", {
+export const quest = pgTable("quest", {
   id: text("id").primaryKey(),
-  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
   type: text("type").$type<"main" | "daily" | "side">().notNull(),
-  parentQuestId: text("parent_quest_id").references(() => quest.id), // Optional parent
-  recurrenceRule: text("recurrence_rule"), // Only for recurring daily/side quests
+  parentQuestId: text("parent_quest_id"),
+  recurrenceRule: text("recurrence_rule"),
   dueDate: timestamp("due_date"),
   completed: boolean("completed").default(false),
+  basePoints: integer("base_points").notNull().default(1),
   xpReward: integer("xp_reward").default(50),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+export const questRelations = relations(quest, ({ one, many }) => ({
+  parent: one(quest, {
+    fields: [quest.parentQuestId],
+    references: [quest.id],
+  }),
+  subQuests: many(quest),
+}));
 
 export const task = pgTable("task", {
   id: text("id").primaryKey(),

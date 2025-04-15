@@ -1,5 +1,7 @@
 "use client";
 
+import MainQuestCard from "@/components/main-quest/main-quest-card";
+
 import TaskList from "@/components/task/task-list";
 import TaskProgress from "@/components/task/task-progress";
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,7 @@ export default function Home() {
       {/* <div>hi{isPending}</div>
       <div>{session?.user.name}</div> */}
       <div className="flex w-full justify-center ">
+        <MainQuestCard></MainQuestCard>
         <TaskList></TaskList>
         <TaskProgress></TaskProgress>
       </div>
