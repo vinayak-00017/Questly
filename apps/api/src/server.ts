@@ -5,7 +5,8 @@ import cors from "cors";
 import "dotenv/config";
 import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import { auth } from "../lib/auth";
-import taskRouter from "./routes/task";
+// import taskRouter from "./routes/task";
+import questRouter from "./routes/quest";
 export const createServer = (): Express => {
   const app = express();
   app
@@ -21,7 +22,8 @@ export const createServer = (): Express => {
     )
     .all("/api/auth/*splat", toNodeHandler(auth))
     .use(json())
-    .use("/tasks", taskRouter)
+    // .use("/tasks", taskRouter)
+    .use("/quest", questRouter)
     .get("/message/:name", (req, res) => {
       return res.json({ message: `hello ${req.params.name}` });
     })

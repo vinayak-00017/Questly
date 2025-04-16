@@ -5,7 +5,6 @@ import {
   timestamp,
   boolean,
   integer,
-  serial,
   date,
 } from "drizzle-orm/pg-core";
 
@@ -22,66 +21,137 @@ export const user = pgTable("user", {
   level: integer("level").default(1).notNull(),
 });
 
-//Questly schema
-export const quest = pgTable("quest", {
+// Main quest remains separate as it's fundamentally different
+export const mainQuest = pgTable("main_quest", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
-  type: text("type").$type<"main" | "daily" | "side">().notNull(),
-  parentQuestId: text("parent_quest_id"),
-  recurrenceRule: text("recurrence_rule"),
+  importance: text("importance")
+    .$type<"low" | "medium" | "high" | "epic">()
+    .notNull(),
   dueDate: timestamp("due_date"),
+  xpReward: integer("xp_reward"),
   completed: boolean("completed").default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Template for both daily and side quests
+export const questTemplate = pgTable("quest_template", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  type: text("type").$type<"daily" | "side">().notNull(),
+  parentQuestId: text("parent_quest_id").references(() => mainQuest.id),
+  recurrenceRule: text("recurrence_rule"),
+  isActive: boolean("is_active").default(true),
   basePoints: integer("base_points").notNull().default(1),
   xpReward: integer("xp_reward").default(50),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const questRelations = relations(quest, ({ one, many }) => ({
-  parent: one(quest, {
-    fields: [quest.parentQuestId],
-    references: [quest.id],
+// Tasks that belong to quest templates
+export const taskTemplate = pgTable("task_template", {
+  id: text("id").primaryKey(),
+  questTemplateId: text("quest_template_id")
+    .notNull()
+    .references(() => questTemplate.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  basePoints: integer("base_points").notNull().default(1),
+  plannedStartTime: text("planned_start_time"), // "HH:mm" format
+  plannedEndTime: text("planned_end_time"), // "HH:mm" format
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Instances of quests (both daily and side)
+export const questInstance = pgTable("quest_instance", {
+  id: text("id").primaryKey(),
+  templateId: text("template_id").references(() => questTemplate.id, {
+    onDelete: "cascade",
   }),
-  subQuests: many(quest),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  date: date("date").notNull(), // The specific day this instance is for
+  completed: boolean("completed").default(false),
+  basePoints: integer("base_points").notNull(),
+  xpReward: integer("xp_reward").notNull(), // Copied from template
+  updatedAt: timestamp("completed_at"),
+  streakCount: integer("streak_count").default(0), // Optional: track streaks
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Task instances
+export const taskInstance = pgTable("task_instance", {
+  id: text("id").primaryKey(),
+  questInstanceId: text("quest_instance_id")
+    .notNull()
+    .references(() => questInstance.id, { onDelete: "cascade" }),
+  templateId: text("template_id")
+    .notNull()
+    .references(() => taskTemplate.id),
+  title: text("title").notNull(),
+  completed: boolean("completed").default(false),
+  basePoint: integer("base_points").notNull(),
+  actualStartTime: timestamp("actual_start_time"),
+  actualEndTime: timestamp("actual_end_time"),
+  updatedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Relations
+export const mainQuestRelations = relations(mainQuest, ({ many }) => ({
+  questTemplates: many(questTemplate),
 }));
 
-export const task = pgTable("task", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  recurringTaskId: integer("recurring_task_id").references(
-    () => recurringTask.id
-  ),
-  title: text("title").notNull(),
-  description: text("description"),
-  date: date("date"), // the day the task is active
-  completed: boolean("completed").notNull().default(false),
-  isTimeTracked: boolean("is_time_tracked").notNull().default(false),
-  plannedDuration: integer("planned_duration"),
-  actualDuration: integer("actual_duration"),
-  basePoints: integer("base_points").notNull().default(1),
-  xpReward: integer("xp_reward"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-export const recurringTask = pgTable("recurring_task", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description"),
-  recurrenceRule: text("recurrence_rule").notNull(), // e.g., 'daily', 'mon-fri'
-  endDate: date("end_date"),
-  isTimeTracked: boolean("is_time_tracked").notNull().default(false),
-  plannedDuration: integer("planned_duration"), // in minutes
-  basePoints: integer("base_points").notNull().default(1),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const questTemplateRelations = relations(
+  questTemplate,
+  ({ many, one }) => ({
+    taskTemplates: many(taskTemplate),
+    instances: many(questInstance),
+    mainQuest: one(mainQuest, {
+      fields: [questTemplate.parentQuestId],
+      references: [mainQuest.id],
+    }),
+  })
+);
+
+export const taskTemplateRelations = relations(taskTemplate, ({ one }) => ({
+  questTemplate: one(questTemplate, {
+    fields: [taskTemplate.questTemplateId],
+    references: [questTemplate.id],
+  }),
+}));
+
+export const questInstanceRelations = relations(
+  questInstance,
+  ({ one, many }) => ({
+    template: one(questTemplate, {
+      fields: [questInstance.templateId],
+      references: [questTemplate.id],
+    }),
+    taskInstances: many(taskInstance),
+  })
+);
+
+export const taskInstanceRelations = relations(taskInstance, ({ one }) => ({
+  template: one(taskTemplate, {
+    fields: [taskInstance.templateId],
+    references: [taskTemplate.id],
+  }),
+  questInstance: one(questInstance, {
+    fields: [taskInstance.questInstanceId],
+    references: [questInstance.id],
+  }),
+}));
 
 //Auth schema
 export const session = pgTable("session", {

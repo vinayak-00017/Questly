@@ -1,46 +1,51 @@
 import { z } from "zod";
+import { baseSchema, QuestType, TaskPriority } from "./base";
+import { createTaskTemplateSchema } from "./task";
 
-export const questSchema = z.object({
-  id: z.string(),
-  userId: z.string(),
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  type: z.enum(["main", "daily", "side"]),
+// Quest Template Schema
+export const questTemplateSchema = baseSchema.extend({
+  type: z.nativeEnum(QuestType),
   parentQuestId: z.string().nullable(),
   recurrenceRule: z.string().nullable(),
-  dueDate: z.date().nullable(),
-  completed: z.boolean().default(false),
+  isActive: z.boolean().default(true),
   basePoints: z.number().int().positive().default(1),
   xpReward: z.number().int().positive().default(50),
+});
+
+// Quest Instance Schema
+export const questInstanceSchema = z.object({
+  id: z.string(),
+  templateId: z.string(),
+  userId: z.string(),
+  date: z.date(),
+  completed: z.boolean().default(false),
+  basePoints: z.number().int().positive(),
+  xpReward: z.number().int().positive(),
+  streakCount: z.number().int().default(0),
+  updatedAt: z.date().optional(),
   createdAt: z.date().default(() => new Date()),
-  updatedAt: z.date().default(() => new Date()),
 });
 
-export const createQuestSchema = questSchema.omit({
-  id: true,
-  userId: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const createMainQuestSchema = createQuestSchema
-  .extend({
-    type: z.literal("main"),
-    importance: z.enum(["low", "medium", "high"]),
-    dailyTasks: z
-      .array(
-        z.object({
-          title: z.string().min(1, "Task title is required"),
-          description: z.string().optional(),
-        })
-      )
-      .optional()
-      .default([]),
-  })
+// Creation schema
+export const createQuestTemplateSchema = questTemplateSchema
   .omit({
+    id: true,
+    userId: true,
+    createdAt: true,
+    updatedAt: true,
+    xpReward: true,
     parentQuestId: true,
-    recurrenceRule: true,
+    completed: true,
+    isActive: true,
+  })
+  .extend({
+    basePoints: z.union([
+      z.number().int().positive(),
+      z.nativeEnum(TaskPriority),
+    ]),
   });
 
-export type Quest = z.infer<typeof questSchema>;
-export type CreateMainQuestInput = z.infer<typeof createMainQuestSchema>;
+// Types
+export type QuestTemplate = z.infer<typeof questTemplateSchema>;
+export type QuestInstance = z.infer<typeof questInstanceSchema>;
+export type CreateQuestTemplate = z.infer<typeof createQuestTemplateSchema>;

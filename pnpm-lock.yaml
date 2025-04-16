@@ -21,6 +21,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@questly/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@repo/logger':
         specifier: workspace:*
         version: link:../../packages/logger
@@ -48,6 +51,9 @@ importers:
       pg:
         specifier: ^8.14.1
         version: 8.14.1
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
     devDependencies:
       '@jest/globals':
         specifier: ^29.7.0
@@ -106,6 +112,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@questly/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@radix-ui/react-checkbox':
         specifier: ^1.1.4
         version: 1.1.4(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -231,19 +240,6 @@ importers:
         specifier: ^5
         version: 5.8.2
 
-  packages/common-types:
-    dependencies:
-      zod:
-        specifier: ^3.22.4
-        version: 3.24.2
-    devDependencies:
-      tsup:
-        specifier: ^8.0.1
-        version: 8.4.0(@swc/core@1.11.16(@swc/helpers@0.5.15))(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.2)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.8.2
-
   packages/config-eslint:
     devDependencies:
       '@eslint/js':
@@ -289,7 +285,7 @@ importers:
         version: 29.7.0(@types/node@22.14.0)
       ts-jest:
         specifier: ^29.3.0
-        version: 29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@22.14.0))(typescript@5.8.2)
+        version: 29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0)(typescript@5.8.2)
     devDependencies:
       jest-environment-jsdom:
         specifier: ^29.7.0
@@ -325,7 +321,26 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  packages/types: {}
+  packages/types:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../config-eslint
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../config-typescript
+      eslint:
+        specifier: ^9.23.0
+        version: 9.24.0(jiti@2.4.2)
+      tsup:
+        specifier: ^8.4.0
+        version: 8.4.0(@swc/core@1.11.16(@swc/helpers@0.5.15))(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.2)
+      typescript:
+        specifier: 5.8.2
+        version: 5.8.2
+      zod:
+        specifier: ^3.22.4
+        version: 3.24.2
 
   packages/ui:
     dependencies:
@@ -5339,6 +5354,10 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
 
   v8-to-istanbul@9.3.0:
     resolution: {integrity: sha512-kiGUalWN+rgBJ/1OHZsBtU4rXZOfj/7rKQxULKlIzwzQSvMJUUNgPwJEEh7gU6xEVxC0ahoOBvN2YI8GH6FNgA==}
@@ -10512,7 +10531,7 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
-  ts-jest@29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@22.14.0))(typescript@5.8.2):
+  ts-jest@29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0)(typescript@5.8.2):
     dependencies:
       bs-logger: 0.2.6
       ejs: 3.1.10
@@ -10735,6 +10754,8 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.1.0
+
+  uuid@11.1.0: {}
 
   v8-to-istanbul@9.3.0:
     dependencies:

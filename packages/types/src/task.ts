@@ -1,67 +1,51 @@
 import { z } from "zod";
+import { TaskPriority } from "./base";
 
-// Base task schema
-export const taskSchema = z.object({
+// Task Template Schema
+export const taskTemplateSchema = z.object({
   id: z.string(),
-  userId: z.string(),
-  recurringTaskId: z.number().nullable().optional(),
+  questTemplateId: z.string(),
   title: z.string().min(1, "Title is required"),
-  description: z.string().nullable().optional(),
-  date: z.string().nullable().optional(), // For date fields, using string format that will be parsed
-  completed: z.boolean().default(false),
-  isTimeTracked: z.boolean().default(false),
-  plannedDuration: z.number().int().nullable().optional(),
-  actualDuration: z.number().int().nullable().optional(),
-  xpReward: z.number().int().nullable().optional(),
-  basePoints: z.number().default(1),
-  createdAt: z.string().datetime().optional(), // ISO format dates
-  updatedAt: z.string().datetime().optional(),
+  description: z.string().optional(),
+  basePoints: z
+    .union([z.number().int().positive(), z.nativeEnum(TaskPriority)])
+    .default(TaskPriority.Medium),
+  plannedStartTime: z
+    .string()
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .optional(),
+  plannedEndTime: z
+    .string()
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .optional(),
+  createdAt: z.date().default(() => new Date()),
 });
 
-// Type inference
-export type Task = z.infer<typeof taskSchema>;
-
-export const UserTaskSchema = taskSchema.omit({
-  xpReward: true,
-});
-
-export type UserTask = z.infer<typeof UserTaskSchema>;
-
-// Schema for creating a new task (omits id, createdAt, updatedAt)
-export const addTaskSchema = taskSchema
-  .omit({
-    id: true,
-    createdAt: true,
-    updatedAt: true,
-    userId: true,
-  })
-  .extend({
-    completed: z.boolean().default(false).optional(),
-    title: z.string().min(1, "Title is required"),
-    isTimeTracked: z.boolean().default(false).optional(),
-    plannedDuration: z.number().int().positive().optional(),
-  });
-
-export type AddTask = z.infer<typeof addTaskSchema>;
-
-// Schema for updating an existing task (all fields optional except id)
-export const updateTaskSchema = taskSchema.partial().pick({
-  title: true,
-  description: true,
-  date: true,
-  completed: true,
-  isTimeTracked: true,
-  plannedDuration: true,
-  actualDuration: true,
-  basePoints: true,
-  xpReward: true,
-});
-
-export type UpdateTask = z.infer<typeof updateTaskSchema>;
-
-// Schema for task with required ID (for operations requiring an ID)
-export const taskWithIdSchema = updateTaskSchema.extend({
+// Task Instance Schema
+export const taskInstanceSchema = z.object({
   id: z.string(),
+  questInstanceId: z.string(),
+  templateId: z.string(),
+  title: z.string(),
+  completed: z.boolean().default(false),
+  basePoints: z.union([
+    z.number().int().positive(),
+    z.nativeEnum(TaskPriority),
+  ]),
+  actualStartTime: z.date().optional(),
+  actualEndTime: z.date().optional(),
+  updatedAt: z.date().optional(),
+  createdAt: z.date().default(() => new Date()),
 });
 
-export type TaskWithId = z.infer<typeof taskWithIdSchema>;
+// Create Task Template Schema
+export const createTaskTemplateSchema = taskTemplateSchema.omit({
+  id: true,
+  questTemplateId: true,
+  createdAt: true,
+});
+
+// Types
+export type TaskTemplate = z.infer<typeof taskTemplateSchema>;
+export type TaskInstance = z.infer<typeof taskInstanceSchema>;
+export type CreateTaskTemplate = z.infer<typeof createTaskTemplateSchema>;
