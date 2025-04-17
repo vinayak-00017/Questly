@@ -27,9 +27,9 @@ import {
   CreateQuestTemplate,
   QuestType,
 } from "@questly/types";
-import { CreateMainQuest, createMainQuestSchema } from "@questly/types";
+import { createMainQuestSchema } from "@questly/types";
 import { toast } from "sonner";
-import { BASE_URL } from "@/config";
+import { mainQuestApi } from "@/services/main-quest-api";
 
 interface AddQuestDialogProps {
   open: boolean;
@@ -79,23 +79,7 @@ export function AddQuestDialog({
   };
 
   const addMainQuestMutation = useMutation({
-    mutationFn: async (input: CreateMainQuest) => {
-      const response = await fetch(`${BASE_URL}/quest/main`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(input),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create quest");
-      }
-
-      return response.json();
-    },
+    mutationFn: mainQuestApi.addMainQuest,
     onSuccess: () => {
       toast.success("Main quest created successfully!");
       onSuccess?.();
@@ -118,14 +102,13 @@ export function AddQuestDialog({
         title,
         description,
         importance,
-        dueDate: dueDate ? dueDate.toISOString() : null,
+        dueDate: dueDate ? dueDate.toISOString() : undefined,
         quests: dailyQuests,
       };
 
       console.log(input);
       try {
         const validatedInput = createMainQuestSchema.parse(input);
-        console.log("hi2");
         addMainQuestMutation.mutate(validatedInput);
       } catch (validationError) {
         console.error("Validation error:", validationError); // Log the validation error
@@ -140,7 +123,7 @@ export function AddQuestDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-zinc-900 border-zinc-800 max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[500px] w-full bg-zinc-900 border-zinc-800 max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-none px-6">
           <DialogTitle className="text-xl font-bold">
             Add New Main Quest
@@ -172,7 +155,13 @@ export function AddQuestDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex justify-between px-2 ">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-200">
+                Due Date (Optional)
+              </label>
+              <DatePicker date={dueDate} onSelect={setDueDate} />
+            </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-200">
                 Importance
@@ -193,13 +182,6 @@ export function AddQuestDialog({
                   <SelectItem value={Epic}>Epic</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-200">
-                Due Date (Optional)
-              </label>
-              <DatePicker date={dueDate} onSelect={setDueDate} />
             </div>
           </div>
 

@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import db from "../db";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 import { mainQuest, questTemplate } from "../db/schema";
-import { TaskPriority } from "@questly/types";
+import { QuestTemplate, TaskPriority } from "@questly/types";
+import { and, eq } from "drizzle-orm";
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ router.post("/main", requireAuth, async (req, res) => {
       userId,
     };
 
-    const updatedQuests = quests.map((quest) => ({
+    const updatedQuests = quests.map((quest: QuestTemplate) => ({
       ...quest,
       parentQuestId: newMainQuest.id,
       userId,
@@ -50,4 +51,42 @@ router.post("/main", requireAuth, async (req, res) => {
     res.status(500).json({ message: "Failed to create quest" });
   }
 });
+
+router.get("/main", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const mainQuests = await db
+      .select()
+      .from(mainQuest)
+      .where(eq(mainQuest.userId, userId));
+
+    res.status(200).json({
+      message: "Main quests retrived successfully",
+      mainQuests,
+    });
+  } catch (err) {
+    console.error("Error getting main quests:", err);
+    res.status(500).json({ message: "failed getting mainQuests" });
+  }
+});
+
+router.get("/daily", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const dailyQuests = await db
+      .select()
+      .from(questTemplate)
+      .where(
+        and(eq(questTemplate.id, userId), eq(questTemplate.type, "daily"))
+      );
+
+    res
+      .status(200)
+      .json({ message: "Daily qeusts retrived successfully", dailyQuests });
+  } catch (err) {
+    console.error("Error getting daily quests", err);
+    res.status(500).json({ message: "failed getting sideQuests" });
+  }
+});
+
 export default router;

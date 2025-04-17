@@ -8,16 +8,9 @@ import { CountdownTimer } from "@/components/timer";
 import { LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AddQuestDialog } from "@/components/main-quest/add-quest-dialog";
-
-interface MainQuest {
-  id: string;
-  title: string;
-  description: string;
-  dueDate: Date;
-  priority: "high" | "medium" | "low";
-  progress: number;
-  linkedQuests: number;
-}
+import { MainQuest, MainQuestImportance } from "@questly/types";
+import { useQuery } from "@tanstack/react-query";
+import { mainQuestApi } from "@/services/main-quest-api";
 
 interface StatCardProps {
   icon: LucideIcon;
@@ -25,27 +18,6 @@ interface StatCardProps {
   value: string | number;
   className?: string;
 }
-
-const quests: MainQuest[] = [
-  {
-    id: "1",
-    title: "Complete Portfolio Website",
-    description: "Finish all sections of my personal portfolio website",
-    dueDate: new Date("2025-04-29"),
-    priority: "high",
-    progress: 35,
-    linkedQuests: 2,
-  },
-  {
-    id: "2",
-    title: "Learn React Advanced Patterns",
-    description: "Study advanced React patterns and implement them in projects",
-    dueDate: new Date("2025-05-15"),
-    priority: "medium",
-    progress: 20,
-    linkedQuests: 2,
-  },
-];
 
 const StatCard = ({
   icon: Icon,
@@ -67,13 +39,21 @@ const StatCard = ({
 );
 
 const MainQuestsPage = () => {
+  const { data: mainQuests = [], isLoading } = useQuery({
+    queryKey: ["mainQuests"],
+    queryFn: mainQuestApi.fetchMainQuests,
+    select: (data) => data.mainQuests || [],
+  });
   const router = useRouter();
+  const { Epic, High, Medium, Low } = MainQuestImportance;
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const totalQuests = quests.length;
-  const completedQuests = quests.filter((q) => q.progress === 100).length;
-  const averageProgress = Math.round(
-    quests.reduce((acc, q) => acc + q.progress, 0) / totalQuests
-  );
+  const totalQuests = mainQuests.length;
+  const completedQuests = mainQuests.filter(
+    (q: MainQuest) => q.completed
+  ).length;
+  // const averageProgress = Math.round(
+  //   quests.reduce((acc, q) => acc + q.progress, 0) / totalQuests
+  // );
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -109,20 +89,21 @@ const MainQuestsPage = () => {
         <StatCard
           icon={TrendingUp}
           title="Average Progress"
-          value={`${averageProgress}%`}
+          value={10}
+          // value={`${averageProgress}%`}
           className="bg-emerald-500/10 text-emerald-400"
         />
       </div>
 
-      <div className="space-y-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-400/[0.2] via-transparent to-purple-500/[0.05] pointer-events-none" />
+      <div className="relative space-y-4">
+        <div className="fixed inset-0 bg-gradient-to-br from-amber-400/[0.2] via-transparent to-purple-500/[0.05] pointer-events-none" />
         <div className="flex items-center gap-2">
           <Shield className="w-5 h-5 text-purple-400" />
           <h2 className="text-xl font-semibold">Active Main Quests</h2>
         </div>
 
         <div className="space-y-4">
-          {quests.map((quest) => (
+          {mainQuests.map((quest: MainQuest) => (
             <Card
               key={quest.id}
               className="bg-zinc-900/50 border-zinc-800/50 hover:bg-zinc-800/50 transition-all cursor-pointer p-6"
@@ -134,12 +115,12 @@ const MainQuestsPage = () => {
                       <h3 className="text-lg font-semibold">{quest.title}</h3>
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs ${
-                          quest.priority === "high"
+                          quest.importance === "high"
                             ? "bg-red-500/20 text-red-400"
                             : "bg-amber-500/20 text-amber-400"
                         }`}
                       >
-                        • {quest.priority} priority
+                        • {quest.importance}
                       </span>
                     </div>
                     <p className="text-zinc-400">{quest.description}</p>
@@ -148,7 +129,8 @@ const MainQuestsPage = () => {
                     <div className="relative w-16 h-16">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="text-lg font-bold">
-                          {quest.progress}%
+                          {/* {quest.progress}% */}
+                          {10}%
                         </span>
                       </div>
                       <svg className="w-full h-full transform -rotate-90">
@@ -165,9 +147,10 @@ const MainQuestsPage = () => {
                           className="text-purple-500"
                           strokeWidth="4"
                           strokeDasharray={30 * 2 * Math.PI}
-                          strokeDashoffset={
-                            30 * 2 * Math.PI * (1 - quest.progress / 100)
-                          }
+                          // strokeDashoffset={
+                          //   30 * 2 * Math.PI * (1 - quest.progress / 100)
+                          // }
+                          strokeDashoffset={10}
                           strokeLinecap="round"
                           stroke="currentColor"
                           fill="transparent"
@@ -184,11 +167,13 @@ const MainQuestsPage = () => {
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <span>Due: </span>
-                    <CountdownTimer targetDate={quest.dueDate} />
+                    {quest.dueDate && (
+                      <CountdownTimer targetDate={new Date(quest.dueDate)} />
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Link className="w-4 h-4" />
-                    <span>{quest.linkedQuests} daily quests linked</span>
+                    <span>{} daily quests linked</span>
                   </div>
                 </div>
 

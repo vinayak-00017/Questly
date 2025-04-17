@@ -1,8 +1,8 @@
 "use client";
 
 import MainQuestCard from "@/components/main-quest/main-quest-card";
+import QuestCard from "@/components/quest-card";
 
-import TaskList from "@/components/task/task-list";
 import TaskProgress from "@/components/task/task-progress";
 import { Button } from "@/components/ui/button";
 import { authClient, useSession } from "@/lib/auth-client";
@@ -39,10 +39,11 @@ export default function Home() {
       <Button onClick={signIn}>signIn</Button>
       {/* <div>hi{isPending}</div>
       <div>{session?.user.name}</div> */}
-      <div className="flex w-full justify-center ">
+      <div className="flex flex-col w-full justify-center ">
+        <QuestCard></QuestCard>
         <MainQuestCard></MainQuestCard>
-        <TaskList></TaskList>
-        <TaskProgress></TaskProgress>
+        {/* <TaskList></TaskList> */}
+        {/* <TaskProgress></TaskProgress> */}
       </div>
     </div>
   );

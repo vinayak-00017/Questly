@@ -52,7 +52,7 @@ export const questTemplate = pgTable("quest_template", {
   recurrenceRule: text("recurrence_rule"),
   isActive: boolean("is_active").default(true),
   basePoints: integer("base_points").notNull().default(1),
-  xpReward: integer("xp_reward").default(50),
+  xpReward: integer("xp_reward"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -83,7 +83,7 @@ export const questInstance = pgTable("quest_instance", {
   date: date("date").notNull(), // The specific day this instance is for
   completed: boolean("completed").default(false),
   basePoints: integer("base_points").notNull(),
-  xpReward: integer("xp_reward").notNull(), // Copied from template
+  xpReward: integer("xp_reward"), // Copied from template
   updatedAt: timestamp("completed_at"),
   streakCount: integer("streak_count").default(0), // Optional: track streaks
   createdAt: timestamp("created_at").notNull().defaultNow(),

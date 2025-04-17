@@ -27,3 +27,12 @@ export const auth = betterAuth({
   trustedOrigins: ["http://localhost:3000"],
   plugins: [anonymous()],
 });
+
+// export async function getAdminToken() {
+//   const token = jwt.sign({
+//     role: "admin", internal: true},
+//     process.env.JWT_SECRET!,
+//     { expiresIn: "1h" }
+//   );
+//   return token;
+//   }
