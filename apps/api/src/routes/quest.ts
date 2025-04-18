@@ -2,7 +2,7 @@ import express from "express";
 import { v4 as uuidv4 } from "uuid";
 import db from "../db";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
-import { mainQuest, questTemplate } from "../db/schema";
+import { mainQuest, questInstance, questTemplate } from "../db/schema";
 import { QuestTemplate, TaskPriority } from "@questly/types";
 import { and, eq } from "drizzle-orm";
 
@@ -70,19 +70,37 @@ router.get("/main", requireAuth, async (req, res) => {
   }
 });
 
-router.get("/daily", requireAuth, async (req, res) => {
+router.get("/dailyInstance", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const dailyQuests = await db
-      .select()
-      .from(questTemplate)
+      .select({
+        instanceId: questInstance.id,
+        templateId: questInstance.templateId,
+        title: questTemplate.title,
+        description: questTemplate.description,
+        type: questTemplate.type,
+        basePoints: questInstance.basePoints,
+        updatedAt: questInstance.updatedAt,
+        completed: questInstance.completed,
+        xpReward: questInstance.xpReward,
+        date: questInstance.date,
+      })
+      .from(questInstance)
+      .innerJoin(questTemplate, eq(questInstance.templateId, questTemplate.id))
       .where(
-        and(eq(questTemplate.id, userId), eq(questTemplate.type, "daily"))
+        and(
+          eq(questInstance.userId, userId),
+          eq(questInstance.date, today.toISOString().split("T")[0]),
+          eq(questTemplate.type, "daily")
+        )
       );
 
     res
       .status(200)
-      .json({ message: "Daily qeusts retrived successfully", dailyQuests });
+      .json({ message: "Daily quests retrived successfully", dailyQuests });
   } catch (err) {
     console.error("Error getting daily quests", err);
     res.status(500).json({ message: "failed getting sideQuests" });

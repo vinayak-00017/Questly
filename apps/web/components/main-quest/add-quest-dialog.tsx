@@ -106,7 +106,6 @@ export function AddQuestDialog({
         quests: dailyQuests,
       };
 
-      console.log(input);
       try {
         const validatedInput = createMainQuestSchema.parse(input);
         addMainQuestMutation.mutate(validatedInput);

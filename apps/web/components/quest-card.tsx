@@ -6,32 +6,32 @@ import { Clock, Check, Shield, Sword, Target, Flame } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Card, CardTitle, CardDescription, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { questApi } from "@/services/quest-api";
-import { QuestTemplate } from "@questly/types";
-
-const { data: dailyQuests = [], isLoading } = useQuery({
-  queryKey: ["dailyQuests"],
-  queryFn: questApi.fetchDailyQuest,
-  select: (data) => data.dailyQuests || [],
-});
+import { QuestInstance } from "@questly/types";
 
 const QuestCard = () => {
   const router = useRouter();
+  const { data: dailyQuests = [], isLoading } = useQuery({
+    queryKey: ["dailyQuests"],
+    queryFn: questApi.fetchDailyQuest,
+    select: (data) => data.dailyQuests || [],
+  });
+
   return (
-    <Card className="w-full overflow-hidden bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-zinc-800/90 via-zinc-900/95 to-black/95 border-0 shadow-2xl relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-red-700/[0.2] via-transparent to-orange-900/[0.1] pointer-events-none" />
+    <Card className="w-full overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border-0 shadow-lg relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-transparent to-orange-700/10 pointer-events-none" />
       <div className="relative">
-        <div className="flex w-full px-6 pt-6 items-center justify-between">
+        <div className="flex w-full px-6 pt-6 pb-4 items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="bg-zinc-900 w-12 h-12 rounded-full flex items-center justify-center shadow-lg ring-1 ring-white/10">
-              <Flame className="h-6 w-6 text-orange-500" />
+            <div className="bg-black/40 w-10 h-10 rounded-full flex items-center justify-center shadow-md ring-1 ring-white/10">
+              <Flame className="h-5 w-5 text-orange-500" />
             </div>
             <div>
-              <CardTitle className="text-xl font-semibold text-white/90">
+              <CardTitle className="text-lg font-semibold text-white/90">
                 Daily Quests
               </CardTitle>
-              <CardDescription className="text-zinc-400 text-sm">
+              <CardDescription className="text-zinc-400 text-xs mt-0.5">
                 Complete these quests every day to stay aligned to your main
                 quest.
               </CardDescription>
@@ -39,44 +39,38 @@ const QuestCard = () => {
           </div>
           <Button
             variant="outline"
-            className="bg-zinc-900/50 border-zinc-800 hover:bg-zinc-800 text-white gap-2"
+            size="sm"
+            className="bg-black/30 border-zinc-800 hover:bg-black/50 text-white gap-1.5 text-sm"
           >
-            <span>+ Add</span>
+            <span>Add Quest</span>
           </Button>
         </div>
 
-        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 ">
-          {dailyQuests.map((quest: QuestTemplate) => (
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          {dailyQuests.map((quest: QuestInstance) => (
             <Card
-              key={quest.id}
-              className="bg-zinc-900/50 border-zinc-800 hover:bg-zinc-800/50 transition-all cursor-pointer"
+              key={quest.instanceId}
+              className="bg-black/20 border-zinc-800 hover:bg-black/30 transition-all duration-200 cursor-pointer group"
             >
               <CardContent className="p-4 flex items-center justify-between">
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <Flame className="h-4 w-4 text-orange-500" />
-                    <span className="text-orange-500/80 text-sm font-sans">
+                    <Flame className="h-3.5 w-3.5 text-orange-500" />
+                    <span className="text-orange-500/80 text-xs font-medium tracking-wide">
                       DAILY QUEST
                     </span>
-                    {/* <span
-                      className={`px-2 py-0.5 rounded-full text-xs ${
-                        quest.priority === "critical"
-                          ? "bg-red-500/20 text-red-400"
-                          : "bg-emerald-500/20 text-emerald-400"
-                      }`}
-                    >
-                      {quest.priority}
-                    </span> */}
                   </div>
-                  <h3 className="text-white/90 font-medium">{quest.title}</h3>
+                  <h3 className="text-white/90 font-medium text-sm">
+                    {quest.title}
+                  </h3>
                   <div className="flex items-center gap-4">
-                    <div className="text-orange-500 font-medium">
+                    <div className="text-orange-400 text-xs font-medium">
                       {/* +{quest.xp} XP */}
                     </div>
                   </div>
                 </div>
-                <div className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors">
-                  <Check className="h-4 w-4 text-zinc-400" />
+                <div className="h-8 w-8 rounded-full bg-black/30 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors ring-1 ring-white/5 group-hover:ring-orange-500/30">
+                  <Check className="h-4 w-4 text-zinc-400 group-hover:text-orange-400" />
                 </div>
               </CardContent>
             </Card>

@@ -1,9 +1,16 @@
-import { log } from "@repo/logger";
 import { createServer } from "./server";
 
-const port = process.env.PORT || 5001;
-const server = createServer();
+async function startServer() {
+  const port = process.env.PORT || 5001;
+  try {
+    const app = await createServer();
+    app.listen(port, () => {
+      console.log(`API listening on port ${port}`);
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  }
+}
 
-server.listen(port, () => {
-  log(`api running on ${port}`);
-});
+startServer();

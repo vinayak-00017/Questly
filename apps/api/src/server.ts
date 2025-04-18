@@ -7,7 +7,9 @@ import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import { auth } from "../lib/auth";
 // import taskRouter from "./routes/task";
 import questRouter from "./routes/quest";
-export const createServer = (): Express => {
+import instanceRouter from "./routes/instance";
+import { initializeScheduler } from "../services/scheduler";
+export const createServer = async (): Promise<Express> => {
   const app = express();
   app
     .disable("x-powered-by")
@@ -24,6 +26,7 @@ export const createServer = (): Express => {
     .use(json())
     // .use("/tasks", taskRouter)
     .use("/quest", questRouter)
+    .use("/instance", instanceRouter)
     .get("/message/:name", (req, res) => {
       return res.json({ message: `hello ${req.params.name}` });
     })
@@ -36,6 +39,8 @@ export const createServer = (): Express => {
       });
       return res.json(session);
     });
+  await initializeScheduler();
+  console.log("Server initialized with scheduled tasks");
 
   return app;
 };

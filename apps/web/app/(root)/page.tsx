@@ -35,15 +35,19 @@ export default function Home() {
   if (isLoading) return <p>loading...</p>;
 
   return (
-    <div>
-      <Button onClick={signIn}>signIn</Button>
-      {/* <div>hi{isPending}</div>
-      <div>{session?.user.name}</div> */}
-      <div className="flex flex-col w-full justify-center ">
-        <QuestCard></QuestCard>
-        <MainQuestCard></MainQuestCard>
-        {/* <TaskList></TaskList> */}
-        {/* <TaskProgress></TaskProgress> */}
+    <div className="flex h-full w-full flex-col gap-4 bg-white dark:bg-neutral-900 p-5 md:p-8 rounded-lg shadow-sm">
+      <Button
+        onClick={signIn}
+        size="sm"
+        variant="outline"
+        className="w-fit ml-auto"
+      >
+        Sign In
+      </Button>
+
+      <div className="flex flex-col w-full gap-6">
+        <QuestCard />
+        <MainQuestCard />
       </div>
     </div>
   );

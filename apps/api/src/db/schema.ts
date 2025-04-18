@@ -57,6 +57,27 @@ export const questTemplate = pgTable("quest_template", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Instances of quests (both daily and side)
+export const questInstance = pgTable("quest_instance", {
+  id: text("id").primaryKey(),
+  templateId: text("template_id").references(() => questTemplate.id, {
+    onDelete: "cascade",
+  }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  date: date("date").notNull(), // The specific day this instance is for
+  completed: boolean("completed").default(false),
+  title: text("title").notNull(),
+  description: text("description"),
+  basePoints: integer("base_points").notNull(),
+  xpReward: integer("xp_reward"), // Copied from template
+  updatedAt: timestamp("completed_at"),
+  streakCount: integer("streak_count").default(0), // Optional: track streaks
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Tasks that belong to quest templates
 export const taskTemplate = pgTable("task_template", {
   id: text("id").primaryKey(),
@@ -68,24 +89,6 @@ export const taskTemplate = pgTable("task_template", {
   basePoints: integer("base_points").notNull().default(1),
   plannedStartTime: text("planned_start_time"), // "HH:mm" format
   plannedEndTime: text("planned_end_time"), // "HH:mm" format
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-// Instances of quests (both daily and side)
-export const questInstance = pgTable("quest_instance", {
-  id: text("id").primaryKey(),
-  templateId: text("template_id").references(() => questTemplate.id, {
-    onDelete: "cascade",
-  }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  date: date("date").notNull(), // The specific day this instance is for
-  completed: boolean("completed").default(false),
-  basePoints: integer("base_points").notNull(),
-  xpReward: integer("xp_reward"), // Copied from template
-  updatedAt: timestamp("completed_at"),
-  streakCount: integer("streak_count").default(0), // Optional: track streaks
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

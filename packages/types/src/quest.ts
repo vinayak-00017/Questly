@@ -14,16 +14,17 @@ export const questTemplateSchema = baseSchema.extend({
 
 // Quest Instance Schema
 export const questInstanceSchema = z.object({
-  id: z.string(),
+  instanceId: z.string(),
   templateId: z.string(),
-  userId: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
   date: z.date(),
   completed: z.boolean().default(false),
   basePoints: z.number().int().positive(),
+  type: z.nativeEnum(QuestType),
   xpReward: z.number().int().positive(),
   streakCount: z.number().int().default(0),
   updatedAt: z.date().optional(),
-  createdAt: z.date().default(() => new Date()),
 });
 
 // Creation schema

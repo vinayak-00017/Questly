@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "../src/db";
+import jwt from "jsonwebtoken";
 
 import { anonymous } from "better-auth/plugins";
 import { account, session, user, verification } from "../src/db/schema";
@@ -28,11 +29,17 @@ export const auth = betterAuth({
   plugins: [anonymous()],
 });
 
-// export async function getAdminToken() {
-//   const token = jwt.sign({
-//     role: "admin", internal: true},
-//     process.env.JWT_SECRET!,
-//     { expiresIn: "1h" }
-//   );
-//   return token;
-//   }
+//Generate a scheduler token.
+
+export async function getSchedulerToken() {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is not defined");
+  }
+  return jwt.sign(
+    { type: "scheduler", internal: true },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "1h",
+    }
+  );
+}
