@@ -1,7 +1,7 @@
 "use client ";
 
-import React from "react";
-import { Clock, Check, Shield, Sword, Target, Flame } from "lucide-react";
+import React, { useState } from "react";
+import { Clock, Check, Shield, Sword, Target, Flame, Plus } from "lucide-react";
 
 import { useRouter } from "next/navigation";
 import { Card, CardTitle, CardDescription, CardContent } from "./ui/card";
@@ -9,6 +9,7 @@ import { Button } from "./ui/button";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { questApi } from "@/services/quest-api";
 import { QuestInstance } from "@questly/types";
+import { AddDailyQuestDialog } from "./add-daily-quest-dialog";
 
 const QuestCard = () => {
   const router = useRouter();
@@ -17,6 +18,7 @@ const QuestCard = () => {
     queryFn: questApi.fetchDailyQuest,
     select: (data) => data.dailyQuests || [],
   });
+  const [isDailyQuestDialog, setIsDailyQuestDialog] = useState(false);
 
   return (
     <Card className="w-full overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border-0 shadow-lg relative">
@@ -40,9 +42,11 @@ const QuestCard = () => {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => setIsDailyQuestDialog(true)}
             className="bg-black/30 border-zinc-800 hover:bg-black/50 text-white gap-1.5 text-sm"
           >
-            <span>Add Quest</span>
+            <Plus />
+            <span>Add </span>
           </Button>
         </div>
 
@@ -77,6 +81,10 @@ const QuestCard = () => {
           ))}
         </div>
       </div>
+      <AddDailyQuestDialog
+        open={isDailyQuestDialog}
+        onOpenChange={setIsDailyQuestDialog}
+      />
     </Card>
   );
 };

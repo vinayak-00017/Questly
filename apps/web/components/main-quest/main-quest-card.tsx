@@ -1,14 +1,8 @@
 "use client ";
 
 import React from "react";
-import { Clock, Check, Shield, Sword, Target } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { Clock, Check, Swords } from "lucide-react";
+import { Card, CardContent, CardDescription, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { CountdownTimer } from "../timer";
 import { useRouter } from "next/navigation";
@@ -44,7 +38,7 @@ const MainQuestCard = () => {
         <div className="flex w-full px-6 pt-6 pb-4 items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="bg-black/40 w-10 h-10 rounded-full flex items-center justify-center shadow-md ring-1 ring-white/10">
-              <Target className="h-5 w-5 text-amber-500" />
+              <Swords className="h-5 w-5 text-amber-500" />
             </div>
             <div>
               <CardTitle className="text-lg font-semibold text-white/90">
@@ -77,7 +71,7 @@ const MainQuestCard = () => {
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <Target className="h-3.5 w-3.5 text-amber-500" />
+                    <Swords className="h-3.5 w-3.5 text-amber-500" />
                     <span className="text-amber-500/80 text-xs font-medium tracking-wide">
                       MAIN QUEST
                     </span>

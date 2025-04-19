@@ -3,6 +3,8 @@ import { cn } from "@/lib/utils";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
+import Link from "next/link";
+import { useSidebarState } from "@/contexts/sidebar-context";
 
 interface Links {
   label: string;
@@ -172,12 +174,17 @@ export const SidebarLink = ({
   className?: string;
 }) => {
   const { open, animate } = useSidebar();
+  const { open: globalOpen } = useSidebarState();
+
+  // Use the global sidebar state for determining UI appearance
+  const isOpen = globalOpen !== undefined ? globalOpen : open;
+
   return (
-    <a
+    <Link
       href={link.href}
       className={cn(
         "flex items-center py-3 px-2 rounded-md text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors group/sidebar",
-        open ? "justify-start gap-3" : "justify-center",
+        isOpen ? "justify-start gap-3" : "justify-center",
         className
       )}
       {...props}
@@ -185,7 +192,7 @@ export const SidebarLink = ({
       <div
         className={cn(
           "flex items-center justify-center flex-shrink-0",
-          open ? "w-5 h-5" : "w-5 h-5"
+          isOpen ? "w-5 h-5" : "w-5 h-5"
         )}
       >
         {link.icon}
@@ -193,14 +200,18 @@ export const SidebarLink = ({
 
       <motion.span
         animate={{
-          display: animate ? (open ? "inline-block" : "none") : "inline-block",
-          opacity: animate ? (open ? 1 : 0) : 1,
+          display: animate
+            ? isOpen
+              ? "inline-block"
+              : "none"
+            : "inline-block",
+          opacity: animate ? (isOpen ? 1 : 0) : 1,
         }}
         transition={{ duration: 0.2 }}
         className="text-sm font-medium group-hover/sidebar:translate-x-0.5 transition duration-150 whitespace-pre inline-block"
       >
         {link.label}
       </motion.span>
-    </a>
+    </Link>
   );
 };

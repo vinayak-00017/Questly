@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Shield, Calendar, Link, TrendingUp, Plus } from "lucide-react";
+import { Calendar, Link, TrendingUp, Plus, Swords, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CountdownTimer } from "@/components/timer";
@@ -75,13 +75,13 @@ const MainQuestsPage = () => {
 
       <div className="grid grid-cols-3 gap-4">
         <StatCard
-          icon={Shield}
+          icon={Swords}
           title="Total Quests"
           value={totalQuests}
           className="bg-indigo-500/10 text-indigo-400"
         />
         <StatCard
-          icon={Link}
+          icon={Trophy}
           title="Completed"
           value={completedQuests}
           className="bg-amber-500/10 text-amber-400"
@@ -98,7 +98,7 @@ const MainQuestsPage = () => {
       <div className="relative space-y-4">
         <div className="fixed inset-0 bg-gradient-to-br from-amber-400/[0.2] via-transparent to-purple-500/[0.05] pointer-events-none" />
         <div className="flex items-center gap-2">
-          <Shield className="w-5 h-5 text-purple-400" />
+          <Swords className="w-5 h-5 text-purple-400" />
           <h2 className="text-xl font-semibold">Active Main Quests</h2>
         </div>
 

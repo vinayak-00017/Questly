@@ -70,7 +70,7 @@ router.get("/main", requireAuth, async (req, res) => {
   }
 });
 
-router.get("/dailyInstance", requireAuth, async (req, res) => {
+router.get("/questInstance", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
     const today = new Date();
@@ -103,7 +103,41 @@ router.get("/dailyInstance", requireAuth, async (req, res) => {
       .json({ message: "Daily quests retrived successfully", dailyQuests });
   } catch (err) {
     console.error("Error getting daily quests", err);
-    res.status(500).json({ message: "failed getting sideQuests" });
+    res.status(500).json({ message: "failed getting dailyQuests" });
+  }
+});
+
+router.post("/questTemplate", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const {
+      title,
+      description,
+      type,
+      parentQuestId,
+      recurrenceRule,
+      base_points,
+    } = req.body;
+
+    const newQuest = {
+      title,
+      description,
+      type,
+      parentQuestId,
+      recurrenceRule,
+      basePoints:
+        typeof base_points === "string"
+          ? (basePointsMap[base_points as keyof typeof basePointsMap] ?? 0)
+          : base_points,
+      userId,
+      id: uuidv4(),
+    };
+    await db.insert(questTemplate).values(newQuest);
+
+    res.status(200).json({ message: "quest added successfully" });
+  } catch (err) {
+    console.error("Error adding quest", err);
+    res.status(500).json({ message: "failed adding Quest" });
   }
 });
 

@@ -2,6 +2,7 @@
 
 import MainQuestCard from "@/components/main-quest/main-quest-card";
 import QuestCard from "@/components/quest-card";
+import SideQuestCard from "@/components/side-quest-card";
 
 import TaskProgress from "@/components/task/task-progress";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ export default function Home() {
 
       <div className="flex flex-col w-full gap-6">
         <QuestCard />
+        <SideQuestCard />
         <MainQuestCard />
       </div>
     </div>

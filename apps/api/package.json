@@ -37,6 +37,7 @@
     "morgan": "^1.10.0",
     "node-cron": "^3.0.3",
     "pg": "^8.14.1",
+    "rrule": "^2.8.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

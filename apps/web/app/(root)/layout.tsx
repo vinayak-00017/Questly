@@ -1,12 +1,13 @@
 "use client";
 
-import { AppSidebar } from "@/components/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 import { cn } from "@/lib/utils";
-
-import React, { useState } from "react";
+import { useSidebarState } from "@/contexts/sidebar-context";
+import React from "react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = useState(false);
+  const { open } = useSidebarState();
+
   return (
     <div
       className={cn(
@@ -19,7 +20,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      <AppSidebar open={open} setOpen={setOpen} />
+      <AppSidebar />
       <main className="flex-1 overflow-auto w-full h-full">{children}</main>
     </div>
   );
