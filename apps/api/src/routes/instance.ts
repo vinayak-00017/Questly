@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import db from "../db";
 import { requireSchedulerAuth } from "../middleware/scheduler-auth";
+import { doesRRuleMatchDate } from "../utils/rrule-utils";
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.post(
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Set to beginning of day
 
+      // Get all active templates for this user
       const activeTemplates = await db
         .select()
         .from(questTemplate)
@@ -27,7 +29,21 @@ router.post(
           )
         );
 
-      //Check if instances already exist
+      // Filter templates based on recurrence rules
+      const templatesForToday = activeTemplates.filter((template) => {
+        // If no recurrence rule (or empty string), it's a one-time quest
+        // For one-time quests, check if an instance has ever been created
+        if (!template.recurrenceRule) {
+          // TODO: Implement proper handling for one-time quests if needed
+          // For now, assume one-time quests should always appear (will be filtered out by existing instances check)
+          return true;
+        }
+
+        // Check if today matches the recurrence rule
+        return doesRRuleMatchDate(template.recurrenceRule, today);
+      });
+
+      // Check if instances already exist for today
       const existingInstances = await db
         .select()
         .from(questInstance)
@@ -44,11 +60,11 @@ router.post(
       );
 
       // Filter templates to only those that don't have an existing instance
-      const templatesToCreate = activeTemplates.filter(
+      const templatesToCreate = templatesForToday.filter(
         (template) => !existingTemplateIds.has(template.id)
       );
 
-      //Creae new instances
+      // Create new instances
       const newInstances = templatesToCreate.map((template) => ({
         id: uuidv4(),
         templateId: template.id,
@@ -69,6 +85,11 @@ router.post(
           res.status(201).json({
             message: "Daily quest instances generated successfully",
             count: newInstances.length,
+          });
+        } else {
+          res.status(200).json({
+            message: "No new quest instances needed for today",
+            count: 0,
           });
         }
       } catch (error) {

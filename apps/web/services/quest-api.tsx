@@ -1,8 +1,9 @@
 import { BASE_URL } from "@/config";
+import { CreateQuestTemplate } from "@questly/types";
 
 export const questApi = {
   fetchDailyQuest: async () => {
-    const response = await fetch(`${BASE_URL}/quest/dailyInstance`, {
+    const response = await fetch(`${BASE_URL}/quest/dailyQuestInstance`, {
       credentials: "include",
     });
     if (!response.ok) throw new Error("Failed to fetch daily quests");
@@ -15,5 +16,30 @@ export const questApi = {
     });
     if (!response.ok) throw new Error("Failed to fetch side quests");
     return response.json();
+  },
+
+  addQuest: async (input: CreateQuestTemplate) => {
+    try {
+      const response = await fetch(`${BASE_URL}/quest/questTemplate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(input),
+      });
+
+      if (!response.ok) {
+        const error = await response
+          .json()
+          .catch(() => ({ message: `Server error: ${response.status}` }));
+        throw new Error(error.message || "Failed to add quest");
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error("API call failed:", error);
+      throw error;
+    }
   },
 };

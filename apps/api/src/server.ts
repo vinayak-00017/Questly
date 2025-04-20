@@ -7,6 +7,7 @@ import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import { auth } from "../lib/auth";
 // import taskRouter from "./routes/task";
 import questRouter from "./routes/quest";
+import mainQuestRouter from "./routes/main-quest";
 import instanceRouter from "./routes/instance";
 import { initializeScheduler } from "../services/scheduler";
 export const createServer = async (): Promise<Express> => {
@@ -18,7 +19,7 @@ export const createServer = async (): Promise<Express> => {
     .use(
       cors({
         origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+        methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"],
         credentials: true,
       })
     )
@@ -27,6 +28,7 @@ export const createServer = async (): Promise<Express> => {
     // .use("/tasks", taskRouter)
     .use("/quest", questRouter)
     .use("/instance", instanceRouter)
+    .use("/main-quest", mainQuestRouter)
     .get("/message/:name", (req, res) => {
       return res.json({ message: `hello ${req.params.name}` });
     })

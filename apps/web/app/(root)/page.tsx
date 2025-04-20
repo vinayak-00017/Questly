@@ -1,7 +1,7 @@
 "use client";
 
 import MainQuestCard from "@/components/main-quest/main-quest-card";
-import QuestCard from "@/components/quest-card";
+import QuestCard from "@/components/daily-quest-card";
 import SideQuestCard from "@/components/side-quest-card";
 
 import TaskProgress from "@/components/task/task-progress";

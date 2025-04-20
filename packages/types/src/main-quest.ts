@@ -20,5 +20,11 @@ export const createMainQuestSchema = mainQuestSchema
     quests: z.array(createQuestTemplateSchema),
   });
 
+export const mainQuestIdSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+});
+
 export type MainQuest = z.infer<typeof mainQuestSchema>;
 export type CreateMainQuest = z.infer<typeof createMainQuestSchema>;
+export type MainQuestId = z.infer<typeof mainQuestIdSchema>;

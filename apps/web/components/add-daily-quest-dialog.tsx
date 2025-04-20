@@ -19,17 +19,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { X, Plus } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-  MainQuestImportance,
+  createQuestTemplateSchema,
+  MainQuestId,
   TaskPriority,
-  CreateQuestTemplate,
-  QuestType,
 } from "@questly/types";
 import { createMainQuestSchema } from "@questly/types";
 import { toast } from "sonner";
 import { mainQuestApi } from "@/services/main-quest-api";
 import { DatePicker } from "./main-quest/date-picker";
+import { questApi } from "@/services/quest-api";
 
 interface AddQuestDialogProps {
   open: boolean;
@@ -43,19 +43,16 @@ export function AddDailyQuestDialog({
   onSuccess,
 }: AddQuestDialogProps) {
   const { Medium, High, Critical, Low, Optional } = TaskPriority;
-  const {
-    Epic,
-    Medium: MainMedium,
-    High: MainHigh,
-    Low: MainLow,
-  } = MainQuestImportance;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [importance, setImportance] = useState<MainQuestImportance>(MainMedium);
+  const [priority, setPriority] = useState<TaskPriority>(Medium);
   const [dueDate, setDueDate] = useState<Date>();
+  const [parentQuestId, setParentQuestId] = useState<string | undefined>(
+    undefined
+  );
 
-  const addMainQuestMutation = useMutation({
-    mutationFn: mainQuestApi.addMainQuest,
+  const addDailyQuestMutation = useMutation({
+    mutationFn: questApi.addQuest,
     onSuccess: () => {
       toast.success("Main quest created successfully!");
       onSuccess?.();
@@ -63,7 +60,7 @@ export function AddDailyQuestDialog({
       // Reset form
       setTitle("");
       setDescription("");
-      setImportance(MainMedium);
+      setPriority(Medium);
       setDueDate(undefined);
     },
     onError: (error) => {
@@ -71,18 +68,27 @@ export function AddDailyQuestDialog({
     },
   });
 
-  const handleCreateMainQuest = () => {
+  const { data: mainQuestsIds = [], isLoading } = useQuery({
+    queryKey: ["mainQuestsId"],
+    queryFn: mainQuestApi.fetchMainQuestsId,
+    select: (data) => data.mainQuestsIds || [],
+  });
+
+  const handleCreateDailyQuest = () => {
     try {
       const input = {
         title,
         description,
-        importance,
+        basePoints: priority,
         dueDate: dueDate ? dueDate.toISOString() : undefined,
+        parentQuestId,
+        type: "daily",
+        recurrenceRule: "FREQ=DAILY",
       };
 
       try {
-        const validatedInput = createMainQuestSchema.parse(input);
-        addMainQuestMutation.mutate(validatedInput);
+        const validatedInput = createQuestTemplateSchema.parse(input);
+        addDailyQuestMutation.mutate(validatedInput);
       } catch (validationError) {
         console.error("Validation error:", validationError); // Log the validation error
         throw validationError; // Re-throw to be caught by outer catch
@@ -132,19 +138,19 @@ export function AddDailyQuestDialog({
             <div>
               <label className="text-sm font-medium text-zinc-200">Link</label>
               <Select
-                value={importance}
-                onValueChange={(value) =>
-                  setImportance(value as MainQuestImportance)
-                }
+                value={parentQuestId}
+                onValueChange={(value) => setParentQuestId(value)}
               >
                 <SelectTrigger className="bg-zinc-800/50 border-zinc-700 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-800 border-zinc-700">
-                  <SelectItem value={MainLow}>Low</SelectItem>
-                  <SelectItem value={MainMedium}>Medium</SelectItem>
-                  <SelectItem value={MainHigh}>High</SelectItem>
-                  <SelectItem value={Epic}>Epic</SelectItem>
+                  <SelectItem value={undefined}>null</SelectItem>
+                  {mainQuestsIds.map((quest: MainQuestId) => (
+                    <SelectItem key={quest.id} value={quest.id}>
+                      {quest.title}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -159,19 +165,18 @@ export function AddDailyQuestDialog({
                 Importance
               </label>
               <Select
-                value={importance}
-                onValueChange={(value) =>
-                  setImportance(value as MainQuestImportance)
-                }
+                value={priority}
+                onValueChange={(value) => setPriority(value as TaskPriority)}
               >
                 <SelectTrigger className="bg-zinc-800/50 border-zinc-700 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-800 border-zinc-700">
-                  <SelectItem value={MainLow}>Low</SelectItem>
-                  <SelectItem value={MainMedium}>Medium</SelectItem>
-                  <SelectItem value={MainHigh}>High</SelectItem>
-                  <SelectItem value={Epic}>Epic</SelectItem>
+                  <SelectItem value={Optional}>Optional</SelectItem>
+                  <SelectItem value={Low}>Low</SelectItem>
+                  <SelectItem value={Medium}>Medium</SelectItem>
+                  <SelectItem value={High}>High</SelectItem>
+                  <SelectItem value={Critical}>Critical</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -188,11 +193,11 @@ export function AddDailyQuestDialog({
             </Button>
           </DialogClose>
           <Button
-            onClick={handleCreateMainQuest}
+            onClick={handleCreateDailyQuest}
             className="bg-purple-500 hover:bg-purple-600"
-            disabled={!title.trim() || addMainQuestMutation.isPending}
+            disabled={!title.trim() || addDailyQuestMutation.isPending}
           >
-            {addMainQuestMutation.isPending ? "Creating..." : "Create Quest"}
+            {addDailyQuestMutation.isPending ? "Creating..." : "Create Quest"}
           </Button>
         </div>
       </DialogContent>
