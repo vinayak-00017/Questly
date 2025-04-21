@@ -68,10 +68,14 @@ export function createMonthlyRRule(daysOfMonth: number[]): string {
 /**
  * Gets a human-readable description of an RRULE
  * @param rule The RRULE string
+ * @param condensed Whether to return a condensed version (for small UI elements)
  * @returns Human-readable description
  */
-export function getHumanReadableRRule(rule?: string): string {
-  if (!rule) return "Once (no recurrence)";
+export function getHumanReadableRRule(
+  rule?: string,
+  condensed = false
+): string {
+  if (!rule) return condensed ? "Once" : "Once (no recurrence)";
 
   // Simple parsing for common patterns
   if (rule === "FREQ=DAILY") {
@@ -79,11 +83,11 @@ export function getHumanReadableRRule(rule?: string): string {
   }
 
   if (rule === "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR") {
-    return "Every weekday (Monday to Friday)";
+    return condensed ? "Every weekday" : "Every weekday (Monday to Friday)";
   }
 
   if (rule === "FREQ=WEEKLY;BYDAY=SA,SU") {
-    return "Weekends (Saturday and Sunday)";
+    return condensed ? "Weekends" : "Weekends (Saturday and Sunday)";
   }
 
   if (rule.startsWith("FREQ=WEEKLY;BYDAY=")) {
@@ -97,6 +101,26 @@ export function getHumanReadableRRule(rule?: string): string {
       SA: "Saturday",
       SU: "Sunday",
     };
+
+    const shortDayNames: Record<string, string> = {
+      MO: "Mon",
+      TU: "Tue",
+      WE: "Wed",
+      TH: "Thu",
+      FR: "Fri",
+      SA: "Sat",
+      SU: "Sun",
+    };
+
+    if (condensed) {
+      if (days.length === 1) {
+        return `Every ${shortDayNames[days[0]] || days[0]}`;
+      } else if (days.length === 2) {
+        // For 2 days, show both days in abbreviated form
+        return `${shortDayNames[days[0]] || days[0]} & ${shortDayNames[days[1]] || days[1]}`;
+      }
+      return `Weekly (${days.length} days)`;
+    }
 
     const dayLabels = days.map((d) => dayNames[d] || d);
 
@@ -112,10 +136,22 @@ export function getHumanReadableRRule(rule?: string): string {
 
     if (days.length === 1) {
       const day = parseInt(days[0]);
-      return `Monthly on day ${day}${getDaySuffix(day)}`;
+      return condensed
+        ? `Monthly (day ${day})`
+        : `Monthly on day ${day}${getDaySuffix(day)}`;
     }
 
-    return `Monthly on days ${days.join(", ")}`;
+    return condensed
+      ? `Monthly (${days.length} days)`
+      : `Monthly on days ${days.join(", ")}`;
+  }
+
+  // For any other formats, try to make them somewhat readable
+  if (condensed) {
+    if (rule.startsWith("FREQ=")) {
+      const freq = rule.split(";")[0].replace("FREQ=", "");
+      return freq.charAt(0) + freq.slice(1).toLowerCase();
+    }
   }
 
   return rule; // Return the raw rule if we can't parse it

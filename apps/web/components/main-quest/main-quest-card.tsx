@@ -6,31 +6,22 @@ import { Card, CardContent, CardDescription, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { CountdownTimer } from "../timer";
 import { useRouter } from "next/navigation";
-
-interface QuestItem {
-  title: string;
-  dueDate: Date;
-  xp: number;
-  status: "due" | "ongoing";
-}
-
-const quests: QuestItem[] = [
-  {
-    title: "Complete Project Proposal",
-    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-    xp: 150,
-    status: "due",
-  },
-  {
-    title: "Learn React Advanced Topics",
-    dueDate: new Date(Date.now() + 13 * 24 * 60 * 60 * 1000), // 13 days from now
-    xp: 300,
-    status: "ongoing",
-  },
-];
+import { mainQuestApi } from "@/services/main-quest-api";
+import { useQuery } from "@tanstack/react-query";
+import { MainQuest } from "@questly/types";
 
 const MainQuestCard = () => {
   const router = useRouter();
+
+  const {
+    data: mainQuests = [],
+    error,
+    isLoading,
+  } = useQuery({
+    queryKey: ["mainQuests"],
+    queryFn: mainQuestApi.fetchMainQuests,
+    select: (data) => data.mainQuests || [],
+  });
   return (
     <Card className="w-full overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border-0 shadow-lg relative">
       <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-purple-500/10 pointer-events-none" />
@@ -63,9 +54,9 @@ const MainQuestCard = () => {
         </div>
 
         <div className="p-4 space-y-3">
-          {quests.map((quest, index) => (
+          {mainQuests.map((quest: MainQuest) => (
             <Card
-              key={index}
+              key={quest.id}
               className="bg-black/20 border-zinc-800 hover:bg-black/30 transition-all duration-200 cursor-pointer group"
             >
               <CardContent className="p-4 flex items-center justify-between">
@@ -75,7 +66,7 @@ const MainQuestCard = () => {
                     <span className="text-amber-500/80 text-xs font-medium tracking-wide">
                       MAIN QUEST
                     </span>
-                    <span
+                    {/* <span
                       className={`px-2 py-0.5 rounded-full text-xs ${
                         quest.status === "due"
                           ? "bg-red-500/20 text-red-400"
@@ -85,7 +76,7 @@ const MainQuestCard = () => {
                       {quest.status === "due"
                         ? "Due today!"
                         : `${Math.ceil((quest.dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days left`}
-                    </span>
+                    </span> */}
                   </div>
                   <h3 className="text-white/90 font-medium text-sm">
                     {quest.title}
@@ -93,15 +84,12 @@ const MainQuestCard = () => {
                   <div className="flex items-center gap-4 text-xs">
                     <div className="flex items-center gap-1.5">
                       <Clock className="h-3.5 w-3.5 text-zinc-400" />
-                      <CountdownTimer
-                        targetDate={quest.dueDate}
-                        onComplete={() =>
-                          console.log(`Quest "${quest.title}" time is up!`)
-                        }
-                      />
+                      {quest.dueDate && (
+                        <CountdownTimer targetDate={new Date(quest.dueDate)} />
+                      )}
                     </div>
                     <div className="text-amber-400 font-medium">
-                      +{quest.xp} XP
+                      +{quest.xpReward} XP
                     </div>
                   </div>
                 </div>

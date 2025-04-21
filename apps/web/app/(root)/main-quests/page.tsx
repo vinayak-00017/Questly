@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { CountdownTimer } from "@/components/timer";
 import { LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AddQuestDialog } from "@/components/main-quest/add-quest-dialog";
+import { AddQuestDialog } from "@/components/main-quest/add-main-quest-dialog";
 import { MainQuest, MainQuestImportance } from "@questly/types";
 import { useQuery } from "@tanstack/react-query";
 import { mainQuestApi } from "@/services/main-quest-api";

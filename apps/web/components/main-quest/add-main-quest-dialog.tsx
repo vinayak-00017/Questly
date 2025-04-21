@@ -142,18 +142,6 @@ export function AddQuestDialog({
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-200">
-              Description (Optional)
-            </label>
-            <Textarea
-              placeholder="Enter quest description..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500 text-white min-h-[100px]"
-            />
-          </div>
-
           <div className="flex justify-between px-2 ">
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-200">
@@ -183,7 +171,17 @@ export function AddQuestDialog({
               </Select>
             </div>
           </div>
-
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-200">
+              Description (Optional)
+            </label>
+            <Textarea
+              placeholder="Enter quest description..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500 text-white min-h-[100px]"
+            />
+          </div>
           <div className="space-y-3 pt-4 border-t border-zinc-800">
             <div className="flex gap-2 items-end">
               <div className="flex flex-col gap-1 flex-1">

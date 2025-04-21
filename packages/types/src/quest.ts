@@ -5,7 +5,7 @@ import { createTaskTemplateSchema } from "./task";
 // Quest Template Schema
 export const questTemplateSchema = baseSchema.extend({
   type: z.nativeEnum(QuestType),
-  parentQuestId: z.string().nullable(),
+  parentQuestId: z.string().nullable().optional(),
   recurrenceRule: z.string().nullable(),
   isActive: z.boolean().default(true),
   basePoints: z.number().int().positive().default(1),
@@ -35,14 +35,13 @@ export const createQuestTemplateSchema = questTemplateSchema
     createdAt: true,
     updatedAt: true,
     xpReward: true,
-    parentQuestId: true,
     completed: true,
     isActive: true,
   })
   .extend({
     basePoints: z.union([
       z.number().int().positive(),
-      z.nativeEnum(TaskPriority),
+      z.nativeEnum(TaskPriority).default(TaskPriority.Standard),
     ]),
   });
 

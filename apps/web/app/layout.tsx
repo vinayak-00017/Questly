@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, EB_Garamond } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  EB_Garamond,
+  MedievalSharp,
+} from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import QueryProvider from "@/components/query-provider";
@@ -19,6 +24,14 @@ const geistMono = Geist_Mono({
 const ebGaramond = EB_Garamond({
   variable: "--font-eb-garamond",
   subsets: ["latin"],
+});
+const medievalSharp = MedievalSharp({
+  variable: "--font-medieval",
+  subsets: ["latin"],
+  display: "swap",
+  weight: "400",
+  style: "normal",
+  fallback: ["cursive"],
 });
 
 export const metadata: Metadata = {
