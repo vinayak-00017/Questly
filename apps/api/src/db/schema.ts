@@ -30,9 +30,16 @@ export const mainQuest = pgTable("main_quest", {
   title: text("title").notNull(),
   description: text("description"),
   importance: text("importance")
-    .$type<"low" | "medium" | "high" | "epic">()
+    .$type<"common" | "rare" | "heroic" | "legendary">()
     .notNull(),
-  dueDate: timestamp("due_date"),
+  category: text("category").$type<
+    "challenge" | "combat" | "creation" | "exploration" | "knowledge" | "social"
+  >(),
+  difficulty: text("difficulty").$type<
+    "novice" | "adventurer" | "veteran" | "master"
+  >(),
+  duration: text("duration").$type<"sprint" | "journey" | "odyssey" | "epic">(),
+  dueDate: timestamp("due_date").notNull(),
   xpReward: integer("xp_reward"),
   completed: boolean("completed").default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),

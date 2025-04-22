@@ -26,10 +26,15 @@ import {
   TaskPriority,
   CreateQuestTemplate,
   QuestType,
+  QuestPriority,
+  MainQuestDifficulty,
+  MainQuestDuration,
+  MainQuestCategory,
 } from "@questly/types";
 import { createMainQuestSchema } from "@questly/types";
 import { toast } from "sonner";
 import { mainQuestApi } from "@/services/main-quest-api";
+import MainSelect from "./add-main-quest-dialog-select";
 
 interface AddQuestDialogProps {
   open: boolean;
@@ -42,20 +47,21 @@ export function AddQuestDialog({
   onOpenChange,
   onSuccess,
 }: AddQuestDialogProps) {
-  const { Medium, High, Critical, Low, Optional } = TaskPriority;
-  const {
-    Epic,
-    Medium: MainMedium,
-    High: MainHigh,
-    Low: MainLow,
-  } = MainQuestImportance;
+  const { Important, Standard, Critical, Minor, Optional } = QuestPriority;
+  const { Legendary, Heroic, Rare, Common } = MainQuestImportance;
+  const { Novice, Adventurer, Veteran, Master } = MainQuestDifficulty;
+  const { Sprint, Journey, Odyssey, Epic } = MainQuestDuration;
+  const { Challenge, Combat, Knowledge, Creation, Exploration, Social } =
+    MainQuestCategory;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [importance, setImportance] = useState<MainQuestImportance>(MainMedium);
+  const [importance, setImportance] = useState<MainQuestImportance>(Common);
+  const [difficulty, setDifficulty] = useState<MainQuestDifficulty>(Adventurer);
+  const [category, setCategory] = useState<MainQuestCategory>(Challenge);
   const [dueDate, setDueDate] = useState<Date>();
   const [dailyQuests, setDailyQuests] = useState<CreateQuestTemplate[]>([]);
   const [dailyQuestPriority, setDailyQuestPriority] =
-    useState<TaskPriority>(Medium);
+    useState<QuestPriority>(Standard);
   const [dailyQuestTitle, setDailyQuestTitle] = useState("");
 
   const handleAddDailyTask = () => {
@@ -70,7 +76,7 @@ export function AddQuestDialog({
         },
       ]);
       setDailyQuestTitle("");
-      setDailyQuestPriority(Medium);
+      setDailyQuestPriority(Standard);
     }
   };
 
@@ -87,7 +93,7 @@ export function AddQuestDialog({
       // Reset form
       setTitle("");
       setDescription("");
-      setImportance(MainMedium);
+      setImportance(Common);
       setDueDate(undefined);
       setDailyQuests([]);
     },
@@ -102,6 +108,8 @@ export function AddQuestDialog({
         title,
         description,
         importance,
+        category,
+        difficulty,
         dueDate: dueDate ? dueDate.toISOString() : undefined,
         quests: dailyQuests,
       };
@@ -142,34 +150,40 @@ export function AddQuestDialog({
             />
           </div>
 
-          <div className="flex justify-between px-2 ">
+          <div className="flex justify-between px-2  ">
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-200">
-                Due Date (Optional)
+                Due Date
               </label>
               <DatePicker date={dueDate} onSelect={setDueDate} />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-200">
-                Importance
-              </label>
-              <Select
-                value={importance}
-                onValueChange={(value) =>
-                  setImportance(value as MainQuestImportance)
-                }
-              >
-                <SelectTrigger className="bg-zinc-800/50 border-zinc-700 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
-                  <SelectItem value={MainLow}>Low</SelectItem>
-                  <SelectItem value={MainMedium}>Medium</SelectItem>
-                  <SelectItem value={MainHigh}>High</SelectItem>
-                  <SelectItem value={Epic}>Epic</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <MainSelect<MainQuestImportance>
+              fields={[Common, Rare, Heroic, Legendary]}
+              property={importance}
+              setProperty={(value) => setImportance(value)}
+              label="Importance"
+            />
+          </div>
+          <div className="flex justify-between px-2 ">
+            <MainSelect<MainQuestDifficulty>
+              fields={[Novice, Adventurer, Veteran, Master]}
+              property={difficulty}
+              setProperty={(value) => setDifficulty(value)}
+              label="Difficulty (Optional)"
+            />
+            <MainSelect<MainQuestCategory>
+              fields={[
+                Challenge,
+                Combat,
+                Creation,
+                Exploration,
+                Knowledge,
+                Social,
+              ]}
+              property={category}
+              setProperty={(value) => setCategory(value)}
+              label="Category (Optional)"
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-200">
@@ -210,7 +224,7 @@ export function AddQuestDialog({
                 <Select
                   value={dailyQuestPriority}
                   onValueChange={(value) =>
-                    setDailyQuestPriority(value as TaskPriority)
+                    setDailyQuestPriority(value as QuestPriority)
                   }
                 >
                   <SelectTrigger className="bg-zinc-800/50 border-zinc-700 text-white">
@@ -218,9 +232,9 @@ export function AddQuestDialog({
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-800 border-zinc-700">
                     <SelectItem value={Optional}>Optional</SelectItem>
-                    <SelectItem value={Low}>Low</SelectItem>
-                    <SelectItem value={Medium}>Medium</SelectItem>
-                    <SelectItem value={High}>High</SelectItem>
+                    <SelectItem value={Minor}>Minor</SelectItem>
+                    <SelectItem value={Standard}>Standard</SelectItem>
+                    <SelectItem value={Important}>Important</SelectItem>
                     <SelectItem value={Critical}>Critical</SelectItem>
                   </SelectContent>
                 </Select>

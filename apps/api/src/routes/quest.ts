@@ -46,6 +46,43 @@ router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
   }
 });
 
+router.get("/sideQuestInstance", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const sideQuests = await db
+      .select({
+        instanceId: questInstance.id,
+        templateId: questInstance.templateId,
+        title: questTemplate.title,
+        description: questTemplate.description,
+        type: questTemplate.type,
+        basePoints: questInstance.basePoints,
+        updatedAt: questInstance.updatedAt,
+        completed: questInstance.completed,
+        xpReward: questInstance.xpReward,
+        date: questInstance.date,
+      })
+      .from(questInstance)
+      .innerJoin(questTemplate, eq(questInstance.templateId, questTemplate.id))
+      .where(
+        and(
+          eq(questInstance.userId, userId),
+          eq(questInstance.date, today.toISOString().split("T")[0]),
+          eq(questTemplate.type, "side")
+        )
+      );
+
+    res
+      .status(200)
+      .json({ message: "Side quests retrived successfully", sideQuests });
+  } catch (err) {
+    console.error("Error getting side quests", err);
+    res.status(500).json({ message: "failed getting sideQuests" });
+  }
+});
+
 router.post("/questTemplate", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;

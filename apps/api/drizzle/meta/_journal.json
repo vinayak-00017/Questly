@@ -71,6 +71,20 @@
       "when": 1744966000423,
       "tag": "0009_silent_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1745324704911,
+      "tag": "0010_nebulous_odin",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1745325449249,
+      "tag": "0011_grey_ravenous",
+      "breakpoints": true
     }
   ]
 }

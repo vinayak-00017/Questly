@@ -12,14 +12,26 @@ const router = express.Router();
 router.post("/", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
-    const { title, dueDate, description, importance, quests } = req.body;
+    const {
+      title,
+      dueDate,
+      description,
+      importance,
+      quests,
+      category,
+      difficulty,
+      duration,
+    } = req.body;
     const newMainQuest = {
       title,
-      dueDate: dueDate ? new Date(dueDate) : null,
+      dueDate: new Date(dueDate),
       description,
       importance,
       id: uuidv4(),
       userId,
+      category,
+      difficulty,
+      duration,
     };
 
     const updatedQuests = quests.map((quest: QuestTemplate) => ({

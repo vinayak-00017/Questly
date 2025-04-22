@@ -32,7 +32,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createQuestTemplateSchema,
   MainQuestId,
-  TaskPriority,
+  QuestPriority,
 } from "@questly/types";
 import { toast } from "sonner";
 import { mainQuestApi } from "@/services/main-quest-api";
@@ -52,10 +52,10 @@ export function AddDailyQuestDialog({
   onSuccess,
 }: AddQuestDialogProps) {
   const queryClient = useQueryClient();
-  const { Critical, Important, Standard, Minor, Optional } = TaskPriority;
+  const { Critical, Important, Standard, Minor, Optional } = QuestPriority;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<TaskPriority>(Standard);
+  const [priority, setPriority] = useState<QuestPriority>(Standard);
   const [dueDate, setDueDate] = useState<Date>();
   const [recurrenceRule, setRecurrenceRule] = useState<string | undefined>();
   const [parentQuestId, setParentQuestId] = useState<string | undefined>();
@@ -64,7 +64,7 @@ export function AddDailyQuestDialog({
     mutationFn: questApi.addQuest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dailyQuests"] });
-      toast.success("Daily quest added to your journal!");
+      toast.success("Daily quest added!");
       onSuccess?.();
       onOpenChange(false);
       // Reset form
@@ -171,7 +171,7 @@ export function AddDailyQuestDialog({
             <div className="space-y-2">
               <label className="text-sm font-medium text-orange-400 flex items-center gap-2">
                 <CalendarDays className="h-3.5 w-3.5" />
-                Due Date
+                Due Date (Optional)
               </label>
               <DatePicker
                 date={dueDate}
@@ -186,7 +186,7 @@ export function AddDailyQuestDialog({
               </label>
               <Select
                 value={priority}
-                onValueChange={(value) => setPriority(value as TaskPriority)}
+                onValueChange={(value) => setPriority(value as QuestPriority)}
               >
                 <SelectTrigger className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 hover:border-orange-500/30">
                   <SelectValue />

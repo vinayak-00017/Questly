@@ -15,7 +15,6 @@ export enum MainQuestDifficulty {
   Adventurer = "adventurer",
   Veteran = "veteran",
   Master = "master",
-  Legendary = "legendary",
 }
 
 export enum MainQuestDuration {
@@ -28,22 +27,22 @@ export enum MainQuestDuration {
 export enum MainQuestCategory {
   Challenge = "challenge", // Overcoming obstacles
   Combat = "combat", // Physical challenges
-  Knowledge = "knowledge", // Learning/mental challenges
   Creation = "creation", // Building/making things
   Exploration = "exploration", // Trying new things
+  Knowledge = "knowledge", // Learning/mental challenges
   Social = "social", // People-oriented goals
+}
+
+export enum MainQuestImportance {
+  Legendary = "legendary",
+  Heroic = "heroic",
+  Rare = "rare",
+  Common = "common",
 }
 
 export enum QuestType {
   Daily = "daily",
   Side = "side",
-}
-
-export enum MainQuestImportance {
-  Epic = "epic",
-  High = "high",
-  Medium = "medium",
-  Low = "low",
 }
 
 export enum QuestPriority {
@@ -54,11 +53,10 @@ export enum QuestPriority {
   Critical = "critical",
 }
 export enum TaskPriority {
-  Optional = "optional",
-  Minor = "minor",
-  Standard = "standard",
-  Important = "important",
-  Critical = "critical",
+  Low = "low",
+  Medium = "medium",
+  High = "high",
+  Urgent = "urgent",
 }
 
 export interface AddTask {

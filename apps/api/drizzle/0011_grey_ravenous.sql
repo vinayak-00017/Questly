@@ -1,0 +1,1 @@
+ALTER TABLE "main_quest" ALTER COLUMN "due_date" SET NOT NULL;

@@ -11,7 +11,7 @@ export const questApi = {
   },
 
   fetchSideQuests: async () => {
-    const response = await fetch(`${BASE_URL}/quest/sideInstance`, {
+    const response = await fetch(`${BASE_URL}/quest/sideQuestInstance`, {
       credentials: "include",
     });
     if (!response.ok) throw new Error("Failed to fetch side quests");

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseSchema, QuestType, TaskPriority } from "./base";
+import { baseSchema, QuestPriority, QuestType, TaskPriority } from "./base";
 import { createTaskTemplateSchema } from "./task";
 
 // Quest Template Schema
@@ -41,7 +41,7 @@ export const createQuestTemplateSchema = questTemplateSchema
   .extend({
     basePoints: z.union([
       z.number().int().positive(),
-      z.nativeEnum(TaskPriority).default(TaskPriority.Standard),
+      z.nativeEnum(QuestPriority).default(QuestPriority.Standard),
     ]),
   });
 

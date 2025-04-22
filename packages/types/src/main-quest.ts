@@ -1,10 +1,20 @@
 import { z } from "zod";
-import { baseSchema, MainQuestImportance } from "./base";
+import {
+  baseSchema,
+  MainQuestCategory,
+  MainQuestDifficulty,
+  MainQuestDuration,
+  MainQuestImportance,
+} from "./base";
 import { createQuestTemplateSchema } from "./quest";
+import { duration } from "drizzle-orm/gel-core";
 
 export const mainQuestSchema = baseSchema.extend({
   importance: z.nativeEnum(MainQuestImportance),
-  dueDate: z.string().nullable(),
+  difficulty: z.nativeEnum(MainQuestDifficulty),
+  category: z.nativeEnum(MainQuestCategory),
+  duration: z.nativeEnum(MainQuestDuration),
+  dueDate: z.string(),
   xpReward: z.number().int().positive().nullable(),
 });
 

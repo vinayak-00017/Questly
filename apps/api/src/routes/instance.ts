@@ -24,7 +24,6 @@ router.post(
         .where(
           and(
             eq(questTemplate.userId, userId),
-            eq(questTemplate.type, "daily"),
             eq(questTemplate.isActive, true)
           )
         );
@@ -99,10 +98,8 @@ router.post(
           .json({ message: "Failed to insert new quest instances" });
       }
     } catch (err) {
-      console.error("Error generating daily quest instances:", err);
-      res
-        .status(500)
-        .json({ message: "Failed to generate daily quest instances" });
+      console.error("Error generating  quest instances:", err);
+      res.status(500).json({ message: "Failed to generate quest instances" });
     }
   }
 );
