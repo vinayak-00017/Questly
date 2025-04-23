@@ -1,8 +1,8 @@
 "use client";
 
 import MainQuestCard from "@/components/main-quest/main-quest-card";
-import DailyQuestCard from "@/components/daily-quest-card";
-import SideQuestCard from "@/components/side-quest-card";
+import DailyQuestCard from "@/components/quest-card/daily-quest-card";
+import SideQuestCard from "@/components/quest-card/side-quest-card";
 import TaskProgress from "@/components/task/task-progress";
 import { Button } from "@/components/ui/button";
 import { authClient, useSession } from "@/lib/auth-client";

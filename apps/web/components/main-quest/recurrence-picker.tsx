@@ -47,6 +47,7 @@ interface RecurrencePickerProps {
   onDateSelect: (date: Date | undefined) => void;
   recurrenceRule?: string;
   onRecurrenceSelect: (rule: string | undefined) => void;
+  className?: string;
 }
 
 type FrequencyType = "once" | "daily" | "weekly" | "monthly";
@@ -56,6 +57,7 @@ export function RecurrencePicker({
   onDateSelect,
   recurrenceRule,
   onRecurrenceSelect,
+  className,
 }: RecurrencePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [frequency, setFrequency] = useState<FrequencyType>("once");
@@ -220,7 +222,8 @@ export function RecurrencePicker({
                 variant="outline"
                 className={cn(
                   "w-[220px] justify-start text-left font-normal",
-                  "bg-zinc-800/50 border-zinc-700 text-white"
+                  "bg-zinc-800/50 border-zinc-700 text-white",
+                  className
                 )}
               >
                 <div className="flex items-center w-full overflow-hidden">

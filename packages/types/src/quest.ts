@@ -5,25 +5,61 @@ import { createTaskTemplateSchema } from "./task";
 // Quest Template Schema
 export const questTemplateSchema = baseSchema.extend({
   type: z.nativeEnum(QuestType),
+  title: z.preprocess(
+    // Preprocess to ensure value is treated as a string
+    (val) => String(val ?? ""),
+    z
+      .string()
+      .min(1, "Title is required")
+      .max(100, "Title must be 100 characters or less")
+  ),
+  description: z.preprocess(
+    (val) => (val === null || val === undefined ? "" : String(val)),
+    z.string().max(500, "Description must be 500 characters or less").optional()
+  ),
   parentQuestId: z.string().nullable().optional(),
   recurrenceRule: z.string().nullable(),
   isActive: z.boolean().default(true),
-  basePoints: z.number().int().positive().default(1),
-  xpReward: z.number().int().positive().default(50),
+  basePoints: z
+    .number()
+    .int()
+    .positive("Points must be a positive number")
+    .default(1),
+  xpReward: z
+    .number()
+    .int()
+    .positive("XP reward must be a positive number")
+    .default(50),
 });
 
 // Quest Instance Schema
 export const questInstanceSchema = z.object({
-  instanceId: z.string(),
-  templateId: z.string(),
-  title: z.string(),
-  description: z.string().optional(),
-  date: z.date(),
+  instanceId: z.string().uuid("Invalid instance ID format"),
+  templateId: z.string().uuid("Invalid template ID format"),
+  title: z.preprocess(
+    (val) => String(val ?? ""),
+    z
+      .string()
+      .min(1, "Title is required")
+      .max(100, "Title must be 100 characters or less")
+  ),
+  description: z.preprocess(
+    (val) => (val === null || val === undefined ? "" : String(val)),
+    z.string().max(500, "Description must be 500 characters or less").optional()
+  ),
+  date: z.date({
+    required_error: "Date is required",
+    invalid_type_error: "Invalid date format",
+  }),
   completed: z.boolean().default(false),
-  basePoints: z.number().int().positive(),
+  basePoints: z.number().int().positive("Points must be a positive number"),
   type: z.nativeEnum(QuestType),
-  xpReward: z.number().int().positive(),
-  streakCount: z.number().int().default(0),
+  xpReward: z.number().int().positive("XP reward must be a positive number"),
+  streakCount: z
+    .number()
+    .int()
+    .min(0, "Streak count cannot be negative")
+    .default(0),
   updatedAt: z.date().optional(),
 });
 
@@ -40,9 +76,16 @@ export const createQuestTemplateSchema = questTemplateSchema
   })
   .extend({
     basePoints: z.union([
-      z.number().int().positive(),
+      z.number().int().positive("Points must be a positive number"),
       z.nativeEnum(QuestPriority).default(QuestPriority.Standard),
     ]),
+    title: z.preprocess(
+      (val) => String(val ?? ""),
+      z
+        .string()
+        .min(1, "Title is required")
+        .max(100, "Title must be 100 characters or less")
+    ),
   });
 
 // Types
