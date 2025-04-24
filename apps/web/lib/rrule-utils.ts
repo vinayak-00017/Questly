@@ -3,6 +3,14 @@
  */
 
 /**
+ * Creates a rule for one-time (non-recurring) events
+ * @returns null to indicate no recurrence
+ */
+export function createOnceRRule(): null {
+  return null;
+}
+
+/**
  * Creates a daily recurrence rule
  * @returns RRULE string
  */

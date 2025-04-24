@@ -35,7 +35,7 @@ export function AddSideQuestDialog({
         // Since RecurrencePicker requires separate handlers for date and recurrence rule,
         // we use a composite state object for value
         const currentDate = value?.date || undefined;
-        const currentRecurrence = value?.recurrenceRule || undefined;
+        const currentRecurrence = value?.recurrenceRule || null;
 
         return (
           <>

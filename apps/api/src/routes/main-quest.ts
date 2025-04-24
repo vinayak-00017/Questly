@@ -95,4 +95,43 @@ router.get("/ids", requireAuth, async (req, res) => {
   }
 });
 
+router.get("/:id/linked-quests", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const mainQuestId = req.params.id;
+
+    // Fetch daily and side quests linked to this main quest
+    const linkedQuests = await db
+      .select({
+        id: questTemplate.id,
+        title: questTemplate.title,
+        description: questTemplate.description,
+        type: questTemplate.type,
+        basePoints: questTemplate.basePoints,
+        recurrenceRule: questTemplate.recurrenceRule,
+        xpReward: questTemplate.xpReward,
+      })
+      .from(questTemplate)
+      .where(
+        and(
+          eq(questTemplate.userId, userId),
+          eq(questTemplate.parentQuestId, mainQuestId)
+        )
+      );
+
+    // Separate daily and side quests
+    const dailyQuests = linkedQuests.filter((quest) => quest.type === "daily");
+    const sideQuests = linkedQuests.filter((quest) => quest.type === "side");
+
+    res.status(200).json({
+      message: "Linked quests retrieved successfully",
+      dailyQuests,
+      sideQuests,
+    });
+  } catch (err) {
+    console.error("Error getting linked quests:", err);
+    res.status(500).json({ message: "Failed to retrieve linked quests" });
+  }
+});
+
 export default router;
