@@ -95,7 +95,6 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
       basePoints,
     } = req.body;
 
-    console.log(parentQuestId);
     // Validate recurrence rule if provided
     if (recurrenceRule && !isValidRRule(recurrenceRule)) {
       return res.status(400).json({
@@ -154,6 +153,22 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
   } catch (err) {
     console.error("Error adding quest", err);
     res.status(500).json({ message: "failed adding Quest" });
+  }
+});
+
+router.patch("/completeQuest", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { done, id } = req.body;
+    const updatedFields = { completed: done, updatedAt: new Date() };
+    await db
+      .update(questInstance)
+      .set(updatedFields)
+      .where(and(eq(questInstance.userId, userId), eq(questInstance.id, id)));
+    res.status(200).json({ message: "Quest Instance updated successfully" });
+  } catch (err) {
+    console.error("Error updating task:", err);
+    res.status(500).json({ message: "Failed to update questInstance" });
   }
 });
 
