@@ -1,37 +1,41 @@
+import { Plus, Check } from "lucide-react";
+import React, { useState } from "react";
+import { Input } from "../ui/input";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { Button } from "../ui/button";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
-} from "@radix-ui/react-select";
-import { Plus, Check } from "lucide-react";
-import React from "react";
-import { Button } from "react-day-picker";
-import { Input } from "../ui/input";
-import { useMutation } from "@tanstack/react-query";
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { CreateTaskInstance, TaskInstance, TaskPriority } from "@questly/types";
+import { taskApi } from "@/services/task-api";
 import { toast } from "sonner";
 
-const QuestInstanceTaskArea = () => {
+const QuestInstanceTaskArea = ({ colorStyles, expandedQuestId, quest }) => {
+  const { Low, Medium, High, Urgent } = TaskPriority;
+  const [taskPriority, setTaskPriority] = useState(Medium);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const queryClient = useQueryClient();
   // Tasks for the expanded quest
-  //   const { data: taskData = { tasks: [] }, isLoading: isLoadingTasks } =
-  //     useQuery({
-  //       queryKey: ["tasks", expandedQuestId],
-  //       queryFn: () => fetchTasksFn(expandedQuestId || ""),
-  //       enabled: !!expandedQuestId,
-  //     });
+  const { data: taskData = { tasks: [] }, isLoading: isLoadingTasks } =
+    useQuery({
+      queryKey: ["tasks", expandedQuestId],
+      queryFn: () => fetchTasksFn(expandedQuestId || ""),
+      enabled: !!expandedQuestId,
+    });
 
-  //   const tasks: Task[] = taskData.tasks || [];
+  const tasks: TaskInstance[] = taskData.tasks || [];
 
   // Mutations
   const addTaskMutation = useMutation({
-    mutationFn: ({
-      questInstanceId,
-      taskData,
-    }: {
+    mutationFn: (variables: {
       questInstanceId: string;
-      taskData: any;
-    }) => addTaskFn(questInstanceId, taskData),
+      taskData: CreateTaskInstance;
+    }) => taskApi.addTaskInstance(variables),
     onSuccess: () => {
       setNewTaskTitle("");
       queryClient.invalidateQueries({ queryKey: ["tasks", expandedQuestId] });
@@ -51,14 +55,15 @@ const QuestInstanceTaskArea = () => {
   });
 
   // Handle task submission
-  const handleAddTask = (questId: string) => {
+  const handleAddTaskInstance = (questId: string) => {
     if (!newTaskTitle.trim()) return;
 
     addTaskMutation.mutate({
       questInstanceId: questId,
       taskData: {
         title: newTaskTitle,
-        priority: taskPriority,
+        basePoints: taskPriority,
+        completed: false,
       },
     });
   };
@@ -87,15 +92,15 @@ const QuestInstanceTaskArea = () => {
             <SelectValue placeholder="Priority" />
           </SelectTrigger>
           <SelectContent className="bg-zinc-800 border-zinc-700">
-            <SelectItem value="low">Low</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="high">High</SelectItem>
-            <SelectItem value="urgent">Urgent</SelectItem>
+            <SelectItem value={Low}>Low</SelectItem>
+            <SelectItem value={Medium}>Medium</SelectItem>
+            <SelectItem value={High}>High</SelectItem>
+            <SelectItem value={Urgent}>Urgent</SelectItem>
           </SelectContent>
         </Select>
         <Button
           size="sm"
-          onClick={() => handleAddTask(quest.instanceId)}
+          onClick={() => handleAddTaskInstance(quest.instanceId)}
           className={`${colorStyles.addButtonBg} text-white`}
           disabled={!newTaskTitle.trim()}
         >

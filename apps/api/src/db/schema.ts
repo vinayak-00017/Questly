@@ -59,6 +59,8 @@ export const questTemplate = pgTable("quest_template", {
   recurrenceRule: text("recurrence_rule"),
   isActive: boolean("is_active").default(true),
   basePoints: integer("base_points").notNull().default(1),
+  plannedStartTime: text("planned_start_time"), // "HH:mm" format
+  plannedEndTime: text("planned_end_time"), // "HH:mm" format
   xpReward: integer("xp_reward"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -81,6 +83,9 @@ export const questInstance = pgTable("quest_instance", {
   basePoints: integer("base_points").notNull(),
   xpReward: integer("xp_reward"), // Copied from template
   updatedAt: timestamp("completed_at"),
+  timeTracked: integer("time_tracked"),
+  plannedStartTime: text("planned_start_time"), // "HH:mm" format
+  plannedEndTime: text("planned_end_time"),
   streakCount: integer("streak_count").default(0), // Optional: track streaks
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -97,6 +102,7 @@ export const taskTemplate = pgTable("task_template", {
   plannedStartTime: text("planned_start_time"), // "HH:mm" format
   plannedEndTime: text("planned_end_time"), // "HH:mm" format
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 // Task instances
@@ -105,14 +111,13 @@ export const taskInstance = pgTable("task_instance", {
   questInstanceId: text("quest_instance_id")
     .notNull()
     .references(() => questInstance.id, { onDelete: "cascade" }),
-  templateId: text("template_id")
-    .notNull()
-    .references(() => taskTemplate.id),
+  templateId: text("template_id").references(() => taskTemplate.id),
   title: text("title").notNull(),
   completed: boolean("completed").default(false),
-  basePoint: integer("base_points").notNull(),
-  actualStartTime: timestamp("actual_start_time"),
-  actualEndTime: timestamp("actual_end_time"),
+  basePoints: integer("base_points").notNull(),
+  timeTracked: integer("time_tracked"),
+  plannedStartTime: text("planned_start_time"), // "HH:mm" format
+  plannedEndTime: text("planned_end_time"),
   updatedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

@@ -6,6 +6,8 @@ import { questInstance, questTemplate } from "../db/schema";
 import { and, eq } from "drizzle-orm";
 import { isValidRRule, doesRRuleMatchDate } from "../utils/rrule-utils";
 import { basePointsMap } from "../utils/points-map";
+import taskInstanceRouter from "./task-instance";
+import taskTemplateRouter from "./task-template";
 
 const router = express.Router();
 
@@ -171,5 +173,8 @@ router.patch("/completeQuest", requireAuth, async (req, res) => {
     res.status(500).json({ message: "Failed to update questInstance" });
   }
 });
+
+router.use("/quest-instance/:questId/task-instance", taskInstanceRouter);
+router.use("/quest-template/:questId/task-template", taskTemplateRouter);
 
 export default router;

@@ -76,6 +76,8 @@ router.post(
         xpReward: template.xpReward,
         createdAt: new Date(),
         updatedAt: new Date(),
+        plannedStartTime: template.plannedStartTime,
+        plannedEndTime: template.plannedEndTime,
       }));
 
       try {

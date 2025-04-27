@@ -1,5 +1,6 @@
 import React from "react";
 import { Checkbox } from "../ui/checkbox";
+import { TaskPriority } from "@questly/types";
 
 const TaskElement = ({
   task,
@@ -10,7 +11,7 @@ const TaskElement = ({
   task: string;
   isChecked: boolean;
   setIsChecked: (checked: boolean) => void;
-  points: number;
+  points: number | TaskPriority;
 }) => {
   return (
     <div

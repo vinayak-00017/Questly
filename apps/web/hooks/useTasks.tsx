@@ -2,6 +2,7 @@
 // import { taskApi } from "@/services/task-api";
 
 // import { useState } from "react";
+// import { createTaskInstanceSchema, TaskInstance } from "@questly/types";
 
 // export function useTasks() {
 //   const queryClient = useQueryClient();
@@ -24,7 +25,7 @@
 //       updates,
 //     }: {
 //       taskId: string;
-//       updates: Partial<UserTask>;
+//       updates: Partial<TaskInstance>;
 //     }) => taskApi.updateTask(taskId, updates),
 //     onMutate: async ({ taskId, updates }) => {
 //       // Cancel in-flight queries to prevent race conditions
@@ -37,7 +38,7 @@
 //       queryClient.setQueryData(["tasks"], (old: any) => {
 //         return {
 //           ...old,
-//           tasks: old.tasks.map((t: UserTask) =>
+//           tasks: old.tasks.map((t: TaskInstance) =>
 //             t.id === taskId ? { ...t, ...updates } : t
 //           ),
 //         };
@@ -64,7 +65,7 @@
 //         plannedDuration,
 //       };
 
-//       const result = addTaskSchema.safeParse(taskInput);
+//       const result = createTaskInstanceSchema.safeParse(taskInput);
 //       if (!result.success) {
 //         const errorMessage =
 //           result.error.errors[0]?.message || "Invalid task data";

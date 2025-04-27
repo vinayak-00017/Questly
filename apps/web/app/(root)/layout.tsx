@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { cn } from "@/lib/utils";
 import { useSidebarState } from "@/contexts/sidebar-context";
 import React from "react";
+import { Toaster } from "@/components/ui/sonner";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { open } = useSidebarState();
@@ -22,6 +23,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     >
       <AppSidebar />
       <main className="flex-1 overflow-auto w-full h-full">{children}</main>
+      <Toaster />
     </div>
   );
 };

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Scroll, Target, LinkIcon, AlertCircle } from "lucide-react";
+import { Scroll, Target, LinkIcon, AlertCircle, Clock } from "lucide-react";
 import { QuestPriority, MainQuestId } from "@questly/types";
 import { QuestFormProps, getQuestColorStyles } from "./types";
 
@@ -172,6 +172,21 @@ export function QuestFormFields({
             </p>
           )}
         </div>
+        {/* <div className="space-y-2 w-[48%]">
+          <label
+            className={`text-sm font-medium ${colorStyles.labelColor} flex items-center gap-2`}
+          >
+            <Clock className="h-3.5 w-3.5" />
+            Time Tracking
+          </label>
+
+          {errors.parentQuestId && (
+            <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors.parentQuestId}
+            </p>
+          )}
+        </div> */}
       </div>
 
       <div className="space-y-2">

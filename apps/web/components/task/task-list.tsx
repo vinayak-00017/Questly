@@ -2,10 +2,11 @@
 // import React from "react";
 
 // import TaskElement from "./task-element";
-// import { useTasks } from "@/hooks/useTasks";
+
 // import TaskInput from "./task-input";
 // import { AnimatedList, AnimatedListItem } from "../magicui/animated-list";
-// import { UserTask } from "../../../../packages/types/src/task";
+// import { useTasks } from "@/hooks/useTasks";
+// import { TaskInstance } from "@questly/types";
 
 // const TaskList = () => {
 //   const {
@@ -69,18 +70,10 @@
 //               const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(0);
 //               return dateB.getTime() - dateA.getTime(); // Descending order (newest first)
 //             })
-//             .map((taskItem: UserTask, index: number) => (
+//             .map((taskItem: TaskInstance, index: number) => (
 //               <AnimatedListItem key={taskItem.id || `task-${index}`}>
 //                 <TaskElement
-//                   points={
-//                     taskItem.isTimeTracked && taskItem.plannedDuration
-//                       ? Math.round(
-//                           taskItem.basePoints *
-//                             (taskItem.plannedDuration / 60) *
-//                             100
-//                         ) / 100
-//                       : taskItem.basePoints
-//                   }
+//                   points={taskItem.basePoints}
 //                   task={taskItem.title}
 //                   isChecked={!!taskItem.completed}
 //                   setIsChecked={(e) => updateCompletedState(taskItem.id, e)}
