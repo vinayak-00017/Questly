@@ -2,8 +2,8 @@ import express from "express";
 import { v4 as uuidv4 } from "uuid";
 import db from "../db";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
-import { questInstance, questTemplate } from "../db/schema";
-import { and, eq } from "drizzle-orm";
+import { questInstance, questTemplate, taskInstance } from "../db/schema";
+import { and, eq, inArray } from "drizzle-orm";
 import { isValidRRule, doesRRuleMatchDate } from "../utils/rrule-utils";
 import { basePointsMap } from "../utils/points-map";
 import taskInstanceRouter from "./task-instance";
@@ -16,7 +16,7 @@ router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
     const userId = (req as AuthenticatedRequest).userId;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const dailyQuests = await db
+    const dailyQuestsData = await db
       .select({
         instanceId: questInstance.id,
         templateId: questInstance.templateId,
@@ -39,9 +39,30 @@ router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
         )
       );
 
-    res
-      .status(200)
-      .json({ message: "Daily quests retrived successfully", dailyQuests });
+    // const questInstanceIds = dailyQuestsData.map((q) => q.instanceId);
+    // const dailyQuestsMap = new Map();
+    // dailyQuestsData.forEach((q) => {
+    //   dailyQuestsMap.set(q.instanceId, { ...q, tasks: [] });
+    // });
+
+    // if (questInstanceIds.length > 0) {
+    //   const tasks = await db
+    //     .select()
+    //     .from(taskInstance)
+    //     .where(and(inArray(taskInstance.questInstanceId, questInstanceIds)));
+    //   tasks.forEach((task) => {
+    //     const quest = dailyQuestsMap.get(task.questInstanceId);
+    //     if (quest) {
+    //       quest.tasks.push(task);
+    //     }
+    //   });
+    // }
+    // const dailyQuests = Array.from(dailyQuestsMap.values());
+
+    res.status(200).json({
+      message: "Daily quests retrived successfully",
+      dailyQuests: dailyQuestsData,
+    });
   } catch (err) {
     console.error("Error getting daily quests", err);
     res.status(500).json({ message: "failed getting dailyQuests" });
@@ -53,12 +74,12 @@ router.get("/sideQuestInstance", requireAuth, async (req, res) => {
     const userId = (req as AuthenticatedRequest).userId;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const sideQuests = await db
+    const sideQuestsData = await db
       .select({
         instanceId: questInstance.id,
         templateId: questInstance.templateId,
-        title: questTemplate.title,
-        description: questTemplate.description,
+        title: questInstance.title,
+        description: questInstance.description,
         type: questTemplate.type,
         basePoints: questInstance.basePoints,
         updatedAt: questInstance.updatedAt,
@@ -76,9 +97,30 @@ router.get("/sideQuestInstance", requireAuth, async (req, res) => {
         )
       );
 
-    res
-      .status(200)
-      .json({ message: "Side quests retrived successfully", sideQuests });
+    // const questInstanceIds = sideQuestsData.map((q) => q.instanceId);
+    // const sideQuestsMap = new Map();
+    // sideQuestsData.forEach((q) => {
+    //   sideQuestsMap.set(q.instanceId, { ...q, tasks: [] });
+    // });
+
+    // if (questInstanceIds.length > 0) {
+    //   const tasks = await db
+    //     .select()
+    //     .from(taskInstance)
+    //     .where(and(inArray(taskInstance.questInstanceId, questInstanceIds)));
+    //   tasks.forEach((task) => {
+    //     const quest = sideQuestsMap.get(task.questInstanceId);
+    //     if (quest) {
+    //       quest.tasks.push(task);
+    //     }
+    //   });
+    // }
+    // const sideQuests = Array.from(sideQuestsMap.values());
+
+    res.status(200).json({
+      message: "Side quests retrived successfully",
+      sideQuests: sideQuestsData,
+    });
   } catch (err) {
     console.error("Error getting side quests", err);
     res.status(500).json({ message: "failed getting sideQuests" });
@@ -174,7 +216,13 @@ router.patch("/completeQuest", requireAuth, async (req, res) => {
   }
 });
 
-router.use("/quest-instance/:questId/task-instance", taskInstanceRouter);
-router.use("/quest-template/:questId/task-template", taskTemplateRouter);
+router.use(
+  "/quest-instance/:questInstanceId/task-instance",
+  taskInstanceRouter
+);
+router.use(
+  "/quest-template/:questTemplateId/task-template",
+  taskTemplateRouter
+);
 
 export default router;

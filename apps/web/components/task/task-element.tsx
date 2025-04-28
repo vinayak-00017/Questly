@@ -3,15 +3,15 @@ import { Checkbox } from "../ui/checkbox";
 import { TaskPriority } from "@questly/types";
 
 const TaskElement = ({
-  task,
+  title,
   isChecked,
   setIsChecked,
-  points,
+  basePoints,
 }: {
-  task: string;
+  title: string;
   isChecked: boolean;
   setIsChecked: (checked: boolean) => void;
-  points: number | TaskPriority;
+  basePoints: number | TaskPriority;
 }) => {
   return (
     <div
@@ -35,11 +35,10 @@ const TaskElement = ({
         <div
           className={`px-2 ${isChecked ? "line-through text-muted-foreground" : ""}`}
         >
-          {task}
+          {title}
         </div>
         <div className="flex">
-          <div>Points:</div>
-          <div>{points}</div>
+          <div>{basePoints}</div>
         </div>
       </div>
     </div>

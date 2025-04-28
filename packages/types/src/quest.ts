@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { baseSchema, QuestPriority, QuestType, TaskPriority } from "./base";
-import { createTaskTemplateSchema } from "./task";
+import { createTaskTemplateSchema, taskInstanceSchema } from "./task";
 
 // Quest Template Schema
 export const questTemplateSchema = baseSchema.extend({
@@ -47,20 +47,15 @@ export const questInstanceSchema = z.object({
     (val) => (val === null || val === undefined ? "" : String(val)),
     z.string().max(500, "Description must be 500 characters or less").optional()
   ),
-  date: z.date({
-    required_error: "Date is required",
-    invalid_type_error: "Invalid date format",
-  }),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
   completed: z.boolean().default(false),
   basePoints: z.number().int().positive("Points must be a positive number"),
   type: z.nativeEnum(QuestType),
   xpReward: z.number().int().positive("XP reward must be a positive number"),
-  streakCount: z
-    .number()
-    .int()
-    .min(0, "Streak count cannot be negative")
-    .default(0),
   updatedAt: z.date().optional(),
+  // tasks: z.array(taskInstanceSchema).default([]),
 });
 
 // Creation schema

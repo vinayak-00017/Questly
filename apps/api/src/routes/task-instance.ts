@@ -3,7 +3,7 @@ import { requireAuth, AuthenticatedRequest } from "../middleware/auth";
 import db from "../db";
 import { taskInstance } from "../db/schema";
 import { v4 as uuidv4 } from "uuid";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { createTaskInstanceSchema } from "@questly/types";
 import { basePointsTaskMap } from "../utils/points-map";
 
@@ -12,9 +12,9 @@ const router = express.Router({ mergeParams: true });
 router.post("/", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
-    const { questId } = req.params;
+    const { questInstanceId } = req.params;
 
-    if (!questId) {
+    if (!questInstanceId) {
       return res
         .status(400)
         .json({ message: "Quest ID parameter is missing." });
@@ -37,7 +37,7 @@ router.post("/", requireAuth, async (req, res) => {
 
     const newTask = {
       id: uuidv4(),
-      questInstanceId: questId,
+      questInstanceId,
       userId: userId,
       title: validatedTaskData.title,
       completed: validatedTaskData.completed,
@@ -54,6 +54,60 @@ router.post("/", requireAuth, async (req, res) => {
   } catch (err) {
     console.error("Error adding task instance:", err);
     res.status(500).json({ message: "Failed to add task instance" });
+  }
+});
+
+router.get("/", requireAuth, async (req, res) => {
+  try {
+    const { questInstanceId } = req.params;
+    let taskInstances = await db
+      .select()
+      .from(taskInstance)
+      .where(eq(taskInstance.questInstanceId, questInstanceId));
+
+    const pointsToPriority = Object.entries(basePointsTaskMap).reduce(
+      (acc, [priority, points]) => {
+        acc[points] = priority;
+        return acc;
+      },
+      {} as Record<number, string>
+    );
+    taskInstances = taskInstances.map((task) => ({
+      ...task,
+      basePoints: task.basePoints,
+      priorityLabel: pointsToPriority[task.basePoints] || "medium",
+    }));
+
+    res
+      .status(200)
+      .json({ message: "Task Instance retrieved successfully", taskInstances });
+  } catch (err) {
+    console.error("Error fetching task instance:", err);
+    res.status(500).json({ message: "Failed to fetch task instance" });
+  }
+});
+
+router.patch("/status", requireAuth, async (req, res) => {
+  try {
+    const { taskId, completed } = req.body;
+    const { questInstanceId } = req.params;
+
+    const updatedFields = { completed, updatedAt: new Date() };
+    await db
+      .update(taskInstance)
+      .set(updatedFields)
+      .where(
+        and(
+          eq(taskInstance.questInstanceId, questInstanceId),
+          eq(taskInstance.id, taskId)
+        )
+      );
+    res
+      .status(200)
+      .json({ message: "Task Instance Status updated successfully" });
+  } catch (err) {
+    console.error("Error updating task instance status:", err);
+    res.status(500).json({ message: "Failed to update task instance status" });
   }
 });
 

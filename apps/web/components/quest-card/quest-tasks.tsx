@@ -1,0 +1,186 @@
+import { taskApi } from "@/services/task-api";
+import { TaskInstance } from "@questly/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ListChecks, Check } from "lucide-react";
+import React from "react";
+import { toast } from "sonner";
+import { Checkbox } from "../ui/checkbox";
+import { Progress } from "../ui/progress";
+
+const QuestTasks = ({
+  questInstanceId,
+  colorStyles,
+
+  displayCompleted,
+}: {
+  questInstanceId: string;
+  colorStyles: any;
+  displayCompleted: boolean;
+}) => {
+  const queryClient = useQueryClient();
+  const { data: taskData = { taskInstances: [] }, isLoading: isLoadingTasks } =
+    useQuery({
+      queryKey: ["taskInstances", questInstanceId],
+      queryFn: () => taskApi.fetchTasks({ questInstanceId }),
+      enabled: !!questInstanceId,
+    });
+
+  const completeTaskMutation = useMutation({
+    mutationFn: ({
+      taskId,
+      completed,
+      questInstanceId,
+    }: {
+      taskId: string;
+      completed: boolean;
+      questInstanceId: string;
+    }) => taskApi.updateTaskStatus({ taskId, completed, questInstanceId }),
+    onMutate: async ({ taskId, completed }) => {
+      await queryClient.cancelQueries({
+        queryKey: ["taskInstances", questInstanceId],
+      });
+      const previousTasks = queryClient.getQueryData([
+        "taskInstances",
+        questInstanceId,
+      ]);
+
+      queryClient.setQueryData(
+        ["taskInstances", questInstanceId],
+        (old: any) => {
+          if (!old || !old.tasks) return old;
+
+          return {
+            ...old,
+            tasks: old.tasks.map((task: TaskInstance) =>
+              task.id === taskId ? { ...task, completed } : task
+            ),
+          };
+        }
+      );
+
+      return { previousTasks };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(
+          ["taskInstances", questInstanceId],
+          context.previousTasks
+        );
+      }
+      toast.error("Failed to update task");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["taskInstances", questInstanceId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["questInstance"] });
+      toast.success("Task updated");
+    },
+  });
+
+  const tasks: TaskInstance[] = taskData.taskInstances || [];
+
+  const taskCount = tasks?.length || 0;
+  const totalTaskPoints = tasks?.reduce(
+    (total, task) => total + (task.basePoints || 0),
+    0
+  );
+  const completedTaskPoints =
+    tasks
+      ?.filter((task) => task.completed)
+      .reduce((total, task) => total + (task.basePoints || 0), 0) || 0;
+  const completedTaskCount =
+    tasks?.filter((task) => task.completed)?.length || 0;
+  const hasProgress = taskCount > 0;
+  const progress = hasProgress
+    ? Math.round((completedTaskPoints / totalTaskPoints) * 100)
+    : 0;
+
+  if (isLoadingTasks)
+    return <div className="text-xs text-zinc-500">Loading tasks...</div>;
+  if (taskCount === 0)
+    return <div className="text-xs text-zinc-500">No tasks yet</div>;
+  return (
+    <>
+      {taskCount > 0 && (
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
+            <div className="flex items-center gap-1.5">
+              <ListChecks className="h-3 w-3" />
+              <span>
+                {taskCount} {taskCount === 1 ? "task" : "tasks"} (
+                {completedTaskCount} completed)
+              </span>
+            </div>
+
+            {/* Progress percentage */}
+            <span
+              className={
+                progress === 100 ? colorStyles.xpColor : "text-zinc-400"
+              }
+            >
+              {progress}%
+            </span>
+          </div>
+
+          {/* Progress bar */}
+          <Progress value={progress} />
+
+          {/* Task list preview */}
+          <ul className="space-y-1 list-none pl-1 mt-1">
+            {tasks.map((task: TaskInstance) => (
+              <li
+                key={task.id}
+                className="group/task flex items-center gap-1.5 text-xs text-zinc-300 py-0.5 px-0.5 hover:bg-black/30 rounded cursor-pointer transition-colors"
+                onClick={() => {
+                  const newStatus = !task.completed;
+                  completeTaskMutation.mutate({
+                    taskId: task.id,
+                    completed: newStatus,
+                    questInstanceId,
+                  });
+                }}
+              >
+                {/* Task priority tag with fixed width */}
+                <div
+                  className={`text-[10px] font-medium px-1.5 py-0.5 rounded-sm min-w-[52px] text-center ${
+                    task.priorityLabel === "low"
+                      ? "bg-slate-700/50 text-slate-300"
+                      : task.priorityLabel === "medium"
+                        ? "bg-emerald-700/50 text-emerald-300"
+                        : task.priorityLabel === "high"
+                          ? "bg-amber-700/50 text-amber-300"
+                          : "bg-rose-700/50 text-rose-300" // urgent
+                  } flex-shrink-0`}
+                >
+                  {task.priorityLabel
+                    ? task.priorityLabel.charAt(0).toUpperCase() +
+                      task.priorityLabel.slice(1)
+                    : "Medium"}
+                </div>
+
+                {/* Custom checkbox with improved appearance */}
+                <div
+                  className={`h-4 w-4 flex-shrink-0 rounded-full ${
+                    task.completed
+                      ? `${colorStyles.expandedBg} ring-1 ring-opacity-50 ${colorStyles.cornerBorder}`
+                      : "bg-black/20 border border-zinc-700"
+                  } flex items-center justify-center transition-colors`}
+                >
+                  {task.completed && <Check className="h-3 w-3 text-white" />}
+                </div>
+                <span
+                  className={`${task.completed ? "line-through text-zinc-500" : ""} text-xs flex-1 truncate max-w-[180px]`}
+                >
+                  {task.title}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default QuestTasks;
