@@ -1,21 +1,18 @@
 import { taskApi } from "@/services/task-api";
 import { TaskInstance } from "@questly/types";
+import { numberToTaskTag } from "@questly/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ListChecks, Check } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
-import { Checkbox } from "../ui/checkbox";
 import { Progress } from "../ui/progress";
 
 const QuestTasks = ({
   questInstanceId,
   colorStyles,
-
-  displayCompleted,
 }: {
   questInstanceId: string;
   colorStyles: any;
-  displayCompleted: boolean;
 }) => {
   const queryClient = useQueryClient();
   const { data: taskData = { taskInstances: [] }, isLoading: isLoadingTasks } =
@@ -80,15 +77,22 @@ const QuestTasks = ({
 
   const tasks: TaskInstance[] = taskData.taskInstances || [];
 
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.completed !== b.completed) {
+      return a.completed ? 1 : -1;
+    }
+    return Number(b.basePoints) - Number(a.basePoints);
+  });
+
   const taskCount = tasks?.length || 0;
   const totalTaskPoints = tasks?.reduce(
-    (total, task) => total + (task.basePoints || 0),
+    (total, task) => total + (Number(task.basePoints) || 0),
     0
   );
   const completedTaskPoints =
     tasks
       ?.filter((task) => task.completed)
-      .reduce((total, task) => total + (task.basePoints || 0), 0) || 0;
+      .reduce((total, task) => total + (Number(task.basePoints) || 0), 0) || 0;
   const completedTaskCount =
     tasks?.filter((task) => task.completed)?.length || 0;
   const hasProgress = taskCount > 0;
@@ -128,7 +132,7 @@ const QuestTasks = ({
 
           {/* Task list preview */}
           <ul className="space-y-1 list-none pl-1 mt-1">
-            {tasks.map((task: TaskInstance) => (
+            {sortedTasks.map((task: TaskInstance) => (
               <li
                 key={task.id}
                 className="group/task flex items-center gap-1.5 text-xs text-zinc-300 py-0.5 px-0.5 hover:bg-black/30 rounded cursor-pointer transition-colors"
@@ -144,18 +148,20 @@ const QuestTasks = ({
                 {/* Task priority tag with fixed width */}
                 <div
                   className={`text-[10px] font-medium px-1.5 py-0.5 rounded-sm min-w-[52px] text-center ${
-                    task.priorityLabel === "low"
+                    numberToTaskTag(Number(task.basePoints)) === "low"
                       ? "bg-slate-700/50 text-slate-300"
-                      : task.priorityLabel === "medium"
+                      : numberToTaskTag(Number(task.basePoints)) === "medium"
                         ? "bg-emerald-700/50 text-emerald-300"
-                        : task.priorityLabel === "high"
+                        : numberToTaskTag(Number(task.basePoints)) === "high"
                           ? "bg-amber-700/50 text-amber-300"
                           : "bg-rose-700/50 text-rose-300" // urgent
                   } flex-shrink-0`}
                 >
-                  {task.priorityLabel
-                    ? task.priorityLabel.charAt(0).toUpperCase() +
-                      task.priorityLabel.slice(1)
+                  {numberToTaskTag(Number(task.basePoints))
+                    ? numberToTaskTag(Number(task.basePoints))
+                        .charAt(0)
+                        .toUpperCase() +
+                      numberToTaskTag(Number(task.basePoints)).slice(1)
                     : "Medium"}
                 </div>
 

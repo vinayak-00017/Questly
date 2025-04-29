@@ -74,6 +74,18 @@ const QuestCard: React.FC<QuestCardProps> = ({
     select: dataSelector,
   });
 
+  // Sort quests: 1. completed (incompleted first), 2. basePoints (higher first)
+  const sortedQuests = React.useMemo(() => {
+    return [...quests].sort((a, b) => {
+      // First sort by completion status (incomplete first)
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1;
+      }
+      // Then sort by baseValue (higher first)
+      return Number(b.basePoints) - Number(a.basePoints);
+    });
+  }, [quests]);
+
   // Color-specific styles based on theme
   return (
     <Card className="w-full overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border-0 shadow-lg relative">
@@ -126,8 +138,8 @@ const QuestCard: React.FC<QuestCardProps> = ({
           </Button>
         </div>
         <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-          {quests.length > 0 ? (
-            quests.map((quest: QuestInstance) => (
+          {sortedQuests.length > 0 ? (
+            sortedQuests.map((quest: QuestInstance) => (
               <QuestInstanceItem
                 key={quest.instanceId}
                 quest={quest}

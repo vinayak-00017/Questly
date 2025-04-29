@@ -3,7 +3,7 @@
 import MainQuestCard from "@/components/main-quest/main-quest-card";
 import DailyQuestCard from "@/components/quest-card/daily-quest-card";
 import SideQuestCard from "@/components/quest-card/side-quest-card";
-import TaskProgress from "@/components/task/task-progress";
+import TodaysQuestsCard from "@/components/quest-card/todays-quests-card";
 import { Button } from "@/components/ui/button";
 import { authClient, useSession } from "@/lib/auth-client";
 import { useQuery } from "@tanstack/react-query";
@@ -169,8 +169,7 @@ export default function Home() {
           </h2>
 
           <div className="flex flex-col w-full gap-8">
-            <DailyQuestCard />
-            <SideQuestCard />
+            <TodaysQuestsCard />
             <MainQuestCard />
           </div>
         </div>

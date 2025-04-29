@@ -3,13 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  CalendarIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  RefreshCwIcon,
-  XIcon,
-} from "lucide-react";
+import { CalendarIcon, RefreshCwIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
@@ -25,8 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,

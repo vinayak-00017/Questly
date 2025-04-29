@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Scroll, Target, LinkIcon, AlertCircle, Clock } from "lucide-react";
 import { QuestPriority, MainQuestId } from "@questly/types";
-import { QuestFormProps, getQuestColorStyles } from "./types";
+import { QuestFormFieldsProps, getQuestColorStyles } from "./types";
 
 export function QuestFormFields({
   formData,
@@ -23,7 +23,7 @@ export function QuestFormFields({
   infoTitle,
   infoText,
   errors = {},
-}: QuestFormProps & { errors?: Record<string, string> }) {
+}: QuestFormFieldsProps) {
   const { Critical, Important, Standard, Minor, Optional } = QuestPriority;
   const colorStyles = getQuestColorStyles(themeColor);
 

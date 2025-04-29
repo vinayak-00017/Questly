@@ -54,7 +54,7 @@ export interface QuestFormData {
   parentQuestId?: string;
 }
 
-export interface QuestFormProps {
+export interface QuestFormFieldsProps {
   formData: QuestFormData;
   onUpdateForm: (field: keyof QuestFormData, value: any) => void;
   themeColor: "blue" | "orange";
@@ -67,6 +67,17 @@ export interface QuestFormProps {
   InfoIcon?: LucideIcon;
   infoTitle?: string;
   infoText?: string;
+  errors?: Record<string, string>;
+}
+
+// Keeping this type for backward compatibility, but recommending usage of QuestFormFieldsProps instead
+export interface QuestFormProps extends QuestFormFieldsProps {
+  onSubmit: () => void;
+  onCancel: () => void;
+  questType: string;
+  buttonColor: string;
+  buttonHoverColor: string;
+  submitButtonText: string;
 }
 
 export interface BaseQuestDialogStyleProps {

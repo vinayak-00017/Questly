@@ -11,6 +11,8 @@ import {
   IconSword,
   IconScript,
   IconSwords,
+  IconFlame,
+  IconCompass,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { useSidebarState } from "@/contexts/sidebar-context";
@@ -34,17 +36,24 @@ export function AppSidebar() {
       ),
     },
     {
+      label: "Daily Quests",
+      href: "/daily-quests",
+      icon: (
+        <IconFlame className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+      ),
+    },
+    {
+      label: "Side Quests",
+      href: "/side-quests",
+      icon: (
+        <IconCompass className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+      ),
+    },
+    {
       label: "Profile",
       href: "#",
       icon: (
         <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
-      ),
-    },
-    {
-      label: "Settings",
-      href: "#",
-      icon: (
-        <IconSettings className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
       ),
     },
     {
@@ -70,6 +79,15 @@ export function AppSidebar() {
           </div>
         </div>
         <div>
+          <SidebarLink
+            link={{
+              label: "Settings",
+              href: "#",
+              icon: (
+                <IconSettings className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+              ),
+            }}
+          />
           <SidebarLink
             link={{
               label: "Account",

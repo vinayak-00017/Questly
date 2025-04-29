@@ -167,4 +167,21 @@
   .pulse-glow {
     animation: pulse-glow 2s infinite;
   }
+
+  @keyframes pulse-subtle {
+    0% {
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.03);
+    }
+    100% {
+      opacity: 0.8;
+    }
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 3s ease-in-out infinite;
+  }
 }

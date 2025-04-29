@@ -24,6 +24,9 @@ importers:
       '@questly/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@questly/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@repo/logger':
         specifier: workspace:*
         version: link:../../packages/logger
@@ -133,6 +136,9 @@ importers:
       '@questly/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@questly/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.10
         version: 1.1.10(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -315,7 +321,7 @@ importers:
         version: 29.7.0(@types/node@22.14.0)
       ts-jest:
         specifier: ^29.3.0
-        version: 29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@22.14.0))(typescript@5.8.2)
+        version: 29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0)(typescript@5.8.2)
     devDependencies:
       jest-environment-jsdom:
         specifier: ^29.7.0
@@ -414,6 +420,8 @@ importers:
       typescript:
         specifier: 5.8.2
         version: 5.8.2
+
+  packages/utils: {}
 
 packages:
 
@@ -11042,7 +11050,7 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
-  ts-jest@29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@22.14.0))(typescript@5.8.2):
+  ts-jest@29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0)(typescript@5.8.2):
     dependencies:
       bs-logger: 0.2.6
       ejs: 3.1.10

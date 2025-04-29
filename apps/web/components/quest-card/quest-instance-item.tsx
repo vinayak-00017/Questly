@@ -1,27 +1,17 @@
-import { QuestInstance, TaskInstance } from "@questly/types";
+import { QuestInstance } from "@questly/types";
 
-import {
-  LucideIcon,
-  Sparkles,
-  Check,
-  ChevronUp,
-  ChevronDown,
-  ListChecks,
-  Clock,
-  CalendarDays,
-  Trophy,
-} from "lucide-react";
+import { LucideIcon, CalendarDays, Trophy } from "lucide-react";
+import { numberToQuestTag } from "@questly/utils";
 
 import React, { useState } from "react";
 import { Card, CardContent } from "../ui/card";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { questApi } from "@/services/quest-api";
+
 import QuestInstanceTaskArea from "./quest-instance-task-area";
 import { cn } from "@/lib/utils";
 import QuestTasks from "./quest-tasks";
+import QuestCardActionButtons from "./quest-card-action-buttons";
 
-type QuestCacheData = {
+export type QuestCacheData = {
   dailyQuests?: QuestInstance[];
   sideQuests?: QuestInstance[];
   message: string;
@@ -41,89 +31,7 @@ const QuestInstanceItem = ({
   queryKey: string[];
 }) => {
   const [expandedQuestId, setExpandedQuestId] = useState<string | null>(null);
-
-  const queryClient = useQueryClient();
   const [isQuestCompleted, setIsQuestCompleted] = useState(quest.completed);
-
-  const completeQuestMutation = useMutation({
-    mutationFn: ({
-      questInstanceId,
-      completed,
-    }: {
-      questInstanceId: string;
-      completed: boolean;
-    }) => questApi.completeQuest(questInstanceId, completed),
-    onMutate: async (variables) => {
-      const { questInstanceId, completed: nextCompletedStatus } = variables;
-
-      await queryClient.cancelQueries({ queryKey });
-      const previousData = queryClient.getQueryData<QuestCacheData>(queryKey);
-
-      queryClient.setQueryData<QuestCacheData>(queryKey, (oldData) => {
-        if (!oldData) {
-          console.warn("Optimistic update: Cache data missing", oldData);
-          return oldData;
-        }
-        let updatedDailyQuests = oldData.dailyQuests;
-        let updatedSideQuests = oldData.sideQuests;
-        let questFound = false;
-
-        if (!questFound && Array.isArray(oldData.dailyQuests)) {
-          updatedDailyQuests = oldData.dailyQuests.map((q) => {
-            if (q.instanceId === questInstanceId) {
-              questFound = true;
-              return { ...q, completed: nextCompletedStatus };
-            }
-            return q;
-          });
-        }
-
-        if (!questFound && Array.isArray(oldData.sideQuests)) {
-          updatedSideQuests = oldData.sideQuests.map((q) => {
-            if (q.instanceId === questInstanceId) {
-              questFound = true;
-              return { ...q, completed: nextCompletedStatus };
-            }
-            return q;
-          });
-        }
-
-        if (!questFound) {
-          console.warn(
-            "Optimistic update: Quest ID not found in dailyQuests or sideQuests.",
-            questInstanceId,
-            oldData
-          );
-          return oldData;
-        }
-
-        return {
-          ...oldData,
-          dailyQuests: updatedDailyQuests,
-          sideQuests: updatedSideQuests,
-        };
-      });
-      setIsQuestCompleted(nextCompletedStatus);
-
-      return { previousQuests: previousData };
-    },
-
-    onError: (error, variables, context) => {
-      toast.error("Failed to update quest status.");
-      console.error("Quest completion error:", error);
-
-      if (context?.previousQuests) {
-        queryClient.setQueryData(queryKey, context.previousQuests);
-        setIsQuestCompleted(!variables.completed);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
-    },
-    onSuccess: () => {
-      toast.success("Quest updated!");
-    },
-  });
 
   const displayCompleted = isQuestCompleted;
 
@@ -166,6 +74,7 @@ const QuestInstanceItem = ({
         <div
           className={`absolute bottom-0 left-0 w-3 h-3 border-b border-l ${colorStyles.cornerBorder}`}
         ></div>
+
         <div
           className={`absolute bottom-0 right-0 w-3 h-3 border-b border-r ${colorStyles.cornerBorder}`}
         ></div>
@@ -186,6 +95,40 @@ const QuestInstanceItem = ({
                 >
                   {questTypeLabel}
                 </span>
+                {/* Quest priority tag with enhanced RPG styling */}
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wider border flex items-center gap-1 ${
+                    numberToQuestTag(Number(quest.basePoints)) === "optional"
+                      ? "bg-gradient-to-r from-slate-800/80 to-slate-700/80 text-slate-200 border-slate-600 shadow-inner shadow-slate-700/30"
+                      : numberToQuestTag(Number(quest.basePoints)) === "minor"
+                        ? "bg-gradient-to-r from-blue-800/80 to-blue-700/80 text-blue-200 border-blue-600 shadow-inner shadow-blue-700/30"
+                        : numberToQuestTag(Number(quest.basePoints)) ===
+                            "standard"
+                          ? "bg-gradient-to-r from-emerald-800/80 to-emerald-700/80 text-emerald-200 border-emerald-600 shadow-inner shadow-emerald-700/30"
+                          : numberToQuestTag(Number(quest.basePoints)) ===
+                              "important"
+                            ? "bg-gradient-to-r from-amber-800/80 to-amber-700/80 text-amber-200 border-amber-600 shadow-inner shadow-amber-700/30"
+                            : "bg-gradient-to-r from-rose-800/80 to-rose-700/80 text-rose-200 border-rose-600 shadow-inner shadow-rose-700/30" // critical
+                  } animate-pulse-subtle transition-all duration-300 hover:scale-105 transform`}
+                >
+                  {/* Small decorative element */}
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      numberToQuestTag(Number(quest.basePoints)) === "optional"
+                        ? "bg-slate-400"
+                        : numberToQuestTag(Number(quest.basePoints)) === "minor"
+                          ? "bg-blue-400"
+                          : numberToQuestTag(Number(quest.basePoints)) ===
+                              "standard"
+                            ? "bg-emerald-400"
+                            : numberToQuestTag(Number(quest.basePoints)) ===
+                                "important"
+                              ? "bg-amber-400"
+                              : "bg-rose-400" // critical
+                    }`}
+                  ></span>
+                  {numberToQuestTag(Number(quest.basePoints))}
+                </span>
               </div>
               <h3 className="text-white/90 font-medium text-base leading-tight">
                 {quest.title}
@@ -201,7 +144,6 @@ const QuestInstanceItem = ({
             <QuestTasks
               questInstanceId={quest.instanceId}
               colorStyles={colorStyles}
-              displayCompleted={displayCompleted}
             />
 
             {/* Quest metadata */}
@@ -225,61 +167,15 @@ const QuestInstanceItem = ({
           </div>
 
           {/* Right side action buttons */}
-          <div className="flex flex-col items-center gap-2 flex-shrink-0">
-            {/* Complete quest button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const nextCompletedStatus = !displayCompleted;
-                completeQuestMutation.mutate({
-                  questInstanceId: quest.instanceId,
-                  completed: nextCompletedStatus,
-                });
-              }}
-              className={cn(
-                "h-8 w-8 rounded-full bg-black/30 flex items-center justify-center",
-                colorStyles.iconHover,
-                "transition-colors ring-1 ring-white/5",
-                displayCompleted && "bg-green-500/20 ring-green-500/30"
-              )}
-              title={
-                displayCompleted ? "Mark as incomplete" : "Mark as completed"
-              }
-              aria-label={
-                displayCompleted ? "Mark as incomplete" : "Mark as completed"
-              }
-            >
-              <Check
-                className={`h-4 w-4 ${displayCompleted ? "text-green-400" : "text-zinc-400"} ${colorStyles.iconHoverText}`}
-              />
-            </button>
-
-            {/* Expand/collapse button */}
-            <button
-              onClick={() => toggleExpand(quest.instanceId)}
-              className={`h-8 w-8 rounded-full bg-black/30 flex items-center justify-center ${colorStyles.iconHover} transition-colors ring-1 ring-white/5`}
-              title={
-                expandedQuestId === quest.instanceId
-                  ? "Collapse"
-                  : "Expand to manage tasks"
-              }
-              aria-label={
-                expandedQuestId === quest.instanceId
-                  ? "Collapse"
-                  : "Expand to manage tasks"
-              }
-            >
-              {expandedQuestId === quest.instanceId ? (
-                <ChevronUp
-                  className={`h-4 w-4 text-zinc-400 ${colorStyles.iconHoverText}`}
-                />
-              ) : (
-                <ChevronDown
-                  className={`h-4 w-4 text-zinc-400 ${colorStyles.iconHoverText}`}
-                />
-              )}
-            </button>
-          </div>
+          <QuestCardActionButtons
+            displayCompleted={displayCompleted}
+            queryKey={queryKey}
+            setIsQuestCompleted={setIsQuestCompleted}
+            colorStyles={colorStyles}
+            quest={quest}
+            expandedQuestId={expandedQuestId}
+            toggleExpand={toggleExpand}
+          />
         </CardContent>
       </Card>
 

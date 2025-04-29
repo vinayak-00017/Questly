@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@questly/types": "workspace:*",
+    "@questly/utils": "workspace:*",
     "@repo/logger": "workspace:*",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node-cron": "^3.0.11",

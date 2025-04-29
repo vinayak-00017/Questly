@@ -60,23 +60,10 @@ router.post("/", requireAuth, async (req, res) => {
 router.get("/", requireAuth, async (req, res) => {
   try {
     const { questInstanceId } = req.params;
-    let taskInstances = await db
+    const taskInstances = await db
       .select()
       .from(taskInstance)
       .where(eq(taskInstance.questInstanceId, questInstanceId));
-
-    const pointsToPriority = Object.entries(basePointsTaskMap).reduce(
-      (acc, [priority, points]) => {
-        acc[points] = priority;
-        return acc;
-      },
-      {} as Record<number, string>
-    );
-    taskInstances = taskInstances.map((task) => ({
-      ...task,
-      basePoints: task.basePoints,
-      priorityLabel: pointsToPriority[task.basePoints] || "medium",
-    }));
 
     res
       .status(200)
