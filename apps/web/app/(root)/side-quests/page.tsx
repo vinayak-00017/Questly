@@ -1,3 +1,5 @@
+"use client";
+
 import SideQuestCard from "@/components/quest-card/side-quest-card";
 import React from "react";
 

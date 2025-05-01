@@ -3,7 +3,7 @@
 import { Flame } from "lucide-react";
 import { BaseQuestDialog } from "../base-quest-dialog";
 import { createDailyRRule } from "@/lib/rrule-utils";
-import { DatePicker } from "../main-quest/date-picker";
+import { DatePicker } from "../date-freq/date-picker";
 
 interface AddDailyQuestDialogProps {
   open: boolean;

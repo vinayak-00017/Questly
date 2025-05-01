@@ -12,9 +12,9 @@ const SideQuestCard = () => {
     <QuestCard
       title="Side Quests"
       description="Optional quests that enhance your journey and earn extra rewards"
-      type="side"
       Icon={Compass}
       EmptyIcon={Map}
+      type="side"
       themeColor="blue"
       fetchFn={() =>
         questApi.fetchSideQuests?.() || Promise.resolve({ sideQuests: [] })
@@ -22,10 +22,8 @@ const SideQuestCard = () => {
       queryKey={["sideQuests"]}
       dataSelector={(data) => data.sideQuests || []}
       AddQuestDialog={AddSideQuestDialog}
-      questTypeLabel="SIDE QUEST"
       emptyStateTitle="Uncharted Territory"
       emptyStateDescription="Embark on side quests to discover new rewards"
-      addButtonLabel="Add Quest"
       createButtonLabel="Explore New Quest"
       defaultXpReward={75}
     />

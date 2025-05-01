@@ -158,14 +158,13 @@ export function BaseQuestDialog({
   const handleCreateQuest = () => {
     try {
       const recurrenceRule = createRecurrenceRule?.(formData.dateValue);
-
       const input = {
         title: formData.title,
         description: formData.description,
         basePoints: formData.priority,
         dueDate:
-          formData.dateValue instanceof Date
-            ? formData.dateValue.toISOString()
+          formData.dateValue?.date instanceof Date
+            ? formData.dateValue.date.toISOString()
             : undefined,
         parentQuestId: formData.parentQuestId,
         type,

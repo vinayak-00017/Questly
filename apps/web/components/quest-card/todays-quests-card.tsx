@@ -27,15 +27,14 @@ const TodaysQuestsCard = () => {
     <QuestCard
       title="Today's Quests"
       description="All your daily and side quests in one place"
-      type="side"
       Icon={Calendar}
       EmptyIcon={Calendar}
-      themeColor="blue"
+      type="today"
+      themeColor="purple"
       fetchFn={fetchTodaysQuests}
-      queryKey={["todaysQuests"]}
+      queryKey={["dailyQuests", "sideQuests"]}
       dataSelector={(data) => data.sideQuests || []}
       AddQuestDialog={AddSideQuestDialog}
-      questTypeLabel="QUEST"
       emptyStateTitle="No Quests For Today"
       emptyStateDescription="Add daily or side quests to see them here"
       addButtonLabel="Add Quest"

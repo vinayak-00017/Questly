@@ -137,7 +137,11 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
       parentQuestId,
       recurrenceRule,
       basePoints,
+      dueDate,
     } = req.body;
+
+    const dueDateObj = dueDate ? new Date(dueDate) : null;
+    console.log(dueDateObj);
 
     // Validate recurrence rule if provided
     if (recurrenceRule && !isValidRRule(recurrenceRule)) {
@@ -161,6 +165,7 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
       recurrenceRule,
       basePoints: basePointsValue,
       userId,
+      dueDate: dueDateObj,
       id: uuidv4(),
     };
 
@@ -174,7 +179,10 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
       today.setHours(0, 0, 0, 0);
 
       // If no recurrence rule or rule matches today, create an instance
-      if (doesRRuleMatchDate(recurrenceRule, today)) {
+      if (
+        doesRRuleMatchDate(recurrenceRule, today) ||
+        (!recurrenceRule && dueDateObj && dueDateObj === today)
+      ) {
         const questInstanceId = uuidv4();
         await trx.insert(questInstance).values({
           id: questInstanceId,

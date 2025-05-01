@@ -2,7 +2,7 @@
 
 import { Compass, Map, CalendarDays } from "lucide-react";
 import { BaseQuestDialog } from "../base-quest-dialog";
-import { RecurrencePicker } from "../main-quest/recurrence-picker";
+import { RecurrencePicker } from "../date-freq/recurrence-picker";
 
 interface AddSideQuestDialogProps {
   open: boolean;
@@ -34,8 +34,29 @@ export function AddSideQuestDialog({
       renderDateField={({ onChange, value, className }) => {
         // Since RecurrencePicker requires separate handlers for date and recurrence rule,
         // we use a composite state object for value
-        const currentDate = value?.date || undefined;
-        const currentRecurrence = value?.recurrenceRule || null;
+        const currentRecurrence = value?.recurrenceRule || undefined;
+        const currentDate =
+          value?.date ||
+          (!currentRecurrence || currentRecurrence === "once"
+            ? new Date()
+            : null);
+
+        if (!value) {
+          // Set initial default value on component mount
+          setTimeout(() => {
+            onChange({
+              date:
+                !currentRecurrence || currentRecurrence === "once"
+                  ? (() => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return today;
+                    })()
+                  : null,
+              recurrenceRule: currentRecurrence,
+            });
+          }, 0);
+        }
 
         return (
           <>

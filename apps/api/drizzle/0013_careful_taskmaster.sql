@@ -1,0 +1,1 @@
+ALTER TABLE "quest_template" ADD COLUMN "due_date" timestamp;

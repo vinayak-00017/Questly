@@ -3,20 +3,20 @@ export const taskTagToNumber = (tag: string): number => {
     case "low":
       return 1;
     case "medium":
-      return 3;
+      return 2;
     case "high":
-      return 5;
+      return 3;
     case "urgent":
-      return 8;
+      return 5;
     default:
-      return 1;
+      return 2;
   }
 };
 
 export const numberToTaskTag = (points: number): string => {
   if (points <= 1) return "low";
-  if (points <= 3) return "medium";
-  if (points <= 5) return "high";
+  if (points <= 2) return "medium";
+  if (points <= 3) return "high";
   return "urgent";
 };
 

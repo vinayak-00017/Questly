@@ -1,23 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { QuestInstance } from "@questly/types";
-import { LucideIcon, Plus } from "lucide-react";
+import { Compass, Flame, LucideIcon, Plus } from "lucide-react";
 
 import QuestInstanceItem from "./quest-instance-item";
 import { useQuestTheme } from "@/hooks/useQuestTheme";
+import { QuestTypeChooserDialog } from "./quest-type-chooser-dialog";
+import { AddDailyQuestDialog } from "../quest-dialog/add-daily-quest-dialog";
+import { AddSideQuestDialog } from "../quest-dialog/add-side-quest-dialog";
 
 export interface QuestCardProps {
   title: string;
   description: string;
-  type: "daily" | "side";
   Icon: LucideIcon;
+  type: "daily" | "side" | "today";
   EmptyIcon: LucideIcon;
-  themeColor: "blue" | "orange";
+  themeColor: "blue" | "orange" | "purple"; // Added "purple"
   fetchFn: () => Promise<any>;
   queryKey: string[];
   dataSelector: (data: any) => QuestInstance[];
@@ -26,7 +29,7 @@ export interface QuestCardProps {
     onOpenChange: (open: boolean) => void;
     onSuccess?: () => void;
   }>;
-  questTypeLabel: string;
+
   emptyStateTitle: string;
   emptyStateDescription: string;
   addButtonLabel?: string;
@@ -42,18 +45,16 @@ export interface QuestCardProps {
 const QuestCard: React.FC<QuestCardProps> = ({
   title,
   description,
-  type,
   Icon,
   EmptyIcon,
+  type,
   themeColor,
   fetchFn,
   queryKey,
   dataSelector,
   AddQuestDialog,
-  questTypeLabel,
   emptyStateTitle,
   emptyStateDescription,
-  addButtonLabel = "Add Quest",
   createButtonLabel = "Create Quest",
   defaultXpReward,
   // Task-related props with defaults
@@ -66,6 +67,35 @@ const QuestCard: React.FC<QuestCardProps> = ({
   const colorStyles = useQuestTheme(themeColor);
 
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isTypeChooserOpen, setIsTypeChooserOpen] = React.useState(false);
+  const [selectedQuestType, setSelectedQuestType] = React.useState<
+    "daily" | "side" | null
+  >(null);
+  const [particles, setParticles] = useState<
+    Array<{
+      width: string;
+      height: string;
+      left: string;
+      top: string;
+      animationDuration: string;
+      animationDelay: string;
+    }>
+  >([]);
+
+  // Generate particles on the client side only
+  useEffect(() => {
+    const newParticles = Array(10)
+      .fill(null)
+      .map(() => ({
+        width: `${Math.random() * 10 + 3}px`,
+        height: `${Math.random() * 10 + 3}px`,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animationDuration: `${Math.random() * 3 + 2}s`,
+        animationDelay: `${Math.random() * 2}s`,
+      }));
+    setParticles(newParticles);
+  }, []);
 
   // Quest data
   const { data: quests = [], isLoading } = useQuery({
@@ -86,7 +116,23 @@ const QuestCard: React.FC<QuestCardProps> = ({
     });
   }, [quests]);
 
-  // Color-specific styles based on theme
+  const handleAddQuest = async () => {
+    if (type === "today") {
+      setIsTypeChooserOpen(true);
+    } else {
+      setIsDialogOpen(true);
+    }
+  };
+
+  const handleQuestTypeSelect = (questType: "daily" | "side") => {
+    setIsTypeChooserOpen(false);
+    setSelectedQuestType(questType);
+    setIsDialogOpen(true);
+  };
+
+  const CurrentAddDialog =
+    selectedQuestType === "daily" ? AddDailyQuestDialog : AddSideQuestDialog;
+
   return (
     <Card className="w-full overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border-0 shadow-lg relative">
       {/* Enhanced background with animated effect */}
@@ -94,17 +140,17 @@ const QuestCard: React.FC<QuestCardProps> = ({
         className={`absolute inset-0 bg-gradient-to-br ${colorStyles.gradient} pointer-events-none`}
       ></div>
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(10)].map((_, i) => (
+        {particles.map((particle, i) => (
           <div
             key={i}
             className={`absolute rounded-full ${colorStyles.particleColor} float-animation`}
             style={{
-              width: `${Math.random() * 10 + 3}px`,
-              height: `${Math.random() * 10 + 3}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDuration: `${Math.random() * 3 + 2}s`,
-              animationDelay: `${Math.random() * 2}s`,
+              width: particle.width,
+              height: particle.height,
+              left: particle.left,
+              top: particle.top,
+              animationDuration: particle.animationDuration,
+              animationDelay: particle.animationDelay,
             }}
           ></div>
         ))}
@@ -131,10 +177,10 @@ const QuestCard: React.FC<QuestCardProps> = ({
             variant="outline"
             size="sm"
             className={`bg-black/30 ${colorStyles.buttonBorder} hover:bg-black/50 text-white gap-1.5 text-sm ${colorStyles.hoverBorder} transition-all duration-300`}
-            onClick={() => setIsDialogOpen(true)}
+            onClick={handleAddQuest}
           >
             <Plus className="h-4 w-4" />
-            <span>{addButtonLabel}</span>
+            <span>Add Quest</span>
           </Button>
         </div>
         <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -143,9 +189,15 @@ const QuestCard: React.FC<QuestCardProps> = ({
               <QuestInstanceItem
                 key={quest.instanceId}
                 quest={quest}
-                colorStyles={colorStyles}
-                questTypeLabel={questTypeLabel}
-                Icon={Icon}
+                colorStyles={
+                  quest.type == "daily"
+                    ? useQuestTheme("orange")
+                    : useQuestTheme("blue")
+                }
+                questTypeLabel={
+                  quest.type == "daily" ? "DAILY QUEST" : "SIDE QUEST"
+                }
+                Icon={quest.type == "daily" ? Flame : Compass}
                 queryKey={queryKey}
               />
             ))
@@ -173,7 +225,20 @@ const QuestCard: React.FC<QuestCardProps> = ({
           )}
         </div>
       </div>
-      <AddQuestDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+      <QuestTypeChooserDialog
+        open={isTypeChooserOpen}
+        onOpenChange={setIsTypeChooserOpen}
+        onChoose={handleQuestTypeSelect}
+      />
+      {isDialogOpen && (
+        <CurrentAddDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSuccess={() => {
+            setSelectedQuestType(null);
+          }}
+        />
+      )}
     </Card>
   );
 };

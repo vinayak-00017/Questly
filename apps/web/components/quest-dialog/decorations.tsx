@@ -1,15 +1,41 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { getQuestColorStyles } from "./types";
 
 interface QuestDialogDecorationsProps {
-  themeColor: "blue" | "orange";
+  themeColor: "blue" | "orange" | "purple"; // Added "purple"
 }
 
 export function QuestDialogDecorations({
   themeColor,
 }: QuestDialogDecorationsProps) {
   const colorStyles = getQuestColorStyles(themeColor);
+  const [particles, setParticles] = useState<
+    Array<{
+      width: string;
+      height: string;
+      left: string;
+      top: string;
+      animationDuration: string;
+      animationDelay: string;
+    }>
+  >([]);
+
+  // Generate particles on the client side only
+  useEffect(() => {
+    const newParticles = Array(15)
+      .fill(null)
+      .map(() => ({
+        width: `${Math.random() * 8 + 2}px`,
+        height: `${Math.random() * 8 + 2}px`,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animationDuration: `${Math.random() * 3 + 2}s`,
+        animationDelay: `${Math.random() * 2}s`,
+      }));
+    setParticles(newParticles);
+  }, []);
 
   return (
     <>
@@ -29,17 +55,17 @@ export function QuestDialogDecorations({
 
       {/* Floating particles background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(15)].map((_, i) => (
+        {particles.map((particle, i) => (
           <div
             key={i}
             className={`absolute rounded-full ${colorStyles.particles} float-animation`}
             style={{
-              width: `${Math.random() * 8 + 2}px`,
-              height: `${Math.random() * 8 + 2}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDuration: `${Math.random() * 3 + 2}s`,
-              animationDelay: `${Math.random() * 2}s`,
+              width: particle.width,
+              height: particle.height,
+              left: particle.left,
+              top: particle.top,
+              animationDuration: particle.animationDuration,
+              animationDelay: particle.animationDelay,
             }}
           ></div>
         ))}

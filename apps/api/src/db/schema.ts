@@ -57,6 +57,7 @@ export const questTemplate = pgTable("quest_template", {
   type: text("type").$type<"daily" | "side">().notNull(),
   parentQuestId: text("parent_quest_id").references(() => mainQuest.id),
   recurrenceRule: text("recurrence_rule"),
+  dueDate: timestamp("due_date"),
   isActive: boolean("is_active").default(true),
   basePoints: integer("base_points").notNull().default(1),
   plannedStartTime: text("planned_start_time"), // "HH:mm" format

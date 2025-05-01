@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { X, Plus } from "lucide-react";
-import { DatePicker } from "./date-picker";
+import { DatePicker } from "../date-freq/date-picker";
 import { useMutation } from "@tanstack/react-query";
 import {
   MainQuestImportance,

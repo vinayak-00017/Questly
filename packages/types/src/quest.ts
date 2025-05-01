@@ -19,6 +19,7 @@ export const questTemplateSchema = baseSchema.extend({
   ),
   parentQuestId: z.string().nullable().optional(),
   recurrenceRule: z.string().nullable(),
+  dueDate: z.string().nullable(),
   isActive: z.boolean().default(true),
   basePoints: z
     .number()
@@ -81,6 +82,7 @@ export const createQuestTemplateSchema = questTemplateSchema
         .min(1, "Title is required")
         .max(100, "Title must be 100 characters or less")
     ),
+    recurrenceRule: z.string().nullable().optional(),
   });
 
 // Types

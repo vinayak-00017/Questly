@@ -6,7 +6,7 @@ import { LucideIcon } from "lucide-react";
 import { getQuestColorStyles } from "./types";
 
 interface QuestDialogFooterProps {
-  themeColor: "blue" | "orange";
+  themeColor: "blue" | "orange" | "purple";
   actionButtonLabel: string;
   isDisabled: boolean;
   isPending: boolean;

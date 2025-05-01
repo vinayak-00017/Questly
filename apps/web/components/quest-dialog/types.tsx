@@ -4,8 +4,10 @@ import { ReactNode } from "react";
 import { LucideIcon } from "lucide-react";
 import { QuestPriority } from "@questly/types";
 
-// Theme styles for both blue and orange color schemes
-export const getQuestColorStyles = (themeColor: "blue" | "orange") => {
+// Theme styles for blue, orange, and purple color schemes
+export const getQuestColorStyles = (
+  themeColor: "blue" | "orange" | "purple"
+) => {
   const styles = {
     blue: {
       headerBorder: "border-blue-800/30",
@@ -41,6 +43,23 @@ export const getQuestColorStyles = (themeColor: "blue" | "orange") => {
       buttonShadow: "shadow-orange-900/20",
       particles: "bg-orange-500/10",
     },
+    purple: {
+      headerBorder: "border-purple-800/30",
+      cornerBorder: "border-purple-500/30",
+      iconBg: "ring-purple-500/30",
+      iconColor: "text-purple-500",
+      labelColor: "text-purple-400",
+      focusBorder: "focus:border-purple-500",
+      hoverBorder: "hover:border-purple-500/30",
+      infoGradient: "from-purple-500/5 to-amber-500/5",
+      infoBorder: "border-purple-900/20",
+      infoIconColor: "text-purple-500/70",
+      infoTextColor: "text-purple-400",
+      buttonGradient:
+        "from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500",
+      buttonShadow: "shadow-purple-900/20",
+      particles: "bg-purple-500/10",
+    },
   };
 
   return styles[themeColor];
@@ -57,7 +76,7 @@ export interface QuestFormData {
 export interface QuestFormFieldsProps {
   formData: QuestFormData;
   onUpdateForm: (field: keyof QuestFormData, value: any) => void;
-  themeColor: "blue" | "orange";
+  themeColor: "blue" | "orange" | "purple";
   renderDateField: (props: {
     className?: string;
     onChange: (value: any) => void;
@@ -82,7 +101,7 @@ export interface QuestFormProps extends QuestFormFieldsProps {
 
 export interface BaseQuestDialogStyleProps {
   icon: LucideIcon;
-  themeColor: "blue" | "orange";
+  themeColor: "blue" | "orange" | "purple";
   title: string;
   description: string;
 }
