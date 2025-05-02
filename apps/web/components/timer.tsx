@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 interface CountdownTimerProps {
   targetDate: Date;
   onComplete?: () => void;
+  className?: string;
 }
 
 export function CountdownTimer({
   targetDate,
   onComplete,
+  className,
 }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -53,7 +55,9 @@ export function CountdownTimer({
   const shouldShowDays = timeLeft.days > 0;
 
   return (
-    <div className="flex items-center gap-1 font-mono text-sm">
+    <div
+      className={`flex items-center gap-1 font-mono text-sm ${className || ""}`}
+    >
       {shouldShowDays && (
         <>
           <SlidingNumber value={timeLeft.days} padStart={true} />

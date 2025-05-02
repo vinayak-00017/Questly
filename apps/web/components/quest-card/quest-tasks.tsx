@@ -67,10 +67,10 @@ const QuestTasks = ({
       toast.error("Failed to update task");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["taskInstances", questInstanceId],
-      });
-      queryClient.invalidateQueries({ queryKey: ["questInstance"] });
+      // queryClient.invalidateQueries({
+      //   queryKey: ["taskInstances", questInstanceId],
+      // });
+      // queryClient.invalidateQueries({ queryKey: ["questInstance"] });
       toast.success("Task updated");
     },
   });

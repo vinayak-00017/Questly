@@ -1,1 +1,2 @@
-export * from "./points-conversion";
+export * from "./points-conversion.ts";
+export * from "./date-manager.ts";

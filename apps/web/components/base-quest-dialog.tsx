@@ -27,7 +27,6 @@ export interface BaseQuestDialogProps {
   icon: LucideIcon;
   themeColor: "blue" | "orange";
   queryKey: string[];
-  actionButtonLabel: string;
   renderDateField: (props: {
     className?: string;
     onChange: (value: any) => void;
@@ -49,7 +48,6 @@ export function BaseQuestDialog({
   icon,
   themeColor,
   queryKey,
-  actionButtonLabel,
   renderDateField,
   createRecurrenceRule,
   infoTitle,
@@ -136,7 +134,7 @@ export function BaseQuestDialog({
   const addQuestMutation = useMutation({
     mutationFn: questApi.addQuest,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
+      // queryClient.invalidateQueries({ queryKey });
       toast.success(`${type === "daily" ? "Daily" : "Side"} quest added!`);
       onSuccess?.();
       onOpenChange(false);
@@ -224,7 +222,6 @@ export function BaseQuestDialog({
           {/* Footer with actions */}
           <QuestDialogFooter
             themeColor={themeColor}
-            actionButtonLabel={actionButtonLabel}
             isDisabled={!formData.title.trim()}
             isPending={addQuestMutation.isPending}
             icon={icon}

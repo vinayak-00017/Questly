@@ -8,6 +8,12 @@ import { isValidRRule, doesRRuleMatchDate } from "../utils/rrule-utils";
 import { basePointsMap } from "../utils/points-map";
 import taskInstanceRouter from "./task-instance";
 import taskTemplateRouter from "./task-template";
+import {
+  getTodayMidnight,
+  isSameDay,
+  toDbDate,
+  toDbTimestamp,
+} from "@questly/utils";
 
 const router = express.Router();
 
@@ -97,6 +103,20 @@ router.get("/sideQuestInstance", requireAuth, async (req, res) => {
         )
       );
 
+    const lvlOneXp = 100;
+    const totalPoints = sideQuestsData.reduce(
+      (sum, quest) => sum + quest.basePoints,
+      0
+    );
+
+    const questsWithXpReward = sideQuestsData.map((quest) => {
+      const xpReward = Math.round((quest.basePoints / totalPoints) * lvlOneXp);
+      return {
+        ...quest,
+        xpReward,
+      };
+    });
+
     // const questInstanceIds = sideQuestsData.map((q) => q.instanceId);
     // const sideQuestsMap = new Map();
     // sideQuestsData.forEach((q) => {
@@ -119,7 +139,7 @@ router.get("/sideQuestInstance", requireAuth, async (req, res) => {
 
     res.status(200).json({
       message: "Side quests retrived successfully",
-      sideQuests: sideQuestsData,
+      sideQuests: questsWithXpReward,
     });
   } catch (err) {
     console.error("Error getting side quests", err);
@@ -140,8 +160,7 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
       dueDate,
     } = req.body;
 
-    const dueDateObj = dueDate ? new Date(dueDate) : null;
-    console.log(dueDateObj);
+    const dueDateObj = dueDate ? toDbTimestamp(dueDate) : null;
 
     // Validate recurrence rule if provided
     if (recurrenceRule && !isValidRRule(recurrenceRule)) {
@@ -175,20 +194,19 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
 
       // Create an instance for today if the quest applies to today
       // or if no recurrence rule (one-time quest)
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const today = getTodayMidnight();
 
       // If no recurrence rule or rule matches today, create an instance
       if (
         doesRRuleMatchDate(recurrenceRule, today) ||
-        (!recurrenceRule && dueDateObj && dueDateObj === today)
+        (!recurrenceRule && dueDateObj && isSameDay(dueDateObj, today))
       ) {
         const questInstanceId = uuidv4();
         await trx.insert(questInstance).values({
           id: questInstanceId,
           templateId: newQuest.id,
           userId,
-          date: today.toISOString().split("T")[0],
+          date: toDbDate(today),
           completed: false,
           title,
           description,
@@ -205,6 +223,66 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
   } catch (err) {
     console.error("Error adding quest", err);
     res.status(500).json({ message: "failed adding Quest" });
+  }
+});
+
+router.get("/todaysQuests", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const allQuestsData = await db
+      .select({
+        instanceId: questInstance.id,
+        templateId: questInstance.templateId,
+        title: questInstance.title,
+        description: questInstance.description,
+        type: questTemplate.type,
+        basePoints: questInstance.basePoints,
+        updatedAt: questInstance.updatedAt,
+        completed: questInstance.completed,
+        xpReward: questInstance.xpReward,
+        date: questInstance.date,
+      })
+      .from(questInstance)
+      .innerJoin(questTemplate, eq(questInstance.templateId, questTemplate.id))
+      .where(
+        and(
+          eq(questInstance.userId, userId),
+          eq(questInstance.date, today.toISOString().split("T")[0])
+        )
+      );
+
+    const lvlOneXp = 100;
+    const totalPoints = allQuestsData.reduce(
+      (sum, quest) => sum + quest.basePoints,
+      0
+    );
+
+    const questsWithXp = allQuestsData.map((quest) => {
+      const xpReward =
+        totalPoints > 0
+          ? Math.round((quest.basePoints / totalPoints) * lvlOneXp)
+          : quest.basePoints > 0
+            ? lvlOneXp
+            : 0;
+      return {
+        ...quest,
+        xpReward,
+      };
+    });
+    const dailyQuests = questsWithXp.filter((quest) => quest.type === "daily");
+    const sideQuests = questsWithXp.filter((quest) => quest.type === "side");
+
+    res.status(200).json({
+      message: "Today's quests retrieved successfully",
+      dailyQuests,
+      sideQuests,
+    });
+  } catch (err) {
+    console.error("Error getting today's quests", err);
+    res.status(500).json({ message: "Failed getting today's quests" });
   }
 });
 

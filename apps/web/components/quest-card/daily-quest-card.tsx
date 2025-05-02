@@ -4,7 +4,6 @@ import React from "react";
 import { Flame } from "lucide-react";
 import QuestCard from "./quest-card";
 import { questApi } from "@/services/quest-api";
-import { AddDailyQuestDialog } from "../quest-dialog/add-daily-quest-dialog";
 
 const DailyQuestCard = () => {
   return (
@@ -18,7 +17,6 @@ const DailyQuestCard = () => {
       fetchFn={questApi.fetchDailyQuest}
       queryKey={["dailyQuests"]}
       dataSelector={(data) => data.dailyQuests || []}
-      AddQuestDialog={AddDailyQuestDialog}
       emptyStateTitle="No Daily Quests Yet"
       emptyStateDescription="Add your first daily quest to begin your journey"
       createButtonLabel="Create Quest"

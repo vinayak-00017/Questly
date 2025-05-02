@@ -57,7 +57,7 @@ export const QuestTypeChooserDialog: React.FC<QuestTypeChooserDialogProps> = ({
             </div>
             <span className="text-white font-medieval text-lg">Side Quest</span>
             <span className="text-zinc-400 text-xs mt-1">
-              One-time activities
+              Custom Schedule activities
             </span>
           </Button>
         </div>

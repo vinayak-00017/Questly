@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { ArrowBigRightIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -41,8 +41,8 @@ export function DatePicker({ date, onSelect, className }: DatePickerProps) {
         )}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <CalendarIcon className="mr-2 h-4 w-4" />
-        {date ? format(date, "PPP") : "Select due date"}
+        <ArrowBigRightIcon className="mr-2 h-4 w-4" />
+        {date ? `Till  ${format(date, "PPP")}` : "Select due date"}
       </Button>
       {isOpen && (
         <div className="absolute top-[calc(100%+4px)] left-0 z-50 w-auto">

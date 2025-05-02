@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { QuestInstance } from "@questly/types";
 import { Compass, Flame, LucideIcon, Plus } from "lucide-react";
 
@@ -24,17 +24,15 @@ export interface QuestCardProps {
   fetchFn: () => Promise<any>;
   queryKey: string[];
   dataSelector: (data: any) => QuestInstance[];
-  AddQuestDialog: React.ComponentType<{
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    onSuccess?: () => void;
-  }>;
 
   emptyStateTitle: string;
   emptyStateDescription: string;
   addButtonLabel?: string;
   createButtonLabel?: string;
   defaultXpReward?: number;
+  isLoading?: boolean;
+  externalData?: QuestInstance[];
+  onAddQuest?: () => void;
   // Add new props for task functionality
   fetchTasksFn?: (questInstanceId: string) => Promise<any>;
   addTaskFn?: (questInstanceId: string, taskData: any) => Promise<any>;
@@ -52,10 +50,11 @@ const QuestCard: React.FC<QuestCardProps> = ({
   fetchFn,
   queryKey,
   dataSelector,
-  AddQuestDialog,
   emptyStateTitle,
   emptyStateDescription,
-  createButtonLabel = "Create Quest",
+  isLoading: propIsLoading,
+  externalData,
+  onAddQuest,
   defaultXpReward,
   // Task-related props with defaults
   fetchTasksFn = async () => ({ tasks: [] }),
@@ -63,7 +62,6 @@ const QuestCard: React.FC<QuestCardProps> = ({
   completeTaskFn = async () => ({}),
   completeQuestFn = async () => ({}),
 }) => {
-  const router = useRouter();
   const colorStyles = useQuestTheme(themeColor);
 
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -98,15 +96,26 @@ const QuestCard: React.FC<QuestCardProps> = ({
   }, []);
 
   // Quest data
-  const { data: quests = [], isLoading } = useQuery({
+
+  useQuery({
     queryKey,
     queryFn: fetchFn,
     select: dataSelector,
+    enabled: !propIsLoading,
+  }).data || [];
+  const { data: quests = [], isLoading: queryIsLoading } = useQuery({
+    queryKey,
+    queryFn: fetchFn,
+    select: dataSelector,
+    enabled: !propIsLoading, // Don't run the query if we already have loading state
   });
+
+  const questData = externalData || quests || [];
+  const isLoading = propIsLoading || queryIsLoading;
 
   // Sort quests: 1. completed (incompleted first), 2. basePoints (higher first)
   const sortedQuests = React.useMemo(() => {
-    return [...quests].sort((a, b) => {
+    return [...questData].sort((a, b) => {
       // First sort by completion status (incomplete first)
       if (a.completed !== b.completed) {
         return a.completed ? 1 : -1;
@@ -114,10 +123,12 @@ const QuestCard: React.FC<QuestCardProps> = ({
       // Then sort by baseValue (higher first)
       return Number(b.basePoints) - Number(a.basePoints);
     });
-  }, [quests]);
+  }, [questData]);
 
   const handleAddQuest = async () => {
-    if (type === "today") {
+    if (onAddQuest) {
+      onAddQuest();
+    } else if (type === "today") {
       setIsTypeChooserOpen(true);
     } else {
       setIsDialogOpen(true);
@@ -219,7 +230,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
                 className={`bg-gradient-to-r ${colorStyles.emptyBtnGradient} text-white`}
               >
                 <Plus className="h-4 w-4 mr-1" />
-                {createButtonLabel}
+                Create Quest
               </Button>
             </div>
           )}

@@ -18,6 +18,14 @@ export const questApi = {
     return response.json();
   },
 
+  fetchTodaysQuests: async () => {
+    const response = await fetch(`${BASE_URL}/quest/todaysQuests`, {
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Failed to fetch daily quests");
+    return response.json();
+  },
+
   addQuest: async (input: CreateQuestTemplate) => {
     const response = await fetch(`${BASE_URL}/quest/questTemplate`, {
       method: "POST",

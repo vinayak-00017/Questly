@@ -21,7 +21,6 @@ const SideQuestCard = () => {
       }
       queryKey={["sideQuests"]}
       dataSelector={(data) => data.sideQuests || []}
-      AddQuestDialog={AddSideQuestDialog}
       emptyStateTitle="Uncharted Territory"
       emptyStateDescription="Embark on side quests to discover new rewards"
       createButtonLabel="Explore New Quest"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Plus } from "lucide-react";
+import {
+  X,
+  Plus,
+  Scroll,
+  Trophy,
+  Shield,
+  Sparkles,
+  CalendarDays,
+  Target,
+} from "lucide-react";
 import { DatePicker } from "../date-freq/date-picker";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -63,6 +72,31 @@ export function AddQuestDialog({
   const [dailyQuestPriority, setDailyQuestPriority] =
     useState<QuestPriority>(Standard);
   const [dailyQuestTitle, setDailyQuestTitle] = useState("");
+  const [particles, setParticles] = useState<
+    Array<{
+      width: string;
+      height: string;
+      left: string;
+      top: string;
+      animationDuration: string;
+      animationDelay: string;
+    }>
+  >([]);
+
+  // Generate particles on the client side only
+  useEffect(() => {
+    const newParticles = Array(15)
+      .fill(null)
+      .map(() => ({
+        width: `${Math.random() * 5 + 2}px`,
+        height: `${Math.random() * 5 + 2}px`,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animationDuration: `${Math.random() * 3 + 2}s`,
+        animationDelay: `${Math.random() * 2}s`,
+      }));
+    setParticles(newParticles);
+  }, []);
 
   const handleAddDailyTask = () => {
     if (dailyQuestTitle.trim()) {
@@ -73,6 +107,7 @@ export function AddQuestDialog({
           type: QuestType.Daily,
           basePoints: dailyQuestPriority,
           recurrenceRule: "daily",
+          dueDate: dueDate ? dueDate.toISOString() : null,
         },
       ]);
       setDailyQuestTitle("");
@@ -128,79 +163,263 @@ export function AddQuestDialog({
     }
   };
 
+  // Function to get priority badge styling
+  const getPriorityBadgeStyle = (priority: number | QuestPriority) => {
+    switch (priority) {
+      case Optional:
+        return "bg-slate-600/50 text-slate-200";
+      case Minor:
+        return "bg-blue-600/50 text-blue-200";
+      case Standard:
+        return "bg-green-600/50 text-green-200";
+      case Important:
+        return "bg-amber-600/50 text-amber-200";
+      case Critical:
+        return "bg-red-600/50 text-red-200";
+      default:
+        return "bg-purple-600/50 text-purple-200";
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] w-full bg-zinc-900 border-zinc-800 max-h-[90vh] flex flex-col">
-        <DialogHeader className="flex-none px-6">
-          <DialogTitle className="text-xl font-bold">
-            Add New Main Quest
-          </DialogTitle>
+      <DialogContent className="sm:max-w-[540px] w-full bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border-purple-800/30 max-h-[75vh] overflow-hidden shadow-xl flex flex-col p-0">
+        {/* Background visual effects */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {particles.map((particle, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full bg-purple-500/10 float-animation"
+              style={{
+                width: particle.width,
+                height: particle.height,
+                left: particle.left,
+                top: particle.top,
+                animationDuration: particle.animationDuration,
+                animationDelay: particle.animationDelay,
+              }}
+            ></div>
+          ))}
+        </div>
+
+        {/* Decorative corner elements */}
+        <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-purple-500/30 rounded-tl-lg"></div>
+        <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-purple-500/30 rounded-tr-lg"></div>
+        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-purple-500/30 rounded-bl-lg"></div>
+        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-purple-500/30 rounded-br-lg"></div>
+
+        {/* Enhanced Dialog Header */}
+        <DialogHeader className="flex-none px-6 pt-6 pb-2 relative">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="bg-black/40 w-10 h-10 rounded-full flex items-center justify-center shadow-md ring-1 ring-purple-500/30 pulse-glow">
+              <Scroll className="h-5 w-5 text-purple-500" />
+            </div>
+            <DialogTitle className="text-xl font-medieval text-white/90">
+              Embark on a New Quest
+            </DialogTitle>
+          </div>
+          <p className="text-zinc-400 text-xs mt-1">
+            Chronicle your journey and conquer new challenges in the realm
+          </p>
         </DialogHeader>
 
-        <div className="space-y-6 py-4 px-6 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800">
+        <div className="space-y-6 py-4 px-6 mt-2 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800 relative z-10">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-200">
+            <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
+              <Scroll className="h-3.5 w-3.5" />
               Quest Title
             </label>
             <Input
               placeholder="Enter quest title..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500 text-white"
+              className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 focus:border-purple-500"
             />
           </div>
 
-          <div className="flex justify-between px-2  ">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-200">
+          <div className="flex justify-between gap-4">
+            <div className="space-y-2 w-[48%]">
+              <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
+                <CalendarDays className="h-3.5 w-3.5" />
                 Due Date
               </label>
-              <DatePicker date={dueDate} onSelect={setDueDate} />
+              <DatePicker
+                date={dueDate}
+                onSelect={setDueDate}
+                className="bg-black/50 border-zinc-700"
+              />
             </div>
-            <MainSelect<MainQuestImportance>
-              fields={[Common, Rare, Heroic, Legendary]}
-              property={importance}
-              setProperty={(value) => setImportance(value)}
-              label="Importance"
-            />
+            <div className="space-y-2 w-[48%]">
+              <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
+                <Trophy className="h-3.5 w-3.5" />
+                Importance
+              </label>
+              <Select
+                value={importance}
+                onValueChange={(value) =>
+                  setImportance(value as MainQuestImportance)
+                }
+              >
+                <SelectTrigger className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 focus:border-purple-500">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-800 border-zinc-700">
+                  <SelectItem
+                    value={Common}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Common
+                  </SelectItem>
+                  <SelectItem
+                    value={Rare}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Rare
+                  </SelectItem>
+                  <SelectItem
+                    value={Heroic}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Heroic
+                  </SelectItem>
+                  <SelectItem
+                    value={Legendary}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Legendary
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="flex justify-between px-2 ">
-            <MainSelect<MainQuestDifficulty>
-              fields={[Novice, Adventurer, Veteran, Master]}
-              property={difficulty}
-              setProperty={(value) => setDifficulty(value)}
-              label="Difficulty (Optional)"
-            />
-            <MainSelect<MainQuestCategory>
-              fields={[
-                Challenge,
-                Combat,
-                Creation,
-                Exploration,
-                Knowledge,
-                Social,
-              ]}
-              property={category}
-              setProperty={(value) => setCategory(value)}
-              label="Category (Optional)"
-            />
+
+          <div className="flex justify-between gap-4">
+            <div className="space-y-2 w-[48%]">
+              <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
+                <Shield className="h-3.5 w-3.5" />
+                Difficulty
+              </label>
+              <Select
+                value={difficulty}
+                onValueChange={(value) =>
+                  setDifficulty(value as MainQuestDifficulty)
+                }
+              >
+                <SelectTrigger className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 focus:border-purple-500">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-800 border-zinc-700">
+                  <SelectItem
+                    value={Novice}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Novice
+                  </SelectItem>
+                  <SelectItem
+                    value={Adventurer}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Adventurer
+                  </SelectItem>
+                  <SelectItem
+                    value={Veteran}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Veteran
+                  </SelectItem>
+                  <SelectItem
+                    value={Master}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Master
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 w-[48%]">
+              <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
+                <Target className="h-3.5 w-3.5" />
+                Category
+              </label>
+              <Select
+                value={category}
+                onValueChange={(value) =>
+                  setCategory(value as MainQuestCategory)
+                }
+              >
+                <SelectTrigger className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 focus:border-purple-500">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-800 border-zinc-700">
+                  <SelectItem
+                    value={Challenge}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Challenge
+                  </SelectItem>
+                  <SelectItem
+                    value={Combat}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Combat
+                  </SelectItem>
+                  <SelectItem
+                    value={Creation}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Creation
+                  </SelectItem>
+                  <SelectItem
+                    value={Exploration}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Exploration
+                  </SelectItem>
+                  <SelectItem
+                    value={Knowledge}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Knowledge
+                  </SelectItem>
+                  <SelectItem
+                    value={Social}
+                    className="focus:bg-purple-900/20 focus:text-purple-400"
+                  >
+                    Social
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-200">
-              Description (Optional)
+            <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
+              <Scroll className="h-3.5 w-3.5" />
+              Quest Description
             </label>
             <Textarea
               placeholder="Enter quest description..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500 text-white min-h-[100px]"
+              className="bg-black/50 border-zinc-700 focus:border-purple-500 text-white min-h-[100px] hover:bg-black/70"
             />
           </div>
-          <div className="space-y-3 pt-4 border-t border-zinc-800">
+
+          <div className="space-y-4 pt-4 border-t border-zinc-800/50">
+            <div className="bg-gradient-to-r from-purple-500/5 to-amber-500/5 p-3 rounded-lg border border-purple-900/20 flex gap-3 items-center mb-3">
+              <Sparkles className="h-5 w-5 text-purple-500/70 flex-shrink-0" />
+              <div className="text-xs text-zinc-400">
+                <span className="text-purple-400">Daily Quests:</span> Add
+                associated daily quests to help you progress on this main quest.
+                These will appear in your daily tasks.
+              </div>
+            </div>
+
             <div className="flex gap-2 items-end">
               <div className="flex flex-col gap-1 flex-1">
-                <label className="text-sm font-medium text-zinc-200">
-                  Associated Daily Quests
+                <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
+                  <Plus className="h-3.5 w-3.5" />
+                  Daily Quest Title
                 </label>
                 <Input
                   placeholder="Enter daily quest title..."
@@ -211,14 +430,15 @@ export function AddQuestDialog({
                       handleAddDailyTask();
                     }
                   }}
-                  className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500 text-white"
+                  className="bg-black/50 border-zinc-700 focus:border-purple-500 text-white hover:bg-black/70"
                 />
               </div>
               <div className="flex flex-col gap-1">
                 <label
                   htmlFor="task-priority"
-                  className="text-sm font-medium text-zinc-200"
+                  className="text-sm font-medium text-purple-400 flex items-center gap-2"
                 >
+                  <Target className="h-3.5 w-3.5" />
                   Priority
                 </label>
                 <Select
@@ -227,21 +447,47 @@ export function AddQuestDialog({
                     setDailyQuestPriority(value as QuestPriority)
                   }
                 >
-                  <SelectTrigger className="bg-zinc-800/50 border-zinc-700 text-white">
+                  <SelectTrigger className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 focus:border-purple-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-800 border-zinc-700">
-                    <SelectItem value={Optional}>Optional</SelectItem>
-                    <SelectItem value={Minor}>Minor</SelectItem>
-                    <SelectItem value={Standard}>Standard</SelectItem>
-                    <SelectItem value={Important}>Important</SelectItem>
-                    <SelectItem value={Critical}>Critical</SelectItem>
+                    <SelectItem
+                      value={Optional}
+                      className="focus:bg-purple-900/20 focus:text-purple-400"
+                    >
+                      Optional
+                    </SelectItem>
+                    <SelectItem
+                      value={Minor}
+                      className="focus:bg-purple-900/20 focus:text-purple-400"
+                    >
+                      Minor
+                    </SelectItem>
+                    <SelectItem
+                      value={Standard}
+                      className="focus:bg-purple-900/20 focus:text-purple-400"
+                    >
+                      Standard
+                    </SelectItem>
+                    <SelectItem
+                      value={Important}
+                      className="focus:bg-purple-900/20 focus:text-purple-400"
+                    >
+                      Important
+                    </SelectItem>
+                    <SelectItem
+                      value={Critical}
+                      className="focus:bg-purple-900/20 focus:text-purple-400"
+                    >
+                      Critical
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <Button
                 onClick={handleAddDailyTask}
-                className="bg-purple-500 hover:bg-purple-600 self-end"
+                className="bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 border-0 text-white self-end"
+                disabled={!dailyQuestTitle.trim()}
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -251,11 +497,16 @@ export function AddQuestDialog({
               {dailyQuests.map((task, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-2 rounded-md bg-zinc-800/30 border border-zinc-700"
+                  className="flex items-center justify-between p-3 rounded-md bg-black/30 border border-zinc-700/50 hover:border-purple-500/30 transition-colors group"
                 >
-                  <div className="flex gap-4 items-center w-full">
+                  <div className="flex gap-3 items-center w-full">
+                    <div className="h-6 w-6 rounded-full bg-black/40 flex items-center justify-center ring-1 ring-purple-500/30">
+                      <Scroll className="h-3 w-3 text-purple-500" />
+                    </div>
                     <span className="text-sm text-zinc-200">{task.title}</span>
-                    <span className="text-sm text-zinc-200 bg-accent rounded-full p-1">
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ml-auto ${getPriorityBadgeStyle(task.basePoints)}`}
+                    >
                       {task.basePoints}
                     </span>
                   </div>
@@ -263,7 +514,7 @@ export function AddQuestDialog({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleRemoveTask(index)}
-                    className="h-8 w-8 p-0 hover:bg-zinc-700"
+                    className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 hover:text-red-400"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -273,22 +524,34 @@ export function AddQuestDialog({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-800 flex-none px-6">
-          <DialogClose asChild>
+        <div className="relative mt-4 pt-4 border-t border-zinc-800/50 flex-none px-6 pb-6">
+          <div className="flex justify-end gap-3 relative z-10">
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                className="bg-zinc-800/50 hover:bg-zinc-700/70 border-zinc-700/50 text-zinc-300 shadow-lg transition-all"
+              >
+                Cancel
+              </Button>
+            </DialogClose>
             <Button
-              variant="outline"
-              className="bg-zinc-800 hover:bg-zinc-700 border-zinc-700"
+              onClick={handleCreateMainQuest}
+              className="bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 border-0 text-white shadow-lg shadow-purple-900/20 transition-all"
+              disabled={!title.trim() || addMainQuestMutation.isPending}
             >
-              Cancel
+              {addMainQuestMutation.isPending ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded-full border-2 border-t-transparent border-white animate-spin"></div>
+                  <span>Creating...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  <span>Begin Quest</span>
+                </div>
+              )}
             </Button>
-          </DialogClose>
-          <Button
-            onClick={handleCreateMainQuest}
-            className="bg-purple-500 hover:bg-purple-600"
-            disabled={!title.trim() || addMainQuestMutation.isPending}
-          >
-            {addMainQuestMutation.isPending ? "Creating..." : "Create Quest"}
-          </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

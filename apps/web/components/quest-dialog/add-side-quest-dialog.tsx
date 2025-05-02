@@ -26,7 +26,6 @@ export function AddSideQuestDialog({
       icon={Compass}
       themeColor="blue"
       queryKey={["sideQuests"]}
-      actionButtonLabel="Embark on Quest"
       InfoIcon={Map}
       infoTitle="Side quests"
       infoText="offer alternative paths of exploration and can earn you valuable experience along your journey."

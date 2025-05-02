@@ -3,7 +3,6 @@ import { requireAuth, AuthenticatedRequest } from "../middleware/auth";
 import db from "../db";
 import { taskInstance } from "../db/schema";
 import { v4 as uuidv4 } from "uuid";
-import { eq } from "drizzle-orm";
 
 // **** IMPORTANT: Use mergeParams: true ****
 // This allows this router to access URL parameters defined in parent routers (like :questId)
@@ -38,6 +37,7 @@ router.post("/", requireAuth, async (req, res) => {
       questInstanceId: questId, // Link task to the quest instance
       userId: userId,
       title: taskData.title,
+      basePoints: taskData.base_points,
       // Add other fields from taskData as needed (e.g., priority)
       completed: false,
       createdAt: new Date(),

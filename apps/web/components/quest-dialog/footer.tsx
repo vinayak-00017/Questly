@@ -7,7 +7,6 @@ import { getQuestColorStyles } from "./types";
 
 interface QuestDialogFooterProps {
   themeColor: "blue" | "orange" | "purple";
-  actionButtonLabel: string;
   isDisabled: boolean;
   isPending: boolean;
   icon: LucideIcon;
@@ -16,7 +15,6 @@ interface QuestDialogFooterProps {
 
 export function QuestDialogFooter({
   themeColor,
-  actionButtonLabel,
   isDisabled,
   isPending,
   icon: Icon,
@@ -47,7 +45,7 @@ export function QuestDialogFooter({
         ) : (
           <div className="flex items-center gap-2">
             <Icon className="h-4 w-4" />
-            <span>{actionButtonLabel}</span>
+            <span>Create Quest</span>
           </div>
         )}
       </Button>

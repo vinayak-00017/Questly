@@ -63,3 +63,6 @@ export interface AddTask {
   title: string;
   basePoints: TaskPriority;
 }
+
+export type DateTimeString = string; // ISO formatted timestamp
+export type DateString = string; // YYYY-MM-DD formatted date

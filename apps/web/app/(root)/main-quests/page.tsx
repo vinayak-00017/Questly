@@ -1,197 +1,142 @@
 "use client";
 
 import React, { useState } from "react";
-import { Calendar, Link, TrendingUp, Plus, Swords, Trophy } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { CountdownTimer } from "@/components/timer";
-import { LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AddQuestDialog } from "@/components/main-quest/add-main-quest-dialog";
-import { MainQuest, MainQuestImportance } from "@questly/types";
 import { useQuery } from "@tanstack/react-query";
+import { Scroll, TrendingUp, Trophy, Swords } from "lucide-react";
+import { MainQuest } from "@questly/types";
 import { mainQuestApi } from "@/services/main-quest-api";
+import { AddQuestDialog } from "@/components/main-quest/add-main-quest-dialog";
 
-interface StatCardProps {
-  icon: LucideIcon;
-  title: string;
-  value: string | number;
-  className?: string;
-}
+// Import our new components
+import { Particles } from "@/components/main-quest/ui/Particles";
+import { StatCard } from "@/components/main-quest/ui/StatCard";
+import { PageHeader } from "@/components/main-quest/ui/PageHeader";
+import { SectionHeader } from "@/components/main-quest/ui/SectionHeader";
+import { EmptyState } from "@/components/main-quest/ui/EmptyState";
+import { QuestCard } from "@/components/main-quest/ui/QuestCard";
+import {
+  getCategoryIcon,
+  getImportanceStyle,
+  getQuestDetails,
+} from "@/components/main-quest/ui/utils";
 
-const StatCard = ({
-  icon: Icon,
-  title,
-  value,
-  className = "",
-}: StatCardProps) => (
-  <Card className="flex-1 bg-zinc-900/50 p-6 flex flex-col items-center justify-center gap-3">
-    <div
-      className={`w-12 h-12 rounded-full flex items-center justify-center ${className}`}
-    >
-      <Icon className="w-6 h-6" />
-    </div>
-    <div className="text-center">
-      <h3 className="text-zinc-400 text-sm font-medium">{title}</h3>
-      <p className="text-4xl font-bold mt-1">{value}</p>
-    </div>
-  </Card>
-);
-
-const MainQuestsPage = () => {
+export default function MainQuestsPage() {
   const { data: mainQuests = [], isLoading } = useQuery({
     queryKey: ["mainQuests"],
     queryFn: mainQuestApi.fetchMainQuests,
     select: (data) => data.mainQuests || [],
   });
+
   const router = useRouter();
-  const { Epic, High, Medium, Low } = MainQuestImportance;
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  // Calculate stats
   const totalQuests = mainQuests.length;
   const completedQuests = mainQuests.filter(
     (q: MainQuest) => q.completed
   ).length;
-  // const averageProgress = Math.round(
-  //   quests.reduce((acc, q) => acc + q.progress, 0) / totalQuests
-  // );
+  const progressPercentage =
+    totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0;
+
+  const handleCreateQuest = () => {
+    console.log("Opening dialog"); // Add logging
+    setIsAddDialogOpen(true);
+  };
+
+  const handleQuestClick = (id: string) => {
+    router.push(`/main-quests/${id}`);
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto p-6 h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Scroll className="w-16 h-16 text-purple-400 mx-auto animate-pulse" />
+          <p className="text-xl font-medieval">Loading your epic journey...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Main Quests</h1>
-          <p className="text-zinc-400">
-            Track your major life quests and associated daily challenges
-          </p>
-        </div>
-        <Button
-          className="bg-purple-500 hover:bg-purple-600 text-white gap-2"
-          onClick={() => setIsAddDialogOpen(true)}
-        >
-          <Plus className="w-4 h-4" />
-          Add Main Quest
-        </Button>
+    <div className="relative max-w-6xl mx-auto p-6 space-y-8">
+      {/* Background particles */}
+      <Particles />
+
+      {/* Page header */}
+      <div className="relative z-10">
+        <PageHeader onCreateQuest={handleCreateQuest} />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      {/* Stats section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
-          icon={Swords}
+          icon={Scroll}
           title="Total Quests"
           value={totalQuests}
-          className="bg-indigo-500/10 text-indigo-400"
+          className="ring-indigo-500/30"
         />
         <StatCard
           icon={Trophy}
           title="Completed"
           value={completedQuests}
-          className="bg-amber-500/10 text-amber-400"
+          className="ring-amber-500/30"
         />
         <StatCard
           icon={TrendingUp}
-          title="Average Progress"
-          value={10}
-          // value={`${averageProgress}%`}
-          className="bg-emerald-500/10 text-emerald-400"
+          title="Progress"
+          value={`${progressPercentage}%`}
+          className="ring-emerald-500/30"
         />
       </div>
 
-      <div className="relative space-y-4">
-        <div className="fixed inset-0 bg-gradient-to-br from-amber-400/[0.2] via-transparent to-purple-500/[0.05] pointer-events-none" />
-        <div className="flex items-center gap-2">
-          <Swords className="w-5 h-5 text-purple-400" />
-          <h2 className="text-xl font-semibold">Active Main Quests</h2>
-        </div>
+      {/* Main quest list section */}
+      <div className="relative z-10 space-y-6">
+        <SectionHeader
+          icon={Swords}
+          title="Active Quests"
+          subtitle="Your ongoing adventures await completion"
+        />
 
-        <div className="space-y-4">
-          {mainQuests.map((quest: MainQuest) => (
-            <Card
-              key={quest.id}
-              className="bg-zinc-900/50 border-zinc-800/50 hover:bg-zinc-800/50 transition-all cursor-pointer p-6"
-            >
-              <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold">{quest.title}</h3>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs ${
-                          quest.importance === "high"
-                            ? "bg-red-500/20 text-red-400"
-                            : "bg-amber-500/20 text-amber-400"
-                        }`}
-                      >
-                        • {quest.importance}
-                      </span>
-                    </div>
-                    <p className="text-zinc-400">{quest.description}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="relative w-16 h-16">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold">
-                          {/* {quest.progress}% */}
-                          {10}%
-                        </span>
-                      </div>
-                      <svg className="w-full h-full transform -rotate-90">
-                        <circle
-                          className="text-zinc-800"
-                          strokeWidth="4"
-                          stroke="currentColor"
-                          fill="transparent"
-                          r="30"
-                          cx="32"
-                          cy="32"
-                        />
-                        <circle
-                          className="text-purple-500"
-                          strokeWidth="4"
-                          strokeDasharray={30 * 2 * Math.PI}
-                          // strokeDashoffset={
-                          //   30 * 2 * Math.PI * (1 - quest.progress / 100)
-                          // }
-                          strokeDashoffset={10}
-                          strokeLinecap="round"
-                          stroke="currentColor"
-                          fill="transparent"
-                          r="30"
-                          cx="32"
-                          cy="32"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
+        {mainQuests.length === 0 ? (
+          <EmptyState onCreateQuest={handleCreateQuest} />
+        ) : (
+          <div className="space-y-4">
+            {mainQuests.map((quest: MainQuest, index: number) => {
+              const details = getQuestDetails(quest);
+              const CategoryIcon = getCategoryIcon(details.category);
 
-                <div className="flex items-center gap-6 text-sm text-zinc-400">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>Due: </span>
-                    {quest.dueDate && (
-                      <CountdownTimer targetDate={new Date(quest.dueDate)} />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Link className="w-4 h-4" />
-                    <span>{} daily quests linked</span>
-                  </div>
-                </div>
-
-                <Button variant="outline" className="text-sm">
-                  View Details
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
+              return (
+                <QuestCard
+                  key={quest.id}
+                  quest={quest}
+                  categoryIcon={CategoryIcon}
+                  progress={details.progress}
+                  dailyQuestsCount={details.dailyQuestsCount}
+                  category={details.category}
+                  importanceStyle={getImportanceStyle(quest.importance)}
+                  index={index}
+                  onClick={handleQuestClick}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
 
+      {/* Add Quest Dialog */}
       <AddQuestDialog
         open={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
+        onOpenChange={(open) => {
+          console.log("Dialog state changed:", open); // Add logging
+          setIsAddDialogOpen(open);
+        }}
+        onSuccess={() => {
+          // Handle success - could trigger a refetch if needed
+        }}
       />
     </div>
   );
-};
-
-export default MainQuestsPage;
+}

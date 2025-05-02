@@ -83,6 +83,7 @@ export const createQuestTemplateSchema = questTemplateSchema
         .max(100, "Title must be 100 characters or less")
     ),
     recurrenceRule: z.string().nullable().optional(),
+    dueDate: z.string().optional(),
   });
 
 // Types

@@ -18,9 +18,27 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at").notNull(),
   isAnonymous: boolean("is_anonymous"),
   xp: integer("xp").default(0).notNull(),
-  level: integer("level").default(1).notNull(),
 });
 
+export const xpTransaction = pgTable("xp_transaction", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  xp: integer("xp").notNull(),
+  date: date("date").notNull(),
+  source: text("source").notNull(), // "quest", "task", "streak", etc.
+  sourceId: text("source_id"), // ID of the related entity
+  note: text("note"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const xpTransactionRelations = relations(xpTransaction, ({ one }) => ({
+  user: one(user, {
+    fields: [xpTransaction.userId],
+    references: [user.id],
+  }),
+}));
 // Main quest remains separate as it's fundamentally different
 export const mainQuest = pgTable("main_quest", {
   id: text("id").primaryKey(),
