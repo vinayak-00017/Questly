@@ -134,7 +134,7 @@ export function BaseQuestDialog({
   const addQuestMutation = useMutation({
     mutationFn: questApi.addQuest,
     onSuccess: () => {
-      // queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey });
       toast.success(`${type === "daily" ? "Daily" : "Side"} quest added!`);
       onSuccess?.();
       onOpenChange(false);

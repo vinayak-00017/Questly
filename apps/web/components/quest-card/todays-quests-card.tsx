@@ -42,7 +42,7 @@ const TodaysQuestsCard = () => {
   // Choose the appropriate dialog based on quest type
   const CurrentAddDialog =
     selectedQuestType === "daily" ? AddDailyQuestDialog : AddSideQuestDialog;
-
+  console.log(combinedQuests);
   return (
     <>
       <QuestCard
@@ -54,7 +54,7 @@ const TodaysQuestsCard = () => {
         type="today"
         themeColor="purple"
         fetchFn={() => Promise.resolve({ todaysQuests: combinedQuests })}
-        queryKey={["dailyQuests", "sideQuests"]}
+        queryKey={["todaysQuests"]}
         dataSelector={(data) => data.todaysQuests || []}
         emptyStateTitle="No Quests For Today"
         emptyStateDescription="Add daily or side quests to see them here"

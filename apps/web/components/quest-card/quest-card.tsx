@@ -97,17 +97,11 @@ const QuestCard: React.FC<QuestCardProps> = ({
 
   // Quest data
 
-  useQuery({
-    queryKey,
-    queryFn: fetchFn,
-    select: dataSelector,
-    enabled: !propIsLoading,
-  }).data || [];
   const { data: quests = [], isLoading: queryIsLoading } = useQuery({
     queryKey,
     queryFn: fetchFn,
     select: dataSelector,
-    enabled: !propIsLoading, // Don't run the query if we already have loading state
+    enabled: !propIsLoading && !externalData,
   });
 
   const questData = externalData || quests || [];

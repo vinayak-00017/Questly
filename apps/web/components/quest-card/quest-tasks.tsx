@@ -44,11 +44,11 @@ const QuestTasks = ({
       queryClient.setQueryData(
         ["taskInstances", questInstanceId],
         (old: any) => {
-          if (!old || !old.tasks) return old;
+          if (!old || !old.taskInstances) return old;
 
           return {
             ...old,
-            tasks: old.tasks.map((task: TaskInstance) =>
+            taskInstances: old.taskInstances.map((task: TaskInstance) =>
               task.id === taskId ? { ...task, completed } : task
             ),
           };

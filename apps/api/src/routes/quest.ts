@@ -2,7 +2,7 @@ import express from "express";
 import { v4 as uuidv4 } from "uuid";
 import db from "../db";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
-import { questInstance, questTemplate } from "../db/schema";
+import { questInstance, questTemplate, user } from "../db/schema";
 import { and, eq } from "drizzle-orm";
 import { isValidRRule, doesRRuleMatchDate } from "../utils/rrule-utils";
 import { basePointsMap } from "../utils/points-map";
@@ -14,6 +14,7 @@ import {
   toDbDate,
   toDbTimestamp,
 } from "@questly/utils";
+import { calculateLevelFromXp, calculateXpRewards } from "../utils/xp";
 
 const router = express.Router();
 
@@ -232,6 +233,15 @@ router.get("/todaysQuests", requireAuth, async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const currentUser = await db
+      .select({ totalXp: user.xp })
+      .from(user)
+      .where(eq(user.id, userId))
+      .then((rows) => rows[0]);
+
+    const totalXp = currentUser?.totalXp || 0;
+    const levelInfo = calculateLevelFromXp(totalXp);
+
     const allQuestsData = await db
       .select({
         instanceId: questInstance.id,
@@ -254,24 +264,8 @@ router.get("/todaysQuests", requireAuth, async (req, res) => {
         )
       );
 
-    const lvlOneXp = 100;
-    const totalPoints = allQuestsData.reduce(
-      (sum, quest) => sum + quest.basePoints,
-      0
-    );
+    const questsWithXp = calculateXpRewards(allQuestsData, levelInfo.level);
 
-    const questsWithXp = allQuestsData.map((quest) => {
-      const xpReward =
-        totalPoints > 0
-          ? Math.round((quest.basePoints / totalPoints) * lvlOneXp)
-          : quest.basePoints > 0
-            ? lvlOneXp
-            : 0;
-      return {
-        ...quest,
-        xpReward,
-      };
-    });
     const dailyQuests = questsWithXp.filter((quest) => quest.type === "daily");
     const sideQuests = questsWithXp.filter((quest) => quest.type === "side");
 

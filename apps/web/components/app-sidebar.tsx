@@ -16,9 +16,26 @@ import {
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { useSidebarState } from "@/contexts/sidebar-context";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export function AppSidebar() {
   const { open, setOpen } = useSidebarState();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/login");
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   const links = [
     {
@@ -56,13 +73,6 @@ export function AppSidebar() {
         <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
       ),
     },
-    {
-      label: "Logout",
-      href: "#",
-      icon: (
-        <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
-      ),
-    },
   ];
 
   return (
@@ -88,19 +98,41 @@ export function AppSidebar() {
               ),
             }}
           />
-          <SidebarLink
-            link={{
-              label: "Account",
-              href: "#",
-              icon: (
-                <img
-                  src="https://static.thenounproject.com/png/2059357-200.png"
-                  className="h-5 w-5 rounded-full object-cover"
-                  alt="Avatar"
-                />
-              ),
+          <button
+            onClick={() => {
+              // Handle account button click
+              router.push("/account"); // Or any other action you want
             }}
-          />
+            className={cn(
+              "flex w-full items-center text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none",
+              open ? "px-3 py-2" : "justify-center p-2"
+            )}
+          >
+            <img
+              src="https://static.thenounproject.com/png/2059357-200.png"
+              className="h-5 w-5 rounded-full object-cover flex-shrink-0"
+              alt="Avatar"
+            />
+            {open && (
+              <span className="ml-2 text-neutral-700 dark:text-neutral-200">
+                Account
+              </span>
+            )}
+          </button>
+          <button
+            onClick={handleLogout}
+            className={cn(
+              "flex w-full items-center text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none",
+              open ? "px-3 py-2" : "justify-center p-2"
+            )}
+          >
+            <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+            {open && (
+              <span className="ml-2 text-neutral-700 dark:text-neutral-200">
+                Logout
+              </span>
+            )}
+          </button>
         </div>
       </SidebarBody>
     </Sidebar>

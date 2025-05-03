@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import Link from "next/link";
 import { useSidebarState } from "@/contexts/sidebar-context";
+import { usePathname } from "next/navigation";
 
 interface Links {
   label: string;
@@ -175,6 +176,12 @@ export const SidebarLink = ({
 }) => {
   const { open, animate } = useSidebar();
   const { open: globalOpen } = useSidebarState();
+  const pathname = usePathname();
+
+  // Check if the current path matches this link's path
+  const isActive =
+    pathname === link.href ||
+    (link.href !== "/" && pathname.startsWith(link.href));
 
   // Use the global sidebar state for determining UI appearance
   const isOpen = globalOpen !== undefined ? globalOpen : open;
@@ -183,8 +190,11 @@ export const SidebarLink = ({
     <Link
       href={link.href}
       className={cn(
-        "flex items-center py-3 px-2 rounded-md text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors group/sidebar",
+        "flex items-center py-3 px-2 rounded-md transition-colors group/sidebar border",
         isOpen ? "justify-start gap-3" : "justify-center",
+        isActive
+          ? "bg-neutral-100 dark:bg-neutral-800/60 border-neutral-300/50 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200"
+          : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border-transparent",
         className
       )}
       {...props}
@@ -195,7 +205,12 @@ export const SidebarLink = ({
           isOpen ? "w-5 h-5" : "w-5 h-5"
         )}
       >
-        {link.icon}
+        {React.cloneElement(link.icon as React.ReactElement, {
+          className: cn(
+            (link.icon as React.ReactElement).props.className,
+            isActive && "text-neutral-800 dark:text-neutral-200"
+          ),
+        })}
       </div>
 
       <motion.span
@@ -208,10 +223,18 @@ export const SidebarLink = ({
           opacity: animate ? (isOpen ? 1 : 0) : 1,
         }}
         transition={{ duration: 0.2 }}
-        className="text-sm font-medium group-hover/sidebar:translate-x-0.5 transition duration-150 whitespace-pre inline-block"
+        className={cn(
+          "text-sm group-hover/sidebar:translate-x-0.5 transition duration-150 whitespace-pre inline-block",
+          isActive ? "font-medium" : "font-normal"
+        )}
       >
         {link.label}
       </motion.span>
+
+      {/* Active indicator dot in collapsed state */}
+      {isActive && !isOpen && (
+        <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-neutral-300 dark:bg-neutral-600 rounded-l-md"></div>
+      )}
     </Link>
   );
 };

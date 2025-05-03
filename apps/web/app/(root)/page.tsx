@@ -70,7 +70,7 @@ export default function Home() {
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center">
             <div className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-amber-500/50 shadow-lg flex items-center justify-center">
-              {session ? (
+              {session && session.user && session.user?.image ? (
                 <img
                   src={session.user?.image || ""}
                   alt="Profile"
@@ -169,8 +169,8 @@ export default function Home() {
           </h2>
 
           <div className="flex flex-col w-full gap-8">
-            <TodaysQuestsCard />
             <MainQuestCard />
+            <TodaysQuestsCard />
           </div>
         </div>
       </div>
