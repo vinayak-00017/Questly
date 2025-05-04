@@ -96,7 +96,7 @@ export const questInstance = pgTable("quest_instance", {
     .references(() => user.id, { onDelete: "cascade" }),
 
   date: date("date").notNull(), // The specific day this instance is for
-  completed: boolean("completed").default(false),
+  completed: boolean("completed").default(false).notNull(),
   title: text("title").notNull(),
   description: text("description"),
   basePoints: integer("base_points").notNull(),

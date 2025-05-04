@@ -8,7 +8,9 @@ import { auth } from "../lib/auth";
 import questRouter from "./routes/quest";
 import mainQuestRouter from "./routes/main-quest";
 import instanceRouter from "./routes/instance";
-import { initializeScheduler } from "../services/scheduler";
+import userRouter from "./routes/user";
+import { initializeScheduler } from "../services/quest-scheduler";
+import { initXpScheduler } from "../services/xp-scheduler";
 export const createServer = async (): Promise<Express> => {
   const app = express();
   app
@@ -27,6 +29,7 @@ export const createServer = async (): Promise<Express> => {
     .use("/quest", questRouter)
     .use("/instance", instanceRouter)
     .use("/main-quest", mainQuestRouter)
+    .use("/user", userRouter)
     .get("/message/:name", (req, res) => {
       return res.json({ message: `hello ${req.params.name}` });
     })
@@ -41,6 +44,8 @@ export const createServer = async (): Promise<Express> => {
     });
   await initializeScheduler();
   console.log("Server initialized with scheduled tasks");
+  initXpScheduler();
+  console.log("Xp awarded to users!");
 
   return app;
 };

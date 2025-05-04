@@ -1,11 +1,11 @@
 "use client";
 
 import MainQuestCard from "@/components/main-quest/main-quest-card";
-import DailyQuestCard from "@/components/quest-card/daily-quest-card";
-import SideQuestCard from "@/components/quest-card/side-quest-card";
 import TodaysQuestsCard from "@/components/quest-card/todays-quests-card";
 import { Button } from "@/components/ui/button";
+import { BASE_URL } from "@/config";
 import { authClient, useSession } from "@/lib/auth-client";
+import { userApi } from "@/services/user-api";
 import { useQuery } from "@tanstack/react-query";
 import {
   Shield,
@@ -16,20 +16,10 @@ import {
   Crown,
   ScrollText,
 } from "lucide-react";
+import Image from "next/image";
 
 export default function Home() {
   const { data: session, isPending } = useSession();
-
-  const fetchTodos = async () => {
-    const response = await fetch(
-      "https://jsonplaceholder.typicode.com/todos/1"
-    );
-    return response.json();
-  };
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["todos"],
-    queryFn: fetchTodos,
-  });
 
   const signIn = async () => {
     const data = await authClient.signIn.social({
@@ -37,8 +27,28 @@ export default function Home() {
     });
   };
 
-  // Mock user stats for demonstration
-  const userStats = {
+  const { data, isLoading } = useQuery({
+    queryKey: ["userStats"],
+    queryFn: userApi.getUserStats,
+    select: (data) => {
+      return {
+        userStats: data.userStats,
+      };
+    },
+  });
+  const { userStats } = data || { userStats: { levelStats: {}, todaysXp: 0 } };
+
+  const handleXp = async () => {
+    await fetch(`${BASE_URL}/user/calculateDailyXp  `, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+  };
+
+  const userStatsDemo = {
     level: 12,
     xp: 3450,
     nextLevelXp: 4000,
@@ -67,64 +77,66 @@ export default function Home() {
 
       <div className="relative z-10 flex h-full w-full flex-col px-4 py-6 md:px-8 md:py-8 max-w-6xl mx-auto">
         {/* Top header section with user profile and sign in button */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center">
-            <div className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-amber-500/50 shadow-lg flex items-center justify-center">
-              {session && session.user && session.user?.image ? (
-                <img
-                  src={session.user?.image || ""}
-                  alt="Profile"
-                  className="rounded-full h-full w-full object-cover"
-                />
-              ) : (
-                <Crown className="h-6 w-6 md:h-8 md:w-8 text-amber-400" />
-              )}
-            </div>
-
-            <div className="ml-4">
-              <h1 className="text-xl md:text-2xl font-bold text-white font-medieval tracking-wide">
-                {session
-                  ? session.user?.name || "Adventurer"
-                  : "Noble Adventurer"}
-              </h1>
-              <p className="text-amber-500/90 text-sm">
-                Level {userStats.level} {userStats.characterClass}
-              </p>
-            </div>
-          </div>
-
-          {!session && (
-            <Button
-              onClick={signIn}
-              size="sm"
-              className="bg-gradient-to-r from-amber-600 to-amber-700 text-white hover:from-amber-500 hover:to-amber-600 border-none shadow-lg shadow-amber-900/30 transition-all duration-300"
-            >
-              Begin Your Journey
-            </Button>
-          )}
-        </div>
 
         {/* Character stats section */}
         <div className="w-full p-4 mb-8 bg-gradient-to-r from-zinc-900/80 via-zinc-900/60 to-zinc-900/80 rounded-xl border border-zinc-800/50 shadow-xl">
-          <h2 className="text-lg text-amber-500 font-medieval mb-3 flex items-center">
-            <ScrollText className="h-5 w-5 mr-2" />
-            Character Stats
-          </h2>
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex items-center">
+              <div className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-amber-500/50 shadow-lg flex items-center justify-center">
+                {session && session.user && session.user?.image ? (
+                  <Image
+                    src={session.user?.image || ""}
+                    width={80}
+                    height={80}
+                    alt="Profile"
+                    className="rounded-full h-full w-full object-cover"
+                  />
+                ) : (
+                  <Crown className="h-6 w-6 md:h-8 md:w-8 text-amber-400" />
+                )}
+              </div>
 
+              <div className="ml-4">
+                <h1 className="text-xl md:text-2xl font-bold text-white font-medieval tracking-wide">
+                  {session
+                    ? session.user?.name || "Adventurer"
+                    : "Noble Adventurer"}
+                </h1>
+                <p className="text-amber-500/90 text-sm">
+                  Level {userStats.levelStats.level} {userStats.characterClass}
+                </p>
+              </div>
+            </div>
+
+            {!session && (
+              <Button
+                onClick={signIn}
+                size="sm"
+                className="bg-gradient-to-r from-amber-600 to-amber-700 text-white hover:from-amber-500 hover:to-amber-600 border-none shadow-lg shadow-amber-900/30 transition-all duration-300"
+              >
+                Begin Your Journey
+              </Button>
+            )}
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="flex flex-col items-center p-3 bg-black/30 rounded-lg border border-zinc-800/70">
-              <Zap className="h-6 w-6 text-yellow-500 mb-1" />
+              <div className="flex">
+                <Zap className="h-6 w-6 text-yellow-500 mb-1" />
+                <span>+{userStats.todaysXp}</span>
+              </div>
+
               <span className="text-sm text-zinc-400">Experience</span>
               <div className="mt-1 w-full bg-zinc-800/50 h-2 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-yellow-500 to-amber-500"
                   style={{
-                    width: `${(userStats.xp / userStats.nextLevelXp) * 100}%`,
+                    width: `${userStats.levelStats.progressPercent}%`,
                   }}
                 ></div>
               </div>
               <span className="text-xs text-amber-500/90 mt-1">
-                {userStats.xp}/{userStats.nextLevelXp} XP
+                {userStats.levelStats.currentLevelXp}/
+                {userStats.levelStats.xpForThisLevel} XP
               </span>
             </div>
 

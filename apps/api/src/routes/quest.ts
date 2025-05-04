@@ -9,12 +9,13 @@ import { basePointsMap } from "../utils/points-map";
 import taskInstanceRouter from "./task-instance";
 import taskTemplateRouter from "./task-template";
 import {
+  calculateLevelFromXp,
+  calculateXpRewards,
   getTodayMidnight,
   isSameDay,
   toDbDate,
   toDbTimestamp,
 } from "@questly/utils";
-import { calculateLevelFromXp, calculateXpRewards } from "../utils/xp";
 
 const router = express.Router();
 

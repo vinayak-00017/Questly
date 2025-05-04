@@ -30,35 +30,6 @@ export const AuthBackground: React.FC<AuthBackgroundProps> = ({
         <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMDAwMDAwMDUiPjwvcmVjdD4KPHBhdGggZD0iTTAgNUw1IDBaTTYgNEw0IDZaTS0xIDFMMSAtMVoiIHN0cm9rZT0iIzg4ODg4ODA1IiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc+')] opacity-30 z-0"></div>
         <div className="fixed inset-0 bg-gradient-to-b from-zinc-950/70 via-zinc-900/20 to-black/90 z-0"></div>
 
-        {/* Animated floating particles */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden">
-          {Array.from({ length: 15 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className={`absolute rounded-full ${particleColor}`}
-              initial={{
-                x: Math.random() * 100 + "%",
-                y: Math.random() * 100 + "%",
-                opacity: Math.random() * 0.5 + 0.3,
-              }}
-              animate={{
-                y: [`${Math.random() * 100}%`, `${Math.random() * 90}%`],
-                opacity: [Math.random() * 0.5 + 0.3, Math.random() * 0.7 + 0.3],
-              }}
-              transition={{
-                duration: Math.random() * 3 + 2,
-                repeat: Infinity,
-                repeatType: "reverse",
-                ease: "easeInOut",
-              }}
-              style={{
-                width: `${Math.random() * 8 + 2}px`,
-                height: `${Math.random() * 8 + 2}px`,
-              }}
-            ></motion.div>
-          ))}
-        </div>
-
         {/* Decorative stars */}
         {Array.from({ length: 20 }).map((_, i) => (
           <motion.div
@@ -69,7 +40,13 @@ export const AuthBackground: React.FC<AuthBackgroundProps> = ({
               top: Math.random() * 100 + "%",
               left: Math.random() * 100 + "%",
             }}
-            animate={{ opacity: [null, 0.1 + Math.random() * 0.7, null] }}
+            animate={{
+              opacity: [
+                0.1 + Math.random() * 0.5,
+                0.1 + Math.random() * 0.7,
+                0.1 + Math.random() * 0.5,
+              ],
+            }}
             transition={{
               duration: 1 + Math.random() * 3,
               repeat: Infinity,
@@ -116,34 +93,38 @@ export const AuthBackground: React.FC<AuthBackgroundProps> = ({
                 ></motion.div>
               ))}
             </div>
+          </>
+        )}
 
-            {/* Magical sparkles that shoot upward */}
+        {/* Purple magic particles */}
+        {variant === "purple" && (
+          <>
+            {/* Shooting elements */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
-              {Array.from({ length: 10 }).map((_, i) => (
+              {Array.from({ length: 8 }).map((_, i) => (
                 <motion.div
-                  key={`sparkle-${i}`}
-                  className="absolute rounded-full bg-amber-400"
+                  key={`shooting-purple-${i}`}
+                  className="absolute h-px bg-gradient-to-r from-transparent via-purple-400 to-transparent"
                   initial={{
                     opacity: 0,
-                    x: `${Math.random() * 100}%`,
-                    y: "100%",
-                    scale: 0.2,
+                    top: `${Math.random() * 70 + 5}%`,
+                    left: `-5%`,
+                    width: `${Math.random() * 50 + 30}px`,
+                    rotate: `${Math.random() * 20 - 10}deg`,
+                    scale: 0.5,
                   }}
                   animate={{
-                    y: [`100%`, `${Math.random() * 40}%`],
-                    opacity: [0, 0.8, 0],
-                    scale: [0.2, 0.6, 0.1],
+                    opacity: [0, 1, 0],
+                    left: [`-5%`, `110%`],
+                    scale: [0.5, 1.5, 0.5],
                   }}
                   transition={{
-                    duration: Math.random() * 3 + 2,
+                    duration: Math.random() * 2 + 3,
                     repeat: Infinity,
-                    repeatDelay: Math.random() * 4,
-                    ease: "easeOut",
-                  }}
-                  style={{
-                    width: `${Math.random() * 4 + 2}px`,
-                    height: `${Math.random() * 4 + 2}px`,
-                    filter: "blur(1px)",
+                    repeatType: "loop",
+                    ease: "easeInOut",
+                    delay: Math.random() * 5,
+                    times: [0, 0.5, 1],
                   }}
                 ></motion.div>
               ))}

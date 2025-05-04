@@ -1,141 +1,77 @@
-/**
- * Calculate the XP cap for a specific level (daily maximum)
- *
- * @param level The player's current level
- * @returns The total XP cap for the given level
- */
-export function getXpCapForLevel(level: number): number {
-  const baseXp = 100;
-
-  if (level < 1) return baseXp;
-
-  return Math.round(baseXp * (1 + (level - 1) * 0.15) * level);
-}
+import db from "../db";
+import { calculateXpRewards, calculateLevelFromXp } from "@questly/utils";
+import { questInstance, user } from "../db/schema";
+import { and, eq, sql } from "drizzle-orm";
 
 /**
- * Calculate how much total XP is needed to reach a specific level
- *
- * @param level The target level to reach
- * @returns The cumulative XP required to reach this level
+ * Process completed quests for a user and award XP
+ * Called at midnight to calculate all XP gained during the day
  */
-export function getXpRequiredForLevel(level: number): number {
-  if (level <= 1) return 0;
 
-  let totalXp = 0;
-  // For each previous level, add the XP needed to complete that level
-  for (let i = 1; i < level; i++) {
-    totalXp += Math.round(100 * (1 + 0.35 * (i - 1)) * i);
-  }
+export async function processUserDailyXp(userId: string, date: string) {
+  return await db.transaction(async (trx) => {
+    // Get the user's current XP and level
+    const [userData] = await trx
+      .select({ xp: user.xp })
+      .from(user)
+      .where(eq(user.id, userId));
 
-  return totalXp;
-}
+    if (!userData) return { success: false, message: "User not found" };
 
-/**
- * Calculate a player's level based on their total XP
- *
- * @param totalXp The player's total accumulated XP
- * @returns Object containing level information and progress details
- */
-export function calculateLevelFromXp(totalXp: number): {
-  level: number;
-  currentLevelXp: number;
-  xpToNextLevel: number;
-  progressPercent: number;
-  totalXpForCurrentLevel: number;
-  totalXpForNextLevel: number;
-} {
-  if (totalXp <= 0) {
-    return {
-      level: 1,
-      currentLevelXp: 0,
-      xpToNextLevel: getXpRequiredForLevel(2),
-      progressPercent: 0,
-      totalXpForCurrentLevel: 0,
-      totalXpForNextLevel: getXpRequiredForLevel(2),
-    };
-  }
+    const currentXp = userData.xp;
+    const currentLevel = calculateLevelFromXp(currentXp).level;
 
-  // Find the highest level where cumulative XP requirement is <= totalXp
-  let level = 1;
-  while (getXpRequiredForLevel(level + 1) <= totalXp) {
-    level++;
-  }
+    //  Get all completed quests for the given date that haven't had XP awarded yet
+    const totalQuests = await trx
+      .select({
+        id: questInstance.id,
+        basePoints: questInstance.basePoints,
+        completed: questInstance.completed,
+        xpReward: questInstance.xpReward,
+      })
+      .from(questInstance)
+      .where(
+        and(
+          eq(questInstance.userId, userId),
+          eq(questInstance.date, date),
+          sql`${questInstance.xpReward} IS NULL`
+        )
+      );
 
-  // Calculate XP within the current level
-  const totalXpForCurrentLevel = getXpRequiredForLevel(level);
-  const totalXpForNextLevel = getXpRequiredForLevel(level + 1);
-  const xpForThisLevel = totalXpForNextLevel - totalXpForCurrentLevel;
-  const currentLevelXp = totalXp - totalXpForCurrentLevel;
-  const xpToNextLevel = totalXpForNextLevel - totalXp;
-  const progressPercent = Math.min(
-    100,
-    Math.max(0, (currentLevelXp / xpForThisLevel) * 100)
-  );
+    if (totalQuests.length === 0) {
+      return { success: true, message: "No new quests to process" };
+    }
 
-  return {
-    level,
-    currentLevelXp,
-    xpToNextLevel,
-    progressPercent,
-    totalXpForCurrentLevel,
-    totalXpForNextLevel,
-  };
-}
+    // Calculate XP rewards based on quest points and user level
+    const questsWithXp = calculateXpRewards(totalQuests, currentLevel);
+    const totalXpEarned = questsWithXp.reduce(
+      (sum, quest) => sum + quest.xpReward,
+      0
+    );
 
-/**
- * Calculate XP rewards for quests based on their base points and the player's level
- *
- * @param quests Array of quests with basePoints property
- * @param playerLevel Current level of the player
- * @returns Array of quests with xpReward property added
- */
-export function calculateXpRewards<T extends { basePoints: number }>(
-  quests: T[],
-  playerLevel: number = 1
-): (T & { xpReward: number })[] {
-  const levelXpCap = getXpCapForLevel(playerLevel);
+    // Update the quests with their XP rewards
+    for (const quest of questsWithXp) {
+      await trx
+        .update(questInstance)
+        .set({ xpReward: quest.xpReward })
+        .where(eq(questInstance.id, quest.id));
+    }
 
-  const totalPoints = quests.reduce((sum, quest) => sum + quest.basePoints, 0);
-
-  // Calculate and add XP rewards
-  return quests.map((quest) => {
-    const xpReward =
-      totalPoints > 0
-        ? Math.round((quest.basePoints / totalPoints) * levelXpCap)
-        : quest.basePoints > 0
-          ? levelXpCap
-          : 0;
+    // Add the XP to the user's total
+    await trx
+      .update(user)
+      .set({
+        xp: currentXp + totalXpEarned,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId));
 
     return {
-      ...quest,
-      xpReward,
+      success: true,
+      xpEarned: totalXpEarned,
+      newTotalXp: currentXp + totalXpEarned,
+      previousLevel: currentLevel,
+      newLevel: calculateLevelFromXp(currentXp + totalXpEarned).level,
     };
   });
-}
-
-/**
- * Check if a player will level up after adding XP
- *
- * @param currentTotalXp Current total XP of the player
- * @param xpToAdd Amount of XP to add
- * @returns Object containing information about the level up, if any
- */
-export function checkLevelUp(
-  currentTotalXp: number,
-  xpToAdd: number
-): {
-  willLevelUp: boolean;
-  currentLevel: number;
-  newLevel: number;
-  levelsGained: number;
-} {
-  const currentLevelInfo = calculateLevelFromXp(currentTotalXp);
-  const newLevelInfo = calculateLevelFromXp(currentTotalXp + xpToAdd);
-
-  return {
-    willLevelUp: newLevelInfo.level > currentLevelInfo.level,
-    currentLevel: currentLevelInfo.level,
-    newLevel: newLevelInfo.level,
-    levelsGained: newLevelInfo.level - currentLevelInfo.level,
-  };
 }

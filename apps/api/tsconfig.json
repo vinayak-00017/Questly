@@ -7,5 +7,5 @@
     "declarationMap": false
   },
   "exclude": ["node_modules"],
-  "include": ["."]
+  "include": [".", "../../packages/utils/src/xp.ts"]
 }

@@ -1,8 +1,24 @@
 {
   "name": "@questly/utils",
-  "version": "0.0.1",
-  "main": "index.ts",
-  "types": "index.ts",
-  "dependencies": {},
-  "devDependencies": {}
+  "version": "0.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "lint": "eslint src/",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "5.8.2",
+    "eslint": "^9.23.0",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "tsup": "^8.4.0"
+  }
 }

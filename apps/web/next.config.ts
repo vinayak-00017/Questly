@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
 
-const nextConfig = {};
+const nextConfig: NextConfig = {
+  images: {
+    domains: ["lh3.googleusercontent.com"],
+  },
+};
 export default nextConfig;

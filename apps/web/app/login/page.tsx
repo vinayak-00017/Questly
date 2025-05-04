@@ -51,6 +51,7 @@ export default function LoginPage() {
     try {
       await authClient.signIn.social({
         provider: "google",
+        callbackURL: `http://localhost:3000/`,
       });
     } catch (err) {
       setError("Failed to summon the Google portal.");
@@ -85,8 +86,8 @@ export default function LoginPage() {
         {/* Header with title and icon */}
         <AuthHeader
           icon={<Swords className="h-12 w-12 text-amber-400" />}
-          title="Begin Your Quest"
-          subtitle="Sign in to your adventure journal and continue your epic journey"
+          title="Rejoin Your Quest"
+          subtitle="Sign in and continue your epic journey"
           variant="amber"
         />
 

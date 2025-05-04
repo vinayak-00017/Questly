@@ -7,10 +7,10 @@ import Link from "next/link";
 import { useSidebarState } from "@/contexts/sidebar-context";
 import { usePathname } from "next/navigation";
 
-interface Links {
+export interface Links {
   label: string;
   href: string;
-  icon: React.JSX.Element | React.ReactNode;
+  icon: React.ReactElement;
 }
 
 interface SidebarContextProps {
@@ -205,12 +205,13 @@ export const SidebarLink = ({
           isOpen ? "w-5 h-5" : "w-5 h-5"
         )}
       >
-        {React.cloneElement(link.icon as React.ReactElement, {
-          className: cn(
-            (link.icon as React.ReactElement).props.className,
-            isActive && "text-neutral-800 dark:text-neutral-200"
-          ),
-        })}
+        {React.isValidElement(link.icon) &&
+          React.cloneElement(link.icon as React.ReactElement<any>, {
+            className: cn(
+              (link.icon.props as any).className || "",
+              isActive && "text-neutral-800 dark:text-neutral-200"
+            ),
+          })}
       </div>
 
       <motion.span
