@@ -7,15 +7,7 @@ import { BASE_URL } from "@/config";
 import { authClient, useSession } from "@/lib/auth-client";
 import { userApi } from "@/services/user-api";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Shield,
-  Swords,
-  Zap,
-  Award,
-  Star,
-  Crown,
-  ScrollText,
-} from "lucide-react";
+import { Shield, Swords, Zap, Award, Star, Crown } from "lucide-react";
 import Image from "next/image";
 
 export default function Home() {
@@ -78,11 +70,12 @@ export default function Home() {
       <div className="relative z-10 flex h-full w-full flex-col px-4 py-6 md:px-8 md:py-8 max-w-6xl mx-auto">
         {/* Top header section with user profile and sign in button */}
 
-        {/* Character stats section */}
+        {/* Character stats section - Compact single-line version */}
         <div className="w-full p-4 mb-8 bg-gradient-to-r from-zinc-900/80 via-zinc-900/60 to-zinc-900/80 rounded-xl border border-zinc-800/50 shadow-xl">
-          <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center">
-              <div className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-amber-500/50 shadow-lg flex items-center justify-center">
+          <div className="flex items-center justify-between">
+            {/* User profile */}
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-amber-500/50 shadow-lg flex items-center justify-center">
                 {session && session.user && session.user?.image ? (
                   <Image
                     src={session.user?.image || ""}
@@ -92,76 +85,66 @@ export default function Home() {
                     className="rounded-full h-full w-full object-cover"
                   />
                 ) : (
-                  <Crown className="h-6 w-6 md:h-8 md:w-8 text-amber-400" />
+                  <Crown className="h-6 w-6 text-amber-400" />
                 )}
               </div>
-
-              <div className="ml-4">
-                <h1 className="text-xl md:text-2xl font-bold text-white font-medieval tracking-wide">
+              <div>
+                <h1 className="text-lg font-bold text-white font-medieval tracking-wide">
                   {session
                     ? session.user?.name || "Adventurer"
                     : "Noble Adventurer"}
                 </h1>
-                <p className="text-amber-500/90 text-sm">
-                  Level {userStats.levelStats.level} {userStats.characterClass}
-                </p>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-amber-500/90">
+                    Level {userStats.levelStats.level}{" "}
+                    {userStats.characterClass}
+                  </span>
+                  <div className="h-3 w-3 rounded-full bg-amber-500/30"></div>
+                  <div className="flex items-center gap-1">
+                    <Shield className="h-4 w-4 text-blue-500" />
+                    <span className="text-blue-400">
+                      {userStats.streak} day streak
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {!session && (
-              <Button
-                onClick={signIn}
-                size="sm"
-                className="bg-gradient-to-r from-amber-600 to-amber-700 text-white hover:from-amber-500 hover:to-amber-600 border-none shadow-lg shadow-amber-900/30 transition-all duration-300"
-              >
-                Begin Your Journey
-              </Button>
-            )}
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="flex flex-col items-center p-3 bg-black/30 rounded-lg border border-zinc-800/70">
-              <div className="flex">
-                <Zap className="h-6 w-6 text-yellow-500 mb-1" />
-                <span>+{userStats.todaysXp}</span>
+            {/* XP progress bar and sign in button */}
+            <div className="flex items-center gap-3">
+              {/* Today's XP above progress bar */}
+              <div className="flex flex-col items-end">
+                <div className="flex items-center gap-1 mb-1">
+                  <Zap className="h-4 w-4 text-yellow-500" />
+                  <span className="text-yellow-200 text-sm font-medium">
+                    +{userStats.todaysXp} XP today
+                  </span>
+                </div>
+                <div className="hidden sm:flex items-center gap-2 w-48">
+                  <div className="w-full bg-zinc-800/50 h-2 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-yellow-500 to-amber-500"
+                      style={{
+                        width: `${userStats.levelStats.progressPercent}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <span className="text-xs whitespace-nowrap text-amber-500/90">
+                    {userStats.levelStats.currentLevelXp}/
+                    {userStats.levelStats.xpForThisLevel}
+                  </span>
+                </div>
               </div>
 
-              <span className="text-sm text-zinc-400">Experience</span>
-              <div className="mt-1 w-full bg-zinc-800/50 h-2 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-yellow-500 to-amber-500"
-                  style={{
-                    width: `${userStats.levelStats.progressPercent}%`,
-                  }}
-                ></div>
-              </div>
-              <span className="text-xs text-amber-500/90 mt-1">
-                {userStats.levelStats.currentLevelXp}/
-                {userStats.levelStats.xpForThisLevel} XP
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center p-3 bg-black/30 rounded-lg border border-zinc-800/70">
-              <Shield className="h-6 w-6 text-blue-500 mb-1" />
-              <span className="text-zinc-400 text-sm">Daily Streak</span>
-              <span className="text-blue-400 text-xl font-bold">
-                {userStats.streak} days
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center p-3 bg-black/30 rounded-lg border border-zinc-800/70">
-              <Swords className="h-6 w-6 text-purple-500 mb-1" />
-              <span className="text-zinc-400 text-sm">Class Ability</span>
-              <span className="text-purple-400 text-lg font-bold">
-                Time Warp
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center p-3 bg-black/30 rounded-lg border border-zinc-800/70">
-              <Award className="h-6 w-6 text-emerald-500 mb-1" />
-              <span className="text-zinc-400 text-sm">Achievements</span>
-              <span className="text-emerald-400 text-xl font-bold">
-                {userStats.achievements}
-              </span>
+              {!session && (
+                <Button
+                  onClick={signIn}
+                  size="sm"
+                  className="bg-gradient-to-r from-amber-600 to-amber-700 text-white hover:from-amber-500 hover:to-amber-600 border-none shadow-lg shadow-amber-900/30 transition-all duration-300"
+                >
+                  Begin Your Journey
+                </Button>
+              )}
             </div>
           </div>
         </div>

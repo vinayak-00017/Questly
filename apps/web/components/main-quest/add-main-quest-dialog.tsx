@@ -107,7 +107,7 @@ export function AddQuestDialog({
           type: QuestType.Daily,
           basePoints: dailyQuestPriority,
           recurrenceRule: "daily",
-          dueDate: dueDate ? dueDate.toISOString() : null,
+          dueDate: dueDate ? dueDate.toISOString() : "",
         },
       ]);
       setDailyQuestTitle("");

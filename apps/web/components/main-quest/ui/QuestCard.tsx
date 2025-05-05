@@ -114,7 +114,7 @@ export function QuestCard({
                       <span>{dailyQuestsCount} daily quests linked</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-purple-400" />
+                      <CategoryIcon className="w-4 h-4 text-purple-400" />
                       <span>{category}</span>
                     </div>
                   </div>

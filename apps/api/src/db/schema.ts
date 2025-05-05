@@ -18,6 +18,7 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at").notNull(),
   isAnonymous: boolean("is_anonymous"),
   xp: integer("xp").default(0).notNull(),
+  timezone: text("timezone").default("UTC").notNull(),
 });
 
 export const xpTransaction = pgTable("xp_transaction", {

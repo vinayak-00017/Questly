@@ -198,6 +198,7 @@ const QuestCardActionButtons = ({
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["userStats"] });
     },
     onSuccess: (_, variables) => {
       if (variables.completed) {

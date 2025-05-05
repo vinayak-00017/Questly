@@ -12,15 +12,15 @@ import {
 // Determine icon based on quest category
 export const getCategoryIcon = (category: string): LucideIcon => {
   switch (category) {
-    case "Combat":
+    case "combat":
       return Swords;
-    case "Knowledge":
+    case "knowledge":
       return Scroll;
-    case "Creation":
+    case "creation":
       return Sparkles;
-    case "Exploration":
+    case "exploration":
       return Target;
-    case "Social":
+    case "social":
       return CalendarDays;
     default:
       return Shield;

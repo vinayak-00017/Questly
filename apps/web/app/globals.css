@@ -184,4 +184,36 @@
   .animate-pulse-subtle {
     animation: pulse-subtle 3s ease-in-out infinite;
   }
+
+  /* Animation for shimmer effect on progress bars */
+  .shimmer {
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 20%,
+      rgba(255, 255, 255, 0.3) 40%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    background-size: 200% 100%;
+    animation: shimmerAnimation 2s infinite linear;
+  }
+
+  @keyframes shimmerAnimation {
+    0% {
+      background-position: 100% 0;
+    }
+    100% {
+      background-position: -100% 0;
+    }
+  }
+
+  /* Hover animations for UI elements */
+  .hover-glow {
+    transition: all 0.3s ease;
+  }
+
+  .hover-glow:hover {
+    box-shadow: 0 0 8px rgba(255, 207, 0, 0.4);
+    transform: translateY(-1px);
+  }
 }

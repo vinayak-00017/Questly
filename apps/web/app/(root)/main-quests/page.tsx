@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Scroll, TrendingUp, Trophy, Swords } from "lucide-react";
+import { Scroll, TrendingUp, Trophy, Target } from "lucide-react";
 import { MainQuest } from "@questly/types";
 import { mainQuestApi } from "@/services/main-quest-api";
 import { AddQuestDialog } from "@/components/main-quest/add-main-quest-dialog";
@@ -40,13 +40,17 @@ export default function MainQuestsPage() {
     totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0;
 
   const handleCreateQuest = () => {
-    console.log("Opening dialog"); // Add logging
+    console.log("Opening dialog");
     setIsAddDialogOpen(true);
   };
 
   const handleQuestClick = (id: string) => {
     router.push(`/main-quests/${id}`);
   };
+
+  setTimeout(() => {
+    console.log("Delayed for 10 second.");
+  }, 10000);
 
   // Loading state
   if (isLoading) {
@@ -95,7 +99,7 @@ export default function MainQuestsPage() {
       {/* Main quest list section */}
       <div className="relative z-10 space-y-6">
         <SectionHeader
-          icon={Swords}
+          icon={Target}
           title="Active Quests"
           subtitle="Your ongoing adventures await completion"
         />
@@ -106,7 +110,7 @@ export default function MainQuestsPage() {
           <div className="space-y-4">
             {mainQuests.map((quest: MainQuest, index: number) => {
               const details = getQuestDetails(quest);
-              const CategoryIcon = getCategoryIcon(details.category);
+              const CategoryIcon = getCategoryIcon(quest.category);
 
               return (
                 <QuestCard
@@ -115,7 +119,7 @@ export default function MainQuestsPage() {
                   categoryIcon={CategoryIcon}
                   progress={details.progress}
                   dailyQuestsCount={details.dailyQuestsCount}
-                  category={details.category}
+                  category={quest.category}
                   importanceStyle={getImportanceStyle(quest.importance)}
                   index={index}
                   onClick={handleQuestClick}

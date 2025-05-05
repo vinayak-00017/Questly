@@ -2,11 +2,15 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "env": ["PORT", "DATABASE_URL"],
+      "env": ["PORT", "DATABASE_URL", "JWT_SECRET", "AUTH_URL"],
       "outputs": ["dist/**"]
     },
     "dev": {
-      "env": ["DATABASE_URL", "PORT"]
+      "env": ["DATABASE_URL", "PORT", "JWT_SECRET", "AUTH_URL"],
+      "persistent": true
+    },
+    "start": {
+      "dependsOn": ["build"]
     }
   }
 }

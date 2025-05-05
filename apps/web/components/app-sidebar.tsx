@@ -54,14 +54,14 @@ export function AppSidebar() {
     },
     {
       label: "Daily Quests",
-      href: "/daily-quests",
+      href: "#",
       icon: (
         <IconFlame className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
       ),
     },
     {
       label: "Side Quests",
-      href: "/side-quests",
+      href: "#",
       icon: (
         <IconCompass className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
       ),
@@ -101,7 +101,7 @@ export function AppSidebar() {
           <button
             onClick={() => {
               // Handle account button click
-              router.push("/account"); // Or any other action you want
+              router.push("#"); // Or any other action you want
             }}
             className={cn(
               "flex w-full items-center text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none",

@@ -265,7 +265,11 @@ router.get("/todaysQuests", requireAuth, async (req, res) => {
         )
       );
 
-    const questsWithXp = calculateXpRewards(allQuestsData, levelInfo.level);
+    const questsWithXp = calculateXpRewards(
+      allQuestsData,
+      levelInfo.level,
+      false
+    );
 
     const dailyQuests = questsWithXp.filter((quest) => quest.type === "daily");
     const sideQuests = questsWithXp.filter((quest) => quest.type === "side");

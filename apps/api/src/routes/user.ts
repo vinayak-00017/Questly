@@ -38,12 +38,12 @@ router.get("/userStats", requireAuth, async (req, res) => {
     }
 
     const levelStats = calculateLevelFromXp(currUser.xp);
-    const todaysXp = calculateXpRewards(quests, levelStats.level).reduce(
+    const todaysXp = calculateXpRewards(quests, levelStats.level, true).reduce(
       (sum, quest) => sum + quest.xpReward,
       0
     );
 
-    const userStats = { levelStats, todaysXp };
+    const userStats = { levelStats, todaysXp, timezone: currUser.timezone };
 
     res.status(200).json({
       message: "User Stats retrived successfully",
@@ -78,6 +78,38 @@ router.post("/calculateDailyXp", requireAuth, async (req, res) => {
   } catch (err) {
     console.error("Error calculating XP:", err);
     res.status(500).json({ message: "Failed to calculate XP" });
+  }
+});
+
+router.patch("/updateTimezone", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { timezone } = req.body;
+
+    if (!timezone) {
+      return res.status(400).json({
+        message: "Timezone is required",
+        success: false,
+      });
+    }
+
+    await db
+      .update(user)
+      .set({
+        timezone,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId));
+
+    res.status(200).json({
+      message: "Timezone updated successfully",
+      success: true,
+    });
+  } catch (err) {
+    console.error("Error updating timezone:", err);
+    res
+      .status(500)
+      .json({ message: "Failed to update timezone", success: false });
   }
 });
 

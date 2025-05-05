@@ -14,6 +14,7 @@ import {
   FormInput,
   SocialLoginButtons,
 } from "@/components/auth";
+import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -23,6 +24,12 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
+
+  // Handle timezone selection completion
+  const handleTimezoneComplete = () => {
+    router.push("/");
+  };
 
   // Sign up with email/password
   const handleSignUp = async (e: React.FormEvent) => {
@@ -36,7 +43,7 @@ export default function RegisterPage() {
         password,
         name,
       });
-      router.push("/");
+      setShowTimezoneDialog(true);
     } catch (err) {
       setError(
         "Failed to create your adventure log. Try a different scroll name or key."
@@ -53,13 +60,14 @@ export default function RegisterPage() {
     setError("");
 
     try {
+      // We need to keep callbackURL for social auth, but we'll check for timezone in the callback page
       await authClient.signIn.social({
         provider: "google",
+        callbackURL: `http://localhost:3000/auth/callback?showTimezone=true`,
       });
     } catch (err) {
       setError("Failed to summon the Google portal.");
       console.error(err);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -71,7 +79,7 @@ export default function RegisterPage() {
 
     try {
       await authClient.signIn.anonymous();
-      router.push("/");
+      setShowTimezoneDialog(true);
     } catch (err) {
       setError("Failed to enter as a traveler.");
       console.error(err);
@@ -81,104 +89,111 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      {/* Background and particles */}
-      <AuthBackground variant="purple" />
+    <>
+      <div className="relative min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        {/* Background and particles */}
+        <AuthBackground variant="purple" />
 
-      <div className="z-10 w-full max-w-md">
-        {/* Header with title and icon */}
-        <AuthHeader
-          icon={<Sparkles className="h-12 w-12 text-purple-400" />}
-          title="Begin Your Adventure"
-          subtitle="Create your adventurer's profile and embark on an epic journey"
-          variant="purple"
-        />
-
-        {/* Register form card */}
-        <AuthFormCard error={error} variant="purple">
-          <form onSubmit={handleSignUp} className="space-y-6">
-            <FormInput
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Noble Adventurer"
-              required
-              icon={<User className="h-4 w-4 text-zinc-500" />}
-              label="Adventurer Name"
-            />
-
-            <FormInput
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your-email@realm.com"
-              required
-              icon={<Mail className="h-4 w-4 text-zinc-500" />}
-              label="Your Scroll (Email)"
-            />
-
-            <div className="space-y-2">
-              <FormInput
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                icon={<Key className="h-4 w-4 text-zinc-500" />}
-                label="Create a Key (Password)"
-                showPassword={showPassword}
-                setShowPassword={setShowPassword}
-              />
-              <p className="text-xs text-zinc-500">
-                At least 8 characters with epic strength
-              </p>
-            </div>
-
-            <div>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white border-none shadow-lg shadow-purple-900/20 transition-all duration-300 group"
-              >
-                {isLoading ? (
-                  "Forging your destiny..."
-                ) : (
-                  <>
-                    <span>Begin Your Quest</span>
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-
-          {/* Social login options */}
-          <SocialLoginButtons
-            onGoogleLogin={handleGoogleSignUp}
-            onGuestLogin={handleGuestSignIn}
-            isLoading={isLoading}
+        <div className="z-10 w-full max-w-md">
+          {/* Header with title and icon */}
+          <AuthHeader
+            icon={<Sparkles className="h-12 w-12 text-purple-400" />}
+            title="Begin Your Adventure"
+            subtitle="Create your adventurer's profile and embark on an epic journey"
             variant="purple"
           />
-        </AuthFormCard>
 
-        {/* Login link */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7, duration: 0.5 }}
-          className="mt-6 text-center"
-        >
-          <p className="text-zinc-400 text-sm">
-            Already a legendary hero?{" "}
-            <Link
-              href="/login"
-              className="text-purple-500 hover:text-purple-400 transition-colors font-medium"
-            >
-              Return to your quest
-            </Link>
-          </p>
-        </motion.div>
+          {/* Register form card */}
+          <AuthFormCard error={error} variant="purple">
+            <form onSubmit={handleSignUp} className="space-y-6">
+              <FormInput
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Noble Adventurer"
+                required
+                icon={<User className="h-4 w-4 text-zinc-500" />}
+                label="Adventurer Name"
+              />
+
+              <FormInput
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your-email@realm.com"
+                required
+                icon={<Mail className="h-4 w-4 text-zinc-500" />}
+                label="Your Scroll (Email)"
+              />
+
+              <div className="space-y-2">
+                <FormInput
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  icon={<Key className="h-4 w-4 text-zinc-500" />}
+                  label="Create a Key (Password)"
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                />
+                <p className="text-xs text-zinc-500">
+                  At least 8 characters with epic strength
+                </p>
+              </div>
+
+              <div>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white border-none shadow-lg shadow-purple-900/20 transition-all duration-300 group"
+                >
+                  {isLoading ? (
+                    "Forging your destiny..."
+                  ) : (
+                    <>
+                      <span>Begin Your Quest</span>
+                      <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+
+            {/* Social login options */}
+            <SocialLoginButtons
+              onGoogleLogin={handleGoogleSignUp}
+              onGuestLogin={handleGuestSignIn}
+              isLoading={isLoading}
+              variant="purple"
+            />
+          </AuthFormCard>
+
+          {/* Login link */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+            className="mt-6 text-center"
+          >
+            <p className="text-zinc-400 text-sm">
+              Already a legendary hero?{" "}
+              <Link
+                href="/login"
+                className="text-purple-500 hover:text-purple-400 transition-colors font-medium"
+              >
+                Return to your quest
+              </Link>
+            </p>
+          </motion.div>
+        </div>
       </div>
-    </div>
+      <TimezoneSelectDialog
+        open={showTimezoneDialog}
+        onOpenChange={setShowTimezoneDialog}
+        onComplete={handleTimezoneComplete}
+      />
+    </>
   );
 }

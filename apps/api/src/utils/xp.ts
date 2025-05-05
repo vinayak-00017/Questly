@@ -43,7 +43,7 @@ export async function processUserDailyXp(userId: string, date: string) {
     }
 
     // Calculate XP rewards based on quest points and user level
-    const questsWithXp = calculateXpRewards(totalQuests, currentLevel);
+    const questsWithXp = calculateXpRewards(totalQuests, currentLevel, true);
     const totalXpEarned = questsWithXp.reduce(
       (sum, quest) => sum + quest.xpReward,
       0

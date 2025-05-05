@@ -94,7 +94,11 @@ export function calculateLevelFromXp(totalXp: number): {
  */
 export function calculateXpRewards<
   T extends { basePoints: number; completed?: boolean },
->(quests: T[], playerLevel: number = 1): (T & { xpReward: number })[] {
+>(
+  quests: T[],
+  playerLevel: number = 1,
+  onlyCompleted: boolean
+): (T & { xpReward: number })[] {
   const levelXpCap = getXpCapForLevel(playerLevel);
 
   const totalPoints = quests.reduce((sum, quest) => sum + quest.basePoints, 0);
@@ -108,12 +112,19 @@ export function calculateXpRewards<
           ? levelXpCap
           : 0;
 
-    const xpReward = quest.completed ? potentialXpReward : 0;
-
-    return {
-      ...quest,
-      xpReward,
-    };
+    if (onlyCompleted) {
+      const xpReward = quest.completed ? potentialXpReward : 0;
+      return {
+        ...quest,
+        xpReward,
+      };
+    } else {
+      const xpReward = potentialXpReward;
+      return {
+        ...quest,
+        xpReward,
+      };
+    }
   });
 }
 

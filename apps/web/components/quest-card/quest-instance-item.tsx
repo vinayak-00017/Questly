@@ -61,7 +61,7 @@ const QuestInstanceItem = ({
 
       <Card
         className={cn(
-          "bg-gradient-to-br border transition-all duration-500 cursor-pointer relative overflow-hidden",
+          "bg-gradient-to-br border transition-all duration-500 cursor-pointer relative overflow-hidden hover-glow",
           displayCompleted
             ? "from-black/30 to-black/50 border-green-500/40"
             : "from-black/40 to-black/60 border-zinc-700/60",
@@ -71,8 +71,8 @@ const QuestInstanceItem = ({
       >
         {/* Status indicator - enhanced */}
         {displayCompleted && (
-          <div className="absolute top-0 right-0 w-full h-1 bg-green-500/50 completion-indicator">
-            <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-green-400/80 to-emerald-500/80 progress-animation"></div>
+          <div className="absolute top-0 right-0 w-full h-1.5 bg-green-500/50 completion-indicator">
+            <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-green-400/80 to-emerald-500/80 shimmer"></div>
           </div>
         )}
 
@@ -84,6 +84,7 @@ const QuestInstanceItem = ({
             text-xs font-medium border shadow-glow z-10
             bg-gradient-to-r from-green-600/50 to-emerald-500/50
             text-white border-green-400/50 flex items-center gap-1
+            animate-pulse-subtle
           `}
           >
             <CheckCircle className="h-3 w-3" />
@@ -231,9 +232,8 @@ const QuestInstanceItem = ({
                 } text-xs font-medium flex items-center gap-1`}
               >
                 <Trophy className="h-3 w-3" />
-                <span>
-                  +{quest.xpReward || (quest.type === "daily" ? 50 : 75)} XP
-                </span>
+
+                <span>+{quest.xpReward} XP</span>
               </div>
 
               {quest.date && (

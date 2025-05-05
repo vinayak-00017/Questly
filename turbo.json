@@ -4,30 +4,36 @@
   "globalEnv": ["*"],
   "tasks": {
     "build": {
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["^build"],
       "outputs": [
-        "build/**",
-        ".vercel/**",
         "dist/**",
         ".next/**",
-        "!.next/cache/**"
-      ]
+        "!.next/cache/**",
+        "build/**",
+        ".vercel/**"
+      ],
+      "inputs": ["src/**", "package.json", "tsconfig.json", ".env*"]
     },
     "test": {
+      "dependsOn": ["^build"],
       "outputs": ["coverage/**"],
-      "dependsOn": []
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", "test/**"]
     },
     "lint": {
-      "dependsOn": ["^build", "^lint"]
+      "dependsOn": ["^build"],
+      "inputs": ["src/**/*.ts", "src/**/*.tsx"]
     },
     "check-types": {
-      "dependsOn": ["^build", "^check-types"]
+      "dependsOn": ["^build"],
+      "inputs": ["src/**/*.ts", "src/**/*.tsx"]
     },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
+    },
+    "clean": {
+      "cache": false
     }
   }
 }
