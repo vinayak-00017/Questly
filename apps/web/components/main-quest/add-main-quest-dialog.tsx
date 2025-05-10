@@ -9,41 +9,22 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  X,
-  Plus,
-  Scroll,
-  Trophy,
-  Shield,
-  Sparkles,
-  CalendarDays,
-  Target,
-} from "lucide-react";
-import { DatePicker } from "../date-freq/date-picker";
 import { useMutation } from "@tanstack/react-query";
 import {
   MainQuestImportance,
-  TaskPriority,
   CreateQuestTemplate,
   QuestType,
   QuestPriority,
   MainQuestDifficulty,
-  MainQuestDuration,
   MainQuestCategory,
 } from "@questly/types";
 import { createMainQuestSchema } from "@questly/types";
 import { toast } from "sonner";
 import { mainQuestApi } from "@/services/main-quest-api";
-import MainSelect from "./add-main-quest-dialog-select";
+import { Scroll, Sparkles } from "lucide-react";
+import { QuestFormFields } from "./quest-form-fields";
+import { DailyQuestForm } from "./daily-quest-form";
+import { DailyQuestItem } from "./daily-quest-item";
 
 interface AddQuestDialogProps {
   open: boolean;
@@ -56,22 +37,19 @@ export function AddQuestDialog({
   onOpenChange,
   onSuccess,
 }: AddQuestDialogProps) {
-  const { Important, Standard, Critical, Minor, Optional } = QuestPriority;
-  const { Legendary, Heroic, Rare, Common } = MainQuestImportance;
-  const { Novice, Adventurer, Veteran, Master } = MainQuestDifficulty;
-  const { Sprint, Journey, Odyssey, Epic } = MainQuestDuration;
-  const { Challenge, Combat, Knowledge, Creation, Exploration, Social } =
-    MainQuestCategory;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [importance, setImportance] = useState<MainQuestImportance>(Common);
-  const [difficulty, setDifficulty] = useState<MainQuestDifficulty>(Adventurer);
-  const [category, setCategory] = useState<MainQuestCategory>(Challenge);
+  const [importance, setImportance] = useState<MainQuestImportance>(
+    MainQuestImportance.Common
+  );
+  const [difficulty, setDifficulty] = useState<MainQuestDifficulty>(
+    MainQuestDifficulty.Adventurer
+  );
+  const [category, setCategory] = useState<MainQuestCategory>(
+    MainQuestCategory.Challenge
+  );
   const [dueDate, setDueDate] = useState<Date>();
   const [dailyQuests, setDailyQuests] = useState<CreateQuestTemplate[]>([]);
-  const [dailyQuestPriority, setDailyQuestPriority] =
-    useState<QuestPriority>(Standard);
-  const [dailyQuestTitle, setDailyQuestTitle] = useState("");
   const [particles, setParticles] = useState<
     Array<{
       width: string;
@@ -98,21 +76,8 @@ export function AddQuestDialog({
     setParticles(newParticles);
   }, []);
 
-  const handleAddDailyTask = () => {
-    if (dailyQuestTitle.trim()) {
-      setDailyQuests([
-        ...dailyQuests,
-        {
-          title: dailyQuestTitle.trim(),
-          type: QuestType.Daily,
-          basePoints: dailyQuestPriority,
-          recurrenceRule: "daily",
-          dueDate: dueDate ? dueDate.toISOString() : "",
-        },
-      ]);
-      setDailyQuestTitle("");
-      setDailyQuestPriority(Standard);
-    }
+  const handleAddDailyQuest = (quest: CreateQuestTemplate) => {
+    setDailyQuests([...dailyQuests, quest]);
   };
 
   const handleRemoveTask = (index: number) => {
@@ -128,7 +93,7 @@ export function AddQuestDialog({
       // Reset form
       setTitle("");
       setDescription("");
-      setImportance(Common);
+      setImportance(MainQuestImportance.Common);
       setDueDate(undefined);
       setDailyQuests([]);
     },
@@ -145,39 +110,22 @@ export function AddQuestDialog({
         importance,
         category,
         difficulty,
-        dueDate: dueDate ? dueDate.toISOString() : undefined,
+        dueDate: dueDate instanceof Date ? dueDate.toISOString() : undefined,
         quests: dailyQuests,
       };
 
       try {
+        console.log(input);
         const validatedInput = createMainQuestSchema.parse(input);
         addMainQuestMutation.mutate(validatedInput);
       } catch (validationError) {
-        console.error("Validation error:", validationError); // Log the validation error
-        throw validationError; // Re-throw to be caught by outer catch
+        console.error("Validation error:", validationError);
+        throw validationError;
       }
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
-    }
-  };
-
-  // Function to get priority badge styling
-  const getPriorityBadgeStyle = (priority: number | QuestPriority) => {
-    switch (priority) {
-      case Optional:
-        return "bg-slate-600/50 text-slate-200";
-      case Minor:
-        return "bg-blue-600/50 text-blue-200";
-      case Standard:
-        return "bg-green-600/50 text-green-200";
-      case Important:
-        return "bg-amber-600/50 text-amber-200";
-      case Critical:
-        return "bg-red-600/50 text-red-200";
-      default:
-        return "bg-purple-600/50 text-purple-200";
     }
   };
 
@@ -224,186 +172,21 @@ export function AddQuestDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4 px-6 mt-2 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800 relative z-10">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
-              <Scroll className="h-3.5 w-3.5" />
-              Quest Title
-            </label>
-            <Input
-              placeholder="Enter quest title..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 focus:border-purple-500"
-            />
-          </div>
-
-          <div className="flex justify-between gap-4">
-            <div className="space-y-2 w-[48%]">
-              <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
-                <CalendarDays className="h-3.5 w-3.5" />
-                Due Date
-              </label>
-              <DatePicker
-                date={dueDate}
-                onSelect={setDueDate}
-                className="bg-black/50 border-zinc-700"
-              />
-            </div>
-            <div className="space-y-2 w-[48%]">
-              <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
-                <Trophy className="h-3.5 w-3.5" />
-                Importance
-              </label>
-              <Select
-                value={importance}
-                onValueChange={(value) =>
-                  setImportance(value as MainQuestImportance)
-                }
-              >
-                <SelectTrigger className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 focus:border-purple-500">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
-                  <SelectItem
-                    value={Common}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Common
-                  </SelectItem>
-                  <SelectItem
-                    value={Rare}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Rare
-                  </SelectItem>
-                  <SelectItem
-                    value={Heroic}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Heroic
-                  </SelectItem>
-                  <SelectItem
-                    value={Legendary}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Legendary
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex justify-between gap-4">
-            <div className="space-y-2 w-[48%]">
-              <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
-                <Shield className="h-3.5 w-3.5" />
-                Difficulty
-              </label>
-              <Select
-                value={difficulty}
-                onValueChange={(value) =>
-                  setDifficulty(value as MainQuestDifficulty)
-                }
-              >
-                <SelectTrigger className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 focus:border-purple-500">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
-                  <SelectItem
-                    value={Novice}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Novice
-                  </SelectItem>
-                  <SelectItem
-                    value={Adventurer}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Adventurer
-                  </SelectItem>
-                  <SelectItem
-                    value={Veteran}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Veteran
-                  </SelectItem>
-                  <SelectItem
-                    value={Master}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Master
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2 w-[48%]">
-              <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
-                <Target className="h-3.5 w-3.5" />
-                Category
-              </label>
-              <Select
-                value={category}
-                onValueChange={(value) =>
-                  setCategory(value as MainQuestCategory)
-                }
-              >
-                <SelectTrigger className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 focus:border-purple-500">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
-                  <SelectItem
-                    value={Challenge}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Challenge
-                  </SelectItem>
-                  <SelectItem
-                    value={Combat}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Combat
-                  </SelectItem>
-                  <SelectItem
-                    value={Creation}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Creation
-                  </SelectItem>
-                  <SelectItem
-                    value={Exploration}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Exploration
-                  </SelectItem>
-                  <SelectItem
-                    value={Knowledge}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Knowledge
-                  </SelectItem>
-                  <SelectItem
-                    value={Social}
-                    className="focus:bg-purple-900/20 focus:text-purple-400"
-                  >
-                    Social
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
-              <Scroll className="h-3.5 w-3.5" />
-              Quest Description
-            </label>
-            <Textarea
-              placeholder="Enter quest description..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="bg-black/50 border-zinc-700 focus:border-purple-500 text-white min-h-[100px] hover:bg-black/70"
-            />
-          </div>
+          {/* Main Quest Form Fields */}
+          <QuestFormFields
+            title={title}
+            setTitle={setTitle}
+            description={description}
+            setDescription={setDescription}
+            importance={importance}
+            setImportance={setImportance}
+            difficulty={difficulty}
+            setDifficulty={setDifficulty}
+            category={category}
+            setCategory={setCategory}
+            dueDate={dueDate}
+            setDueDate={setDueDate}
+          />
 
           <div className="space-y-4 pt-4 border-t border-zinc-800/50">
             <div className="bg-gradient-to-r from-purple-500/5 to-amber-500/5 p-3 rounded-lg border border-purple-900/20 flex gap-3 items-center mb-3">
@@ -415,110 +198,20 @@ export function AddQuestDialog({
               </div>
             </div>
 
-            <div className="flex gap-2 items-end">
-              <div className="flex flex-col gap-1 flex-1">
-                <label className="text-sm font-medium text-purple-400 flex items-center gap-2">
-                  <Plus className="h-3.5 w-3.5" />
-                  Daily Quest Title
-                </label>
-                <Input
-                  placeholder="Enter daily quest title..."
-                  value={dailyQuestTitle}
-                  onChange={(e) => setDailyQuestTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleAddDailyTask();
-                    }
-                  }}
-                  className="bg-black/50 border-zinc-700 focus:border-purple-500 text-white hover:bg-black/70"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="task-priority"
-                  className="text-sm font-medium text-purple-400 flex items-center gap-2"
-                >
-                  <Target className="h-3.5 w-3.5" />
-                  Priority
-                </label>
-                <Select
-                  value={dailyQuestPriority}
-                  onValueChange={(value) =>
-                    setDailyQuestPriority(value as QuestPriority)
-                  }
-                >
-                  <SelectTrigger className="bg-black/50 border-zinc-700 text-white hover:bg-black/70 focus:border-purple-500">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-800 border-zinc-700">
-                    <SelectItem
-                      value={Optional}
-                      className="focus:bg-purple-900/20 focus:text-purple-400"
-                    >
-                      Optional
-                    </SelectItem>
-                    <SelectItem
-                      value={Minor}
-                      className="focus:bg-purple-900/20 focus:text-purple-400"
-                    >
-                      Minor
-                    </SelectItem>
-                    <SelectItem
-                      value={Standard}
-                      className="focus:bg-purple-900/20 focus:text-purple-400"
-                    >
-                      Standard
-                    </SelectItem>
-                    <SelectItem
-                      value={Important}
-                      className="focus:bg-purple-900/20 focus:text-purple-400"
-                    >
-                      Important
-                    </SelectItem>
-                    <SelectItem
-                      value={Critical}
-                      className="focus:bg-purple-900/20 focus:text-purple-400"
-                    >
-                      Critical
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                onClick={handleAddDailyTask}
-                className="bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 border-0 text-white self-end"
-                disabled={!dailyQuestTitle.trim()}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+            {/* Daily Quest Form */}
+            <DailyQuestForm
+              onAddQuest={handleAddDailyQuest}
+              dueDate={dueDate}
+            />
 
             <div className="space-y-2">
               {dailyQuests.map((task, index) => (
-                <div
+                <DailyQuestItem
                   key={index}
-                  className="flex items-center justify-between p-3 rounded-md bg-black/30 border border-zinc-700/50 hover:border-purple-500/30 transition-colors group"
-                >
-                  <div className="flex gap-3 items-center w-full">
-                    <div className="h-6 w-6 rounded-full bg-black/40 flex items-center justify-center ring-1 ring-purple-500/30">
-                      <Scroll className="h-3 w-3 text-purple-500" />
-                    </div>
-                    <span className="text-sm text-zinc-200">{task.title}</span>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full ml-auto ${getPriorityBadgeStyle(task.basePoints)}`}
-                    >
-                      {task.basePoints}
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveTask(index)}
-                    className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 hover:text-red-400"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
+                  task={task}
+                  index={index}
+                  onRemove={handleRemoveTask}
+                />
               ))}
             </div>
           </div>

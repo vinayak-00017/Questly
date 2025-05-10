@@ -20,33 +20,39 @@ router.post("/", requireAuth, async (req, res) => {
       quests,
       category,
       difficulty,
-      duration,
     } = req.body;
+
+    const dueDateObj = new Date(dueDate);
+
     const newMainQuest = {
       title,
-      dueDate: new Date(dueDate),
+      dueDate: dueDateObj,
       description,
       importance,
       id: uuidv4(),
       userId,
       category,
       difficulty,
-      duration,
     };
 
-    const updatedQuests = quests.map((quest: QuestTemplate) => ({
-      ...quest,
-      parentQuestId: newMainQuest.id,
-      userId,
-      id: uuidv4(),
-      basePoints:
-        typeof quest.basePoints === "string"
-          ? (basePointsMap[quest.basePoints as keyof typeof basePointsMap] ?? 0)
-          : quest.basePoints,
-    }));
-
     await db.insert(mainQuest).values(newMainQuest);
-    await db.insert(questTemplate).values(updatedQuests);
+
+    if (quests && quests.length > 0) {
+      const updatedQuests = quests.map((quest: QuestTemplate) => ({
+        ...quest,
+        parentQuestId: newMainQuest.id,
+        userId,
+        id: uuidv4(),
+        basePoints:
+          typeof quest.basePoints === "string"
+            ? (basePointsMap[quest.basePoints as keyof typeof basePointsMap] ??
+              0)
+            : quest.basePoints,
+        ...(quest.dueDate && { dueDate: new Date(quest.dueDate) }),
+      }));
+      await db.insert(questTemplate).values(updatedQuests);
+    }
+
     res.status(201).json({
       message: "Main Quest added successfully",
       questId: newMainQuest.id,

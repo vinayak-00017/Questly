@@ -1,4 +1,5 @@
 import {
+  MainQuestDuration,
   MainQuestImportance,
   QuestPriority,
   TaskPriority,
@@ -18,4 +19,10 @@ export const basePointsTaskMap: Record<TaskPriority, number> = {
   urgent: 5,
 };
 
+export const getDurationTag = (days: number): MainQuestDuration => {
+  if (days <= 14) return MainQuestDuration.Sprint;
+  if (days <= 60) return MainQuestDuration.Journey;
+  if (days <= 150) return MainQuestDuration.Odyssey;
+  return MainQuestDuration.Epic;
+};
 // export const mainBasePointsMap: Record<MainQuestImportance, number> = {}

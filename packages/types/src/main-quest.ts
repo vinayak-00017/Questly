@@ -13,7 +13,6 @@ export const mainQuestSchema = baseSchema.extend({
   importance: z.nativeEnum(MainQuestImportance),
   difficulty: z.nativeEnum(MainQuestDifficulty),
   category: z.nativeEnum(MainQuestCategory),
-  duration: z.nativeEnum(MainQuestDuration),
   dueDate: z.string(),
   xpReward: z.number().int().positive().nullable(),
 });
@@ -27,7 +26,7 @@ export const createMainQuestSchema = mainQuestSchema
     xpReward: true,
   })
   .extend({
-    quests: z.array(createQuestTemplateSchema),
+    quests: z.array(createQuestTemplateSchema).optional(),
   });
 
 export const mainQuestIdSchema = z.object({

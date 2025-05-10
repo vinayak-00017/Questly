@@ -40,7 +40,7 @@ export const xpTransactionRelations = relations(xpTransaction, ({ one }) => ({
     references: [user.id],
   }),
 }));
-// Main quest remains separate as it's fundamentally different
+
 export const mainQuest = pgTable("main_quest", {
   id: text("id").primaryKey(),
   userId: text("user_id")
@@ -96,17 +96,17 @@ export const questInstance = pgTable("quest_instance", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 
-  date: date("date").notNull(), // The specific day this instance is for
+  date: date("date").notNull(),
   completed: boolean("completed").default(false).notNull(),
   title: text("title").notNull(),
   description: text("description"),
   basePoints: integer("base_points").notNull(),
-  xpReward: integer("xp_reward"), // Copied from template
+  xpReward: integer("xp_reward"),
   updatedAt: timestamp("completed_at"),
   timeTracked: integer("time_tracked"),
-  plannedStartTime: text("planned_start_time"), // "HH:mm" format
+  plannedStartTime: text("planned_start_time"),
   plannedEndTime: text("planned_end_time"),
-  streakCount: integer("streak_count").default(0), // Optional: track streaks
+  streakCount: integer("streak_count").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
