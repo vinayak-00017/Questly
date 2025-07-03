@@ -71,83 +71,6 @@ export default function Home() {
         {/* Top header section with user profile and sign in button */}
 
         {/* Character stats section - Compact single-line version */}
-        <div className="w-full p-4 mb-8 bg-gradient-to-r from-zinc-900/80 via-zinc-900/60 to-zinc-900/80 rounded-xl border border-zinc-800/50 shadow-xl">
-          <div className="flex items-center justify-between">
-            {/* User profile */}
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-amber-500/50 shadow-lg flex items-center justify-center">
-                {session && session.user && session.user?.image ? (
-                  <Image
-                    src={session.user?.image || ""}
-                    width={80}
-                    height={80}
-                    alt="Profile"
-                    className="rounded-full h-full w-full object-cover"
-                  />
-                ) : (
-                  <Crown className="h-6 w-6 text-amber-400" />
-                )}
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-white font-medieval tracking-wide">
-                  {session
-                    ? session.user?.name || "Adventurer"
-                    : "Noble Adventurer"}
-                </h1>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-amber-500/90">
-                    Level {userStats.levelStats.level}{" "}
-                    {userStats.characterClass}
-                  </span>
-                  <div className="h-3 w-3 rounded-full bg-amber-500/30"></div>
-                  <div className="flex items-center gap-1">
-                    <Shield className="h-4 w-4 text-blue-500" />
-                    <span className="text-blue-400">
-                      {userStats.streak} day streak
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* XP progress bar and sign in button */}
-            <div className="flex items-center gap-3">
-              {/* Today's XP above progress bar */}
-              <div className="flex flex-col items-end">
-                <div className="flex items-center gap-1 mb-1">
-                  <Zap className="h-4 w-4 text-yellow-500" />
-                  <span className="text-yellow-200 text-sm font-medium">
-                    +{userStats.todaysXp} XP today
-                  </span>
-                </div>
-                <div className="hidden sm:flex items-center gap-2 w-48">
-                  <div className="w-full bg-zinc-800/50 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-yellow-500 to-amber-500"
-                      style={{
-                        width: `${userStats.levelStats.progressPercent}%`,
-                      }}
-                    ></div>
-                  </div>
-                  <span className="text-xs whitespace-nowrap text-amber-500/90">
-                    {userStats.levelStats.currentLevelXp}/
-                    {userStats.levelStats.xpForThisLevel}
-                  </span>
-                </div>
-              </div>
-
-              {!session && (
-                <Button
-                  onClick={signIn}
-                  size="sm"
-                  className="bg-gradient-to-r from-amber-600 to-amber-700 text-white hover:from-amber-500 hover:to-amber-600 border-none shadow-lg shadow-amber-900/30 transition-all duration-300"
-                >
-                  Begin Your Journey
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* Quests section with decorative elements */}
         <div className="relative">
@@ -164,7 +87,6 @@ export default function Home() {
           </h2>
 
           <div className="flex flex-col w-full gap-8">
-            <MainQuestCard />
             <TodaysQuestsCard />
           </div>
         </div>

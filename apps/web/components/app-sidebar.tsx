@@ -68,7 +68,7 @@ export function AppSidebar() {
     },
     {
       label: "Profile",
-      href: "#",
+      href: "/profile",
       icon: (
         <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
       ),

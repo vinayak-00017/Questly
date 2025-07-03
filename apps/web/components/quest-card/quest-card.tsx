@@ -220,7 +220,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsDialogOpen(true)}
+                onClick={handleAddQuest}
                 className={`bg-gradient-to-r ${colorStyles.emptyBtnGradient} text-white`}
               >
                 <Plus className="h-4 w-4 mr-1" />

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { HoveredLink, Menu, MenuItem } from "./ui/navbar-menu";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "./ui/hover-card";
@@ -23,6 +24,7 @@ import { Button } from "./ui/button";
 export default function AppTopbar({ className }: { className?: string }) {
   const [active, setActive] = useState<string | null>(null);
   const { data: session, isPending } = useSession();
+  const router = useRouter();
 
   const { data } = useQuery({
     queryKey: ["userStats"],
@@ -43,8 +45,8 @@ export default function AppTopbar({ className }: { className?: string }) {
     characterClass: "Adventurer",
   };
 
-  const signIn = async () => {
-    await authClient.signIn.social({ provider: "google" });
+  const handleSignUp = () => {
+    router.push("/register");
   };
 
   return (
@@ -284,7 +286,7 @@ export default function AppTopbar({ className }: { className?: string }) {
             //   </HoverCardContent>
             // </HoverCard>
             <Button
-              onClick={signIn}
+              onClick={handleSignUp}
               size="sm"
               className="bg-gradient-to-r from-amber-600 to-amber-700 text-white hover:from-amber-500 hover:to-amber-600 border-none shadow-lg shadow-amber-900/30 transition-all duration-300"
             >

@@ -9,7 +9,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   MainQuestImportance,
   CreateQuestTemplate,
@@ -76,6 +76,8 @@ export function AddQuestDialog({
     setParticles(newParticles);
   }, []);
 
+  const queryClient = useQueryClient();
+
   const handleAddDailyQuest = (quest: CreateQuestTemplate) => {
     setDailyQuests([...dailyQuests, quest]);
   };
@@ -87,6 +89,13 @@ export function AddQuestDialog({
   const addMainQuestMutation = useMutation({
     mutationFn: mainQuestApi.addMainQuest,
     onSuccess: () => {
+      // Invalidate main quests cache
+      queryClient.invalidateQueries({ queryKey: ["mainQuests"] });
+      // If there are daily quests associated with this main quest, invalidate related caches
+      if (dailyQuests.length > 0) {
+        queryClient.invalidateQueries({ queryKey: ["dailyQuests"] });
+        queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
+      }
       toast.success("Main quest created successfully!");
       onSuccess?.();
       onOpenChange(false);

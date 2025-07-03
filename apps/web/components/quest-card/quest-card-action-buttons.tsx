@@ -16,21 +16,45 @@ import { QuestInstance } from "@questly/types";
 
 // Confetti component for celebration animation
 const Confetti = ({ visible }: { visible: boolean }) => {
+  const [confettiPieces, setConfettiPieces] = useState<
+    Array<{
+      left: string;
+      width: string;
+      height: string;
+      background: string;
+      animationDelay: string;
+      animationDuration: string;
+    }>
+  >([]);
+
+  useEffect(() => {
+    // Generate confetti pieces on the client side only
+    const pieces = Array.from({ length: 50 }).map(() => ({
+      left: `${Math.random() * 100}%`,
+      width: `${Math.random() * 8 + 5}px`,
+      height: `${Math.random() * 8 + 5}px`,
+      background: `hsl(${Math.random() * 360}, 100%, 50%)`,
+      animationDelay: `${Math.random() * 0.5}s`,
+      animationDuration: `${Math.random() * 1 + 2}s`,
+    }));
+    setConfettiPieces(pieces);
+  }, []);
+
   if (!visible) return null;
 
   return (
     <div className="confetti-container">
-      {Array.from({ length: 50 }).map((_, i) => (
+      {confettiPieces.map((piece, i) => (
         <div
           key={i}
           className="confetti-piece"
           style={{
-            left: `${Math.random() * 100}%`,
-            width: `${Math.random() * 8 + 5}px`,
-            height: `${Math.random() * 8 + 5}px`,
-            background: `hsl(${Math.random() * 360}, 100%, 50%)`,
-            animationDelay: `${Math.random() * 0.5}s`,
-            animationDuration: `${Math.random() * 1 + 2}s`,
+            left: piece.left,
+            width: piece.width,
+            height: piece.height,
+            background: piece.background,
+            animationDelay: piece.animationDelay,
+            animationDuration: piece.animationDuration,
           }}
         />
       ))}

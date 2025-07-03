@@ -134,7 +134,10 @@ export function BaseQuestDialog({
   const addQuestMutation = useMutation({
     mutationFn: questApi.addQuest,
     onSuccess: () => {
+      // Invalidate the specific quest type cache
       queryClient.invalidateQueries({ queryKey });
+      // Also invalidate the combined todaysQuests cache so Today's Quests card updates
+      queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
       toast.success(`${type === "daily" ? "Daily" : "Side"} quest added!`);
       onSuccess?.();
       onOpenChange(false);
