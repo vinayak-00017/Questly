@@ -10,6 +10,7 @@ import {
 import { questInstance, user } from "../db/schema";
 import { and, eq } from "drizzle-orm";
 import { processUserDailyXp } from "../utils/xp";
+import { performanceService } from "../../services/performance-service";
 
 const router = express.Router();
 
@@ -110,6 +111,120 @@ router.patch("/updateTimezone", requireAuth, async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to update timezone", success: false });
+  }
+});
+
+router.get("/weeklyPerformance", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const result = await performanceService.getWeeklyPerformance(userId);
+
+    // Transform response to match legacy format
+    res.status(200).json({
+      message: result.message,
+      weeklyData: result.performanceData,
+      summary: {
+        averagePercentage: result.summary.averagePercentage,
+        bestDay: {
+          day: result.summary.bestPeriod.period,
+          percentage: result.summary.bestPeriod.percentage,
+        },
+        totalPointsThisWeek: result.summary.totalPoints,
+        activeDays: result.summary.activePeriods,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching weekly performance:", err);
+    res.status(500).json({ message: "Failed to fetch weekly performance" });
+  }
+});
+
+router.get("/performance", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const periodQuery = (req.query.period as string) || "weekly";
+
+    // Validate and cast the period to the correct type
+    const validPeriods = [
+      "weekly",
+      "monthly",
+      "quarterly",
+      "yearly",
+      "overall",
+    ] as const;
+    type ValidPeriod = (typeof validPeriods)[number];
+
+    const period: ValidPeriod = validPeriods.includes(
+      periodQuery as ValidPeriod
+    )
+      ? (periodQuery as ValidPeriod)
+      : "weekly";
+
+    const result = await performanceService.getPerformance(userId, period);
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Error fetching performance:", err);
+    res.status(500).json({ message: "Failed to fetch performance data" });
+  }
+});
+
+router.get("/questDetails", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const date = req.query.date as string;
+
+    if (!date) {
+      return res.status(400).json({ message: "Date parameter is required" });
+    }
+
+    // Fetch quest instances for the specific date
+    const quests = await db
+      .select({
+        id: questInstance.id,
+        basePoints: questInstance.basePoints,
+        completed: questInstance.completed,
+        date: questInstance.date,
+        templateId: questInstance.templateId,
+        title: questInstance.title,
+        description: questInstance.description,
+      })
+      .from(questInstance)
+      .where(
+        and(eq(questInstance.userId, userId), eq(questInstance.date, date))
+      );
+
+    // Transform quest data
+    const questDetails = quests.map((quest) => ({
+      id: quest.id,
+      title: quest.title || `Quest ${quest.id}`,
+      completed: quest.completed,
+      points: quest.basePoints,
+      category: "General", // You could determine this based on templateId later
+      templateId: quest.templateId,
+      description: quest.description,
+    }));
+
+    const totalQuests = quests.length;
+    const completedQuests = quests.filter((q) => q.completed).length;
+    const totalPoints = quests.reduce((sum, q) => sum + q.basePoints, 0);
+    const completedPoints = quests
+      .filter((q) => q.completed)
+      .reduce((sum, q) => sum + q.basePoints, 0);
+
+    res.status(200).json({
+      message: "Quest details retrieved successfully",
+      date,
+      totalQuests,
+      completedQuests,
+      totalPoints,
+      completedPoints,
+      completionPercentage:
+        totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0,
+      quests: questDetails,
+    });
+  } catch (err) {
+    console.error("Error fetching quest details:", err);
+    res.status(500).json({ message: "Failed to fetch quest details" });
   }
 });
 

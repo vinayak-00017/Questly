@@ -19,6 +19,88 @@ import {
 
 const router = express.Router();
 
+// Add endpoint to fetch all quest templates
+router.get("/questTemplates", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+
+    const questTemplates = await db
+      .select({
+        id: questTemplate.id,
+        title: questTemplate.title,
+        description: questTemplate.description,
+        type: questTemplate.type,
+        parentQuestId: questTemplate.parentQuestId,
+        recurrenceRule: questTemplate.recurrenceRule,
+        dueDate: questTemplate.dueDate,
+        isActive: questTemplate.isActive,
+        basePoints: questTemplate.basePoints,
+        xpReward: questTemplate.xpReward,
+        createdAt: questTemplate.createdAt,
+        updatedAt: questTemplate.updatedAt,
+      })
+      .from(questTemplate)
+      .where(eq(questTemplate.userId, userId));
+
+    res.status(200).json({
+      message: "Quest templates retrieved successfully",
+      questTemplates,
+    });
+  } catch (err) {
+    console.error("Error getting quest templates:", err);
+    res.status(500).json({ message: "Failed to get quest templates" });
+  }
+});
+
+// Add endpoint to update quest template
+router.patch("/questTemplate/:id", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { id: templateId } = req.params;
+    const updateData = req.body;
+
+    // Remove fields that shouldn't be updated directly
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, userId: _, createdAt, ...allowedUpdates } = updateData;
+
+    const updatedFields = {
+      ...allowedUpdates,
+      updatedAt: new Date(),
+    };
+
+    await db
+      .update(questTemplate)
+      .set(updatedFields)
+      .where(
+        and(eq(questTemplate.id, templateId), eq(questTemplate.userId, userId))
+      );
+
+    res.status(200).json({ message: "Quest template updated successfully" });
+  } catch (err) {
+    console.error("Error updating quest template:", err);
+    res.status(500).json({ message: "Failed to update quest template" });
+  }
+});
+
+// Add endpoint to delete quest template
+router.delete("/questTemplate/:id", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { id: templateId } = req.params;
+
+    await db
+      .delete(questTemplate)
+      .where(
+        and(eq(questTemplate.id, templateId), eq(questTemplate.userId, userId))
+      );
+
+    res.status(200).json({ message: "Quest template deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting quest template:", err);
+    res.status(500).json({ message: "Failed to delete quest template" });
+  }
+});
+
 router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;

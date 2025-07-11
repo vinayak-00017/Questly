@@ -1,14 +1,13 @@
 "use client";
 
-import MainQuestCard from "@/components/main-quest/main-quest-card";
 import TodaysQuestsCard from "@/components/quest-card/todays-quests-card";
-import { Button } from "@/components/ui/button";
+import PerformanceChart from "@/components/performance-chart";
+
 import { BASE_URL } from "@/config";
 import { authClient, useSession } from "@/lib/auth-client";
 import { userApi } from "@/services/user-api";
 import { useQuery } from "@tanstack/react-query";
-import { Shield, Swords, Zap, Award, Star, Crown } from "lucide-react";
-import Image from "next/image";
+import { Star, Crown } from "lucide-react";
 
 export default function Home() {
   const { data: session, isPending } = useSession();
@@ -88,6 +87,7 @@ export default function Home() {
 
           <div className="flex flex-col w-full gap-8">
             <TodaysQuestsCard />
+            <PerformanceChart />
           </div>
         </div>
       </div>
