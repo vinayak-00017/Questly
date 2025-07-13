@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import QueryProvider from "@/components/query-provider";
 import PullToRefresh from "@/components/pull-to-refresh";
 import { SidebarProvider } from "@/contexts/sidebar-context";
+import { AnonymousLoginProvider } from "@/components/anonymous-login-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,10 +58,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
-            <SidebarProvider>
-              <PullToRefresh />
-              {children}
-            </SidebarProvider>
+            <AnonymousLoginProvider>
+              <SidebarProvider>
+                <PullToRefresh />
+                {children}
+              </SidebarProvider>
+            </AnonymousLoginProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>

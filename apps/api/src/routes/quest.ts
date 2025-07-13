@@ -13,8 +13,7 @@ import {
   calculateXpRewards,
   getTodayMidnight,
   isSameDay,
-  toDbDate,
-  toDbTimestamp,
+  toDbTimestamp, toLocalDbDate,
 } from "@questly/utils";
 
 const router = express.Router();
@@ -290,7 +289,7 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
           id: questInstanceId,
           templateId: newQuest.id,
           userId,
-          date: toDbDate(today),
+          date: toLocalDbDate(today),
           completed: false,
           title,
           description,
@@ -343,7 +342,7 @@ router.get("/todaysQuests", requireAuth, async (req, res) => {
       .where(
         and(
           eq(questInstance.userId, userId),
-          eq(questInstance.date, today.toISOString().split("T")[0])
+            eq(questInstance.date, toLocalDbDate(today))
         )
       );
 

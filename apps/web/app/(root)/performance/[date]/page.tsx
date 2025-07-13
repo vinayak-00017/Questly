@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { userApi } from "@/services/user-api";
 import {
@@ -24,11 +24,10 @@ import { Badge } from "@/components/ui/badge";
 export default function PerformanceDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const date = params.date as string;
-  const period =
-    new URLSearchParams(window.location.search).get("period") || "daily";
-  const label =
-    new URLSearchParams(window.location.search).get("label") || date;
+  const period = searchParams.get("period") || "daily";
+  const label = searchParams.get("label") || date;
 
   // For now, we'll fetch the period data and find the specific date
   // Later you might want to create a specific endpoint for detailed day/period data
@@ -92,6 +91,18 @@ export default function PerformanceDetailPage() {
       }
       return acc;
     }, {}) || {};
+
+  // Sort quests: completed first (by points descending), then incompleted (by points descending)
+  let sortedQuests: any[] = [];
+  if (questDetails?.quests) {
+    const completed = questDetails.quests
+      .filter((q: any) => q.completed)
+      .sort((a: any, b: any) => b.points - a.points);
+    const incompleted = questDetails.quests
+      .filter((q: any) => !q.completed)
+      .sort((a: any, b: any) => b.points - a.points);
+    sortedQuests = [...completed, ...incompleted];
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -250,7 +261,7 @@ export default function PerformanceDetailPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {questDetails?.quests?.map((quest: any) => (
+            {sortedQuests?.map((quest: any) => (
               <div
                 key={quest.id}
                 className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${

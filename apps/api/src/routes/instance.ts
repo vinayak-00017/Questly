@@ -42,6 +42,12 @@ router.post(
         return doesRRuleMatchDate(template.recurrenceRule, today);
       });
 
+      // Use local date string instead of UTC to avoid off-by-one errors
+      const pad = (n: number) => n.toString().padStart(2, "0");
+      const localDateString = `${today.getFullYear()}-${pad(
+        today.getMonth() + 1
+      )}-${pad(today.getDate())}`;
+
       // Check if instances already exist for today
       const existingInstances = await db
         .select()
@@ -49,7 +55,7 @@ router.post(
         .where(
           and(
             eq(questInstance.userId, userId),
-            eq(questInstance.date, today.toISOString().split("T")[0])
+            eq(questInstance.date, localDateString)
           )
         );
 
@@ -70,7 +76,7 @@ router.post(
         title: template.title,
         description: template.description,
         userId,
-        date: today.toISOString().split("T")[0],
+        date: localDateString,
         completed: false,
         basePoints: template.basePoints,
         xpReward: template.xpReward,

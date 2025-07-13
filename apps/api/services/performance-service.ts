@@ -157,6 +157,14 @@ export class PerformanceService {
   }
 
   /**
+   * Format local date string (YYYY-MM-DD) in user's timezone
+   */
+  private formatLocalDateString(date: Date): string {
+    // Returns YYYY-MM-DD in local time
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  }
+
+  /**
    * Calculate summary statistics
    */
   private calculateSummary(
@@ -211,7 +219,7 @@ export class PerformanceService {
 
     const performanceData = await Promise.all(
       dates.map(async (date) => {
-        const dateStr = date.toISOString().split("T")[0];
+        const dateStr = this.formatLocalDateString(date); // Use local date string
         const quests = await this.fetchQuestData(userId, dateStr);
         const label = this.formatDateLabel(date, period);
         return this.calculateDayMetrics(quests, label, dateStr);
@@ -309,7 +317,7 @@ export class PerformanceService {
       // Get daily metrics for all dates in this group
       const dailyMetrics = await Promise.all(
         group.map(async (date) => {
-          const dateStr = date.toISOString().split("T")[0];
+          const dateStr = this.formatLocalDateString(date); // Use local date string
           const quests = await this.fetchQuestData(userId, dateStr);
           const label = "";
           return this.calculateDayMetrics(quests, label, dateStr);
@@ -347,7 +355,7 @@ export class PerformanceService {
 
       aggregatedData.push({
         day: label,
-        date: startDate.toISOString().split("T")[0],
+        date: this.formatLocalDateString(startDate), // Use local date string
         percentage: averagePercentage,
         completedPoints: totalCompletedPoints,
         totalPossiblePoints: totalPossiblePoints,

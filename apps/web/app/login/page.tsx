@@ -15,6 +15,7 @@ import {
   SocialLoginButtons,
 } from "@/components/auth";
 import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
+import { useAnonymousUser } from "@/components/anonymous-login-provider";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
+  const { isAnonymous } = useAnonymousUser();
 
   // Sign in with email/password
   const handleSignIn = async (e: React.FormEvent) => {
@@ -72,6 +74,11 @@ export default function LoginPage() {
     setError("");
 
     try {
+      if (isAnonymous) {
+        // Already anonymous, just redirect
+        router.push("/");
+        return;
+      }
       await authClient.signIn.anonymous();
       setShowTimezoneDialog(true);
     } catch (err) {

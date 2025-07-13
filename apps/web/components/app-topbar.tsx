@@ -18,11 +18,15 @@ import {
   ChevronDown,
   Trophy,
   Crown,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "./ui/button";
+import { useAnonymousUser } from "./anonymous-login-provider";
+import { motion } from "framer-motion";
 
 export default function AppTopbar({ className }: { className?: string }) {
   const [active, setActive] = useState<string | null>(null);
+  const { isAnonymous } = useAnonymousUser();
   const { data: session, isPending } = useSession();
   const router = useRouter();
 
@@ -49,6 +53,10 @@ export default function AppTopbar({ className }: { className?: string }) {
     router.push("/register");
   };
 
+  const handleSignIn = () => {
+    router.push("/login");
+  };
+
   return (
     <div
       className={cn(
@@ -59,7 +67,7 @@ export default function AppTopbar({ className }: { className?: string }) {
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
         {/* Left Section: Logo and Navigation */}
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/profile')}>
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-amber-500/50 shadow-lg flex items-center justify-center">
               {session && session.user && session.user?.image ? (
                 <Image
@@ -187,6 +195,36 @@ export default function AppTopbar({ className }: { className?: string }) {
         {/* Right Section: User Info and Profile */}
         <div className="flex items-center gap-3">
           {/* User Profile Button and Hover Card */}
+          {isAnonymous && (
+            <div className="flex space-x-2">
+              <Button
+                onClick={handleSignIn}
+                variant="outline"
+                size="sm"
+                className="border-amber-500/30 text-amber-400"
+              >
+                <UserCheck className="h-4 w-4 mr-1" />
+                Sign In
+              </Button>
+              <motion.div
+                whileHover={{
+                  scale: 1.07,
+                  boxShadow: "0 4px 24px 0 rgba(168,85,247,0.15)",
+                }}
+                whileTap={{ scale: 0.96 }}
+                style={{ display: "inline-block" }}
+              >
+                <Button
+                  onClick={handleSignUp}
+                  size="sm"
+                  className="bg-gradient-to-r from-amber-500 to-purple-500 text-black"
+                >
+                  <Crown className="h-4 w-4 mr-1" />
+                  Create Account
+                </Button>
+              </motion.div>
+            </div>
+          )}
           {session ? (
             <></>
           ) : (

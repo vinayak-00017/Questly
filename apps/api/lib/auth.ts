@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "../src/db";
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 import { anonymous } from "better-auth/plugins";
 import { account, session, user, verification } from "../src/db/schema";

@@ -20,12 +20,17 @@ export function toDbTimestamp(
 }
 
 // Format for database date columns (YYYY-MM-DD)
-export function toDbDate(date: Date | string | null | undefined): string {
-  if (!date) return new Date().toISOString().split("T")[0]; // Default to today if null
-
-  const dateObj = date instanceof Date ? date : new Date(date);
-  return dateObj.toISOString().split("T")[0]; // Returns YYYY-MM-DD format
+export function toLocalDbDate(date: Date | string | null | undefined): string {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  let dateObj: Date;
+  if (!date) {
+    dateObj = new Date();
+  } else {
+    dateObj = date instanceof Date ? date : new Date(date);
+  }
+  return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`;
 }
+
 // Get today's date at midnight for comparison purposes
 export function getTodayMidnight(): Date {
   const today = new Date();
