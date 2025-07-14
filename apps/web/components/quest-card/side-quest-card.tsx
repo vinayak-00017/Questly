@@ -11,7 +11,7 @@ const SideQuestCard = () => {
   return (
     <QuestCard
       title="Side Quests"
-      description="Optional quests that enhance your journey and earn extra rewards"
+      description="Custom schedule quests to enhance your journey "
       Icon={Compass}
       EmptyIcon={Map}
       type="side"

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { QuestTemplate } from "@questly/types";
+import { QuestTemplate, QuestPriority } from "@questly/types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,9 +31,7 @@ import {
   Calendar,
   Target,
   Clock,
-  Sparkles,
-  Crown,
-  Zap,
+  Zap, CompassIcon, Flame, AlertTriangle, Star, Shield, Crown,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -55,6 +53,66 @@ const QuestTemplateCard: React.FC<QuestTemplateCardProps> = ({
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // Helper function to get quest priority from basePoints
+  const getQuestPriority = (basePoints: number | string): QuestPriority => {
+    if (typeof basePoints === 'string') {
+      return basePoints as QuestPriority;
+    }
+    // Map number values to priority levels based on points-map.ts
+    if (basePoints === 1) return QuestPriority.Optional;
+    if (basePoints === 2) return QuestPriority.Minor;
+    if (basePoints === 3) return QuestPriority.Standard;
+    if (basePoints === 5) return QuestPriority.Important;
+    if (basePoints >= 8) return QuestPriority.Critical;
+    return QuestPriority.Standard; // default
+  };
+
+  // Helper function to get importance badge styling
+  const getImportanceStyle = (priority: QuestPriority) => {
+    switch (priority) {
+      case QuestPriority.Critical:
+        return {
+          bg: "bg-gradient-to-r from-red-500/20 to-red-600/20 text-red-400 border-red-500/30",
+          icon: Crown,
+          label: "Critical"
+        };
+      case QuestPriority.Important:
+        return {
+          bg: "bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-orange-400 border-orange-500/30",
+          icon: Star,
+          label: "Important"
+        };
+      case QuestPriority.Standard:
+        return {
+          bg: "bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-400 border-blue-500/30",
+          icon: Shield,
+          label: "Standard"
+        };
+      case QuestPriority.Minor:
+        return {
+          bg: "bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border-green-500/30",
+          icon: Target,
+          label: "Minor"
+        };
+      case QuestPriority.Optional:
+        return {
+          bg: "bg-gradient-to-r from-gray-500/20 to-slate-500/20 text-gray-400 border-gray-500/30",
+          icon: AlertTriangle,
+          label: "Optional"
+        };
+      default:
+        return {
+          bg: "bg-gradient-to-r from-gray-500/20 to-slate-500/20 text-gray-400 border-gray-500/30",
+          icon: Target,
+          label: "Standard"
+        };
+    }
+  };
+
+  const priority = getQuestPriority(questTemplate.basePoints);
+  const importanceStyle = getImportanceStyle(priority);
+  const ImportanceIcon = importanceStyle.icon;
+
   const getTypeColor = (type: string) => {
     switch (type) {
       case "daily":
@@ -69,9 +127,9 @@ const QuestTemplateCard: React.FC<QuestTemplateCardProps> = ({
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "daily":
-        return <Sparkles className="h-3 w-3" />;
+        return <Flame className="h-3 w-3" />;
       case "side":
-        return <Crown className="h-3 w-3" />;
+        return <CompassIcon className="h-3 w-3" />;
       default:
         return <Target className="h-3 w-3" />;
     }
@@ -186,6 +244,18 @@ const QuestTemplateCard: React.FC<QuestTemplateCardProps> = ({
                         )}
                       />
                       {questTemplate.isActive ? "Active" : "Inactive"}
+                    </div>
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-xs font-medium",
+                      importanceStyle.bg
+                    )}
+                  >
+                    <div className="flex items-center gap-1">
+                      <ImportanceIcon className="h-3 w-3" />
+                      {importanceStyle.label}
                     </div>
                   </Badge>
                 </div>

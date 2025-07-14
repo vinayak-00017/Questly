@@ -12,7 +12,7 @@ import {
   IconScript,
   IconSwords,
   IconFlame,
-  IconCompass,
+  IconCompass, IconAdjustmentsAlt,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { useSidebarState } from "@/contexts/sidebar-context";
@@ -52,18 +52,25 @@ export function AppSidebar() {
         <IconSwords className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
       ),
     },
+    // {
+    //   label: "Daily Quests",
+    //   href: "#",
+    //   icon: (
+    //     <IconFlame className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+    //   ),
+    // },
+    // {
+    //   label: "Side Quests",
+    //   href: "#",
+    //   icon: (
+    //     <IconCompass className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+    //   ),
+    // },
     {
-      label: "Daily Quests",
-      href: "#",
+      label: "Quest Manager",
+      href: "/quest-manager",
       icon: (
-        <IconFlame className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
-      ),
-    },
-    {
-      label: "Side Quests",
-      href: "#",
-      icon: (
-        <IconCompass className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+        <IconAdjustmentsAlt className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
       ),
     },
     {

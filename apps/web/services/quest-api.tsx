@@ -64,4 +64,12 @@ export const questApi = {
     }
     return response.json();
   },
+
+  fetchQuestActivity: async (templateIds: string[], startDate: string, endDate: string) => {
+    const response = await fetch(`${BASE_URL}/quest/activity?templateIds=${templateIds.join(',')}&startDate=${startDate}&endDate=${endDate}`, {
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Failed to fetch quest activity");
+    return response.json();
+  },
 };

@@ -222,6 +222,9 @@ const QuestCardActionButtons = ({
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
+      if (Array.isArray(queryKey) && queryKey.length === 1 && queryKey[0] !== "todaysQuests") {
+        queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
+      }
       queryClient.invalidateQueries({ queryKey: ["userStats"] });
     },
     onSuccess: (_, variables) => {

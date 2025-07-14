@@ -42,7 +42,7 @@ const TodaysQuestsCard = () => {
   // Choose the appropriate dialog based on quest type
   const CurrentAddDialog =
     selectedQuestType === "daily" ? AddDailyQuestDialog : AddSideQuestDialog;
-  console.log(combinedQuests);
+
   return (
     <>
       <QuestCard

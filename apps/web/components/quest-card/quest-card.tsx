@@ -178,6 +178,8 @@ const QuestCard: React.FC<QuestCardProps> = ({
               </CardDescription>
             </div>
           </div>
+          {type === "today" &&
+
           <Button
             variant="outline"
             size="sm"
@@ -187,6 +189,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
             <Plus className="h-4 w-4" />
             <span>Add Quest</span>
           </Button>
+          }
         </div>
         <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           {sortedQuests.length > 0 ? (
@@ -217,6 +220,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
               <p className="text-zinc-400 text-sm mb-4">
                 {emptyStateDescription}
               </p>
+
               <Button
                 variant="outline"
                 size="sm"

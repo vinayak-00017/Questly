@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import db from "../db";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 import { questInstance, questTemplate, user } from "../db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { isValidRRule, doesRRuleMatchDate } from "../utils/rrule-utils";
 import { basePointsMap } from "../utils/points-map";
 import taskInstanceRouter from "./task-instance";
@@ -123,7 +123,7 @@ router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
       .where(
         and(
           eq(questInstance.userId, userId),
-          eq(questInstance.date, today.toISOString().split("T")[0]),
+            eq(questInstance.date, toLocalDbDate(today)),
           eq(questTemplate.type, "daily")
         )
       );
@@ -181,7 +181,7 @@ router.get("/sideQuestInstance", requireAuth, async (req, res) => {
       .where(
         and(
           eq(questInstance.userId, userId),
-          eq(questInstance.date, today.toISOString().split("T")[0]),
+            eq(questInstance.date, toLocalDbDate(today)),
           eq(questTemplate.type, "side")
         )
       );
@@ -379,6 +379,71 @@ router.patch("/completeQuest", requireAuth, async (req, res) => {
   } catch (err) {
     console.error("Error updating task:", err);
     res.status(500).json({ message: "Failed to update questInstance" });
+  }
+});
+
+// Add endpoint to fetch quest activity for quest tracker
+router.get("/activity", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { templateIds, startDate, endDate } = req.query;
+
+    if (!templateIds || typeof templateIds !== 'string') {
+      return res.status(400).json({ message: "Template IDs are required" });
+    }
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: "Start date and end date are required" });
+    }
+
+    // Parse the comma-separated templateIds
+    const templateIdArray = templateIds.split(',').filter(id => id.trim());
+
+    if (templateIdArray.length === 0) {
+      return res.status(400).json({ message: "At least one template ID is required" });
+    }
+
+    // Fetch quest instances for the given template IDs and date range
+    const questInstances = await db
+      .select({
+        instanceId: questInstance.id,
+        templateId: questInstance.templateId,
+        date: questInstance.date,
+        completed: questInstance.completed,
+        xpReward: questInstance.xpReward,
+      })
+      .from(questInstance)
+      .innerJoin(questTemplate, eq(questInstance.templateId, questTemplate.id))
+      .where(
+        and(
+          eq(questInstance.userId, userId),
+          inArray(questInstance.templateId, templateIdArray),
+          // Add date range filtering if needed
+        )
+      );
+
+    console.log(`Found ${questInstances.length} quest instances for user ${userId}`);
+
+    // Group the data by template ID and date
+    const activityData: { [templateId: string]: { [date: string]: any } } = {};
+
+    questInstances.forEach((instance) => {
+      if (!activityData[instance.templateId]) {
+        activityData[instance.templateId] = {};
+      }
+
+      activityData[instance.templateId][instance.date] = {
+        date: instance.date,
+        completed: instance.completed,
+        xpEarned: instance.xpReward || 0,
+        instanceId: instance.instanceId,
+      };
+    });
+
+    res.status(200).json(activityData);
+  } catch (err) {
+    console.error("Error fetching quest activity:", err);
+    res.status(500).json({ message: "Failed to fetch quest activity" });
   }
 });
 

@@ -3,15 +3,18 @@
 import TodaysQuestsCard from "@/components/quest-card/todays-quests-card";
 import PerformanceChart from "@/components/performance-chart";
 
+import QuestTracker from "@/components/quest-tracking/quest-tracker";
+
 import { BASE_URL } from "@/config";
 import { authClient, useSession } from "@/lib/auth-client";
 import { userApi } from "@/services/user-api";
 import { useQuery } from "@tanstack/react-query";
 import { Star, Crown } from "lucide-react";
-import { AnonymousUserBanner } from "@/components/anonymous-user-banner";
+
 import { useEffect, useState } from "react";
 import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
 import { useAnonymousUser } from "@/components/anonymous-login-provider";
+import {AnonymousUserBanner} from "@/components/anonymous-user-banner";
 
 export default function Home() {
   const { data: session, isPending } = useSession();
@@ -113,6 +116,7 @@ export default function Home() {
               </h2>
 
               <div className="flex flex-col w-full gap-8">
+                <QuestTracker />
                 <TodaysQuestsCard />
                 <PerformanceChart />
               </div>
