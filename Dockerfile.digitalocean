@@ -1,0 +1,61 @@
+# DigitalOcean Dockerfile for production deployment
+FROM node:18-alpine AS base
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+COPY packages/*/package.json ./packages/*/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile --prod=false
+
+# Copy source code
+COPY . .
+
+# Build applications
+RUN pnpm build
+
+# Production stage for API
+FROM node:18-alpine AS api-production
+WORKDIR /app
+
+# Copy built API and dependencies
+COPY --from=base /app/apps/api/dist ./dist
+COPY --from=base /app/apps/api/package.json ./
+COPY --from=base /app/node_modules ./node_modules
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+USER nodejs
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["node", "dist/index.js"]
+
+# Production stage for Web
+FROM node:18-alpine AS web-production
+WORKDIR /app
+
+# Copy built Next.js app
+COPY --from=base /app/apps/web/.next ./.next
+COPY --from=base /app/apps/web/package.json ./
+COPY --from=base /app/apps/web/public ./public
+COPY --from=base /app/node_modules ./node_modules
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+USER nodejs
+
+EXPOSE 3000
+
+CMD ["npm", "start"]

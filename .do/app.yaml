@@ -1,0 +1,65 @@
+name: questly-app
+services:
+  - name: api
+    source_dir: /
+    github:
+      repo: vinayak-00017/questly
+      branch: main
+    run_command: cd apps/api && node dist/index.js
+    build_command: |
+      pnpm install --frozen-lockfile
+      pnpm build --filter=api
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /api
+    health_check:
+      http_path: /health
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
+      - key: DATABASE_URL
+        value: ${questly-db.DATABASE_URL}
+
+  - name: web
+    source_dir: /
+    github:
+      repo: vinayak-00017/questly
+      branch: main
+    run_command: cd apps/web && npm start
+    build_command: |
+      pnpm install --frozen-lockfile
+      pnpm build --filter=web
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: ${api.PUBLIC_URL}
+
+databases:
+  - name: questly-db
+    engine: PG
+    version: "15"
+    size: db-s-1vcpu-1gb
+    num_nodes: 1
+
+static_sites:
+  - name: web-static
+    source_dir: /apps/web
+    github:
+      repo: vinayak-00017/questly
+      branch: main
+    build_command: |
+      pnpm install --frozen-lockfile
+      pnpm build --filter=web
+    output_dir: /apps/web/.next
+    routes:
+      - path: /

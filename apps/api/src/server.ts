@@ -36,6 +36,13 @@ export const createServer = async (): Promise<Express> => {
     .get("/status", (_, res) => {
       return res.json({ ok: true });
     })
+    .get("/health", (_, res) => {
+      return res.json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+      });
+    })
     .get("/api/me", async (req, res) => {
       const session = await auth.api.getSession({
         headers: fromNodeHeaders(req.headers),
