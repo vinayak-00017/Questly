@@ -19,7 +19,11 @@ export const createServer = async (): Promise<Express> => {
     .use(urlencoded({ extended: true }))
     .use(
       cors({
-        origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+        origin: [
+          "http://localhost:3000",
+          "http://127.0.0.1:3000",
+          process.env.FRONTEND_URL || "http://localhost:3000",
+        ].filter(Boolean),
         methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"],
         credentials: true,
       })

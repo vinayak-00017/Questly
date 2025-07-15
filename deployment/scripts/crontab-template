@@ -1,0 +1,20 @@
+# Crontab configuration for Questly production server
+# Add these entries to your crontab with: crontab -e
+
+# Database backup - every day at 2 AM
+0 2 * * * /var/www/questly/deployment/scripts/backup-database.sh >> /var/log/questly/backup.log 2>&1
+
+# Health monitoring - every 5 minutes
+*/5 * * * * /var/www/questly/deployment/scripts/monitor.sh
+
+# Log rotation - weekly on Sunday at 3 AM
+0 3 * * 0 /usr/sbin/logrotate /etc/logrotate.d/questly
+
+# SSL certificate renewal (if using Let's Encrypt) - twice daily
+0 */12 * * * /usr/bin/certbot renew --quiet
+
+# Clean up old Docker images - daily at 4 AM
+0 4 * * * /usr/bin/docker system prune -f >> /var/log/questly/docker-cleanup.log 2>&1
+
+# Update system packages - weekly on Sunday at 5 AM (optional)
+# 0 5 * * 0 /usr/bin/apt update && /usr/bin/apt upgrade -y >> /var/log/questly/system-update.log 2>&1

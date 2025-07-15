@@ -1,0 +1,32 @@
+# Logrotate configuration for Questly
+# Save this file as /etc/logrotate.d/questly
+
+/var/log/questly/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 644 root root
+    sharedscripts
+    postrotate
+        # Restart rsyslog if it's handling these logs
+        systemctl reload rsyslog >/dev/null 2>&1 || true
+    endscript
+}
+
+# Nginx logs for Questly
+/var/log/nginx/questly*.log {
+    daily
+    missingok
+    rotate 52
+    compress
+    delaycompress
+    notifempty
+    create 644 www-data www-data
+    sharedscripts
+    postrotate
+        systemctl reload nginx >/dev/null 2>&1 || true
+    endscript
+}

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { userApi } from "@/services/user-api";
 import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
@@ -74,5 +74,13 @@ export default function AuthCallbackPage() {
       onOpenChange={setShowTimezoneDialog}
       onComplete={handleTimezoneComplete}
     />
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthCallbackContent />
+    </Suspense>
   );
 }

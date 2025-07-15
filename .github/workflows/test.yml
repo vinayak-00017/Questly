@@ -1,0 +1,79 @@
+name: 🧪 Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_USER: testuser
+          POSTGRES_DB: questly_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔨 Build packages
+        run: pnpm build
+
+      - name: 🗄️ Setup test database
+        run: |
+          export DATABASE_URL="postgresql://testuser:testpassword@localhost:5432/questly_test"
+          cd apps/api
+          pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/questly_test
+
+      - name: 🧪 Run unit tests
+        run: pnpm test:unit
+
+      - name: 🧪 Run integration tests
+        run: pnpm test:integration
+        env:
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/questly_test
+          NODE_ENV: test
+
+      - name: 📊 Generate test coverage
+        run: pnpm test:coverage
+
+      - name: 📤 Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella

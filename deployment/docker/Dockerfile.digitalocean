@@ -1,4 +1,4 @@
-# DigitalOcean Dockerfile for production deployment
+# DigitalOcean Droplet Dockerfile
 FROM node:18-alpine AS base
 
 # Install pnpm
@@ -14,7 +14,7 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/*/package.json ./packages/*/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile --prod=false
+RUN pnpm install
 
 # Copy source code
 COPY . .
@@ -23,16 +23,20 @@ COPY . .
 RUN pnpm build
 
 # Production stage for API
-FROM node:18-alpine AS api-production
+FROM node:18-alpine AS api
 WORKDIR /app
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Copy built API and dependencies
-COPY --from=base /app/apps/api/dist ./dist
-COPY --from=base /app/apps/api/package.json ./
+COPY --from=base /app/apps/api/dist ./
+COPY --from=base /app/apps/api/package.json ./package.json
 COPY --from=base /app/node_modules ./node_modules
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
 USER nodejs
 
 EXPOSE 8080
@@ -40,22 +44,28 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "index.js"]
 
 # Production stage for Web
-FROM node:18-alpine AS web-production
+FROM node:18-alpine AS web
 WORKDIR /app
 
-# Copy built Next.js app
-COPY --from=base /app/apps/web/.next ./.next
-COPY --from=base /app/apps/web/package.json ./
+# Install wget for health checks
+RUN apk add --no-cache wget
+
+# Copy built Next.js app and dependencies
+COPY --from=base /app/apps/web/.next/standalone ./
+COPY --from=base /app/apps/web/.next/static ./.next/static
 COPY --from=base /app/apps/web/public ./public
-COPY --from=base /app/node_modules ./node_modules
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
 USER nodejs
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+
+CMD ["node", "server.js"]

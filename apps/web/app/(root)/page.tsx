@@ -5,27 +5,17 @@ import PerformanceChart from "@/components/performance-chart";
 
 import QuestTracker from "@/components/quest-tracking/quest-tracker";
 
-import { BASE_URL } from "@/config";
-import { authClient, useSession } from "@/lib/auth-client";
 import { userApi } from "@/services/user-api";
 import { useQuery } from "@tanstack/react-query";
-import { Star, Crown } from "lucide-react";
+import { Star } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
 import { useAnonymousUser } from "@/components/anonymous-login-provider";
-import {AnonymousUserBanner} from "@/components/anonymous-user-banner";
+import { AnonymousUserBanner } from "@/components/anonymous-user-banner";
 
 export default function Home() {
-  const { data: session, isPending } = useSession();
-
-  const signIn = async () => {
-    const data = await authClient.signIn.social({
-      provider: "google",
-    });
-  };
-
-  const { data, isLoading } = useQuery({
+  const { isLoading } = useQuery({
     queryKey: ["userStats"],
     queryFn: userApi.getUserStats,
     select: (data) => {
@@ -34,26 +24,6 @@ export default function Home() {
       };
     },
   });
-  const { userStats } = data || { userStats: { levelStats: {}, todaysXp: 0 } };
-
-  const handleXp = async () => {
-    await fetch(`${BASE_URL}/user/calculateDailyXp  `, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-  };
-
-  const userStatsDemo = {
-    level: 12,
-    xp: 3450,
-    nextLevelXp: 4000,
-    streak: 7,
-    achievements: 14,
-    characterClass: "Wizard",
-  };
 
   const { isAnonymous } = useAnonymousUser();
   const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
