@@ -126,6 +126,39 @@ jobs:
             echo "📥 Pulling latest code..."
             git pull origin main
             
+            # Create production environment file
+            echo "🔧 Setting up environment variables..."
+            cat > .env.production << 'ENVEOF'
+            # Production Environment Variables
+            NODE_ENV=production
+            PORT=3001
+            
+            # Database
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            
+            # Authentication
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
+            BETTER_AUTH_URL=${{ secrets.API_URL }}
+            
+            # API Configuration
+            API_URL=${{ secrets.API_URL }}
+            
+            # Frontend Configuration
+            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+            NEXT_PUBLIC_API_URL=${{ secrets.API_URL }}
+            NEXT_PUBLIC_AUTH_URL=${{ secrets.API_URL }}
+            
+            # Google OAuth
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            
+            # PostgreSQL Container Config
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          ENVEOF
+            
             # Login to GitHub Container Registry
             echo "🔐 Logging into container registry..."
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin

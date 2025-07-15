@@ -40,13 +40,12 @@ services:
     restart: unless-stopped # Better than 'always' - won't restart if manually stopped
     ports:
       - "8080:8080"
+    env_file:
+      - ../../.env.production # Use centralized environment file
     environment:
-      NODE_ENV: production
+      # Override specific values if needed
       PORT: 8080
       DATABASE_URL: postgresql://${POSTGRES_USER:-questly}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-questly}
-      JWT_SECRET: ${JWT_SECRET}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     depends_on:
       postgres:
         condition: service_healthy
@@ -80,9 +79,11 @@ services:
     restart: unless-stopped # Better restart policy
     ports:
       - "3000:3000"
+    env_file:
+      - ../../.env.production # Use centralized environment file
     environment:
+      # Override specific values if needed
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:8080}
     depends_on:
       api:
         condition: service_healthy
