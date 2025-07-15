@@ -7,7 +7,6 @@ import {
   MainQuestImportance,
 } from "./base";
 import { createQuestTemplateSchema } from "./quest";
-import { duration } from "drizzle-orm/gel-core";
 
 export const mainQuestSchema = baseSchema.extend({
   importance: z.nativeEnum(MainQuestImportance),
