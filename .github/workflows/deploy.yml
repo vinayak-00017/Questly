@@ -184,6 +184,18 @@ jobs:
             echo "⏳ Waiting for services to be ready..."
             sleep 30
             
+            # Check service status
+            echo "📊 Checking service status..."
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production ps
+            
+            # Check API logs if it's not healthy
+            echo "📋 Checking API logs..."
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production logs api --tail 20
+            
+            # Additional wait for health checks
+            echo "⏳ Waiting for health checks to pass..."
+            sleep 60
+            
             # Run database migrations
             echo "🗄️ Running database migrations..."
             docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production exec -T api npm run db:migrate || echo "Migration failed, continuing..."

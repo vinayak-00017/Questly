@@ -50,10 +50,10 @@ services:
       - app-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 20s # Check more frequently
-      timeout: 5s # Faster timeout
-      retries: 3
-      start_period: 30s # Give app time to start before health checks
+      interval: 30s # Check every 30 seconds
+      timeout: 10s # Allow more time for response
+      retries: 5 # More retries
+      start_period: 60s # Give app more time to start before health checks
     deploy:
       resources:
         limits:
