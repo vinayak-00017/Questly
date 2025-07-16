@@ -30,16 +30,13 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 🔍 Lint code
-        run: pnpm lint
-        continue-on-error: true
-
-      - name: 🔨 Build packages
+      - name: � Build packages
         run: pnpm build
+        timeout-minutes: 10
 
       - name: 🧪 Run tests
         run: pnpm test
-        continue-on-error: true
+        timeout-minutes: 5
 
   # Docker Build and Push Job
   docker-build:

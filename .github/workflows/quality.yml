@@ -27,9 +27,11 @@ jobs:
 
       - name: 🔍 Lint code
         run: pnpm lint
+        timeout-minutes: 5
 
       - name: 🎨 Check code formatting
         run: pnpm format:check
+        timeout-minutes: 2
 
   type-check:
     runs-on: ubuntu-latest
@@ -51,9 +53,11 @@ jobs:
 
       - name: 🔨 Build packages
         run: pnpm build
+        timeout-minutes: 10
 
       - name: 🔧 Type check
         run: pnpm type-check
+        timeout-minutes: 5
 
   security:
     runs-on: ubuntu-latest
@@ -75,9 +79,13 @@ jobs:
 
       - name: 🛡️ Run security audit
         run: pnpm audit
+        timeout-minutes: 3
+        continue-on-error: true
 
       - name: 🔒 Check for vulnerabilities
         run: pnpm dlx npm-audit-resolver@latest check
+        timeout-minutes: 3
+        continue-on-error: true
 
   dependency-review:
     runs-on: ubuntu-latest

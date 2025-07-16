@@ -1,6 +1,7 @@
 # Build Performance Fixes for @questly/types
 
 ## Problem
+
 The `@questly/types:build` task was taking 6+ hours and eventually timing out, wasting CI/CD resources and blocking deployments.
 
 ## Root Causes Identified
@@ -13,35 +14,40 @@ The `@questly/types:build` task was taking 6+ hours and eventually timing out, w
 ## Solutions Implemented
 
 ### 1. Optimized TypeScript Configuration
+
 - **Before**: 100+ line verbose tsconfig with all comments
 - **After**: Clean, optimized config extending `@repo/typescript-config/base.json`
 - **Impact**: Faster type checking and compilation
 
 ### 2. Custom tsup Configuration
+
 Created `tsup.config.ts` with optimizations:
+
 - **Target**: ES2020 for better compatibility
 - **Tree-shaking**: Enabled for smaller bundles
 - **DTS optimization**: Optimized declaration file generation
 - **No incremental builds**: Prevents state corruption issues
 
 ### 3. Simplified Zod Schemas
+
 - **Removed**: Complex `z.preprocess()` calls that were causing performance bottlenecks
 - **Simplified**: String validation to direct constraints
 - **Maintained**: All functionality while improving performance
 
 ### 4. Build Timeout Protection
+
 - **Script**: `build-with-timeout.sh` with 2-minute timeout
 - **Fallback**: `build:safe` command for CI environments
 - **Monitoring**: Clear error messages for debugging
 
 ## Performance Results
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Build Time | 6+ hours (timeout) | ~5 seconds | 99.98% faster |
-| DTS Generation | Hanging | 4.2 seconds | ✅ Completed |
-| Bundle Size | N/A | ~61KB (types) | ✅ Optimized |
-| CI Resource Usage | Massive waste | Minimal | ✅ Efficient |
+| Metric            | Before             | After         | Improvement   |
+| ----------------- | ------------------ | ------------- | ------------- |
+| Build Time        | 6+ hours (timeout) | ~5 seconds    | 99.98% faster |
+| DTS Generation    | Hanging            | 4.2 seconds   | ✅ Completed  |
+| Bundle Size       | N/A                | ~61KB (types) | ✅ Optimized  |
+| CI Resource Usage | Massive waste      | Minimal       | ✅ Efficient  |
 
 ## Available Build Commands
 

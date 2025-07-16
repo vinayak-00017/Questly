@@ -64,7 +64,10 @@ export const createTaskInstanceSchema = taskInstanceSchema
       z.number().int().positive("Points must be a positive number"),
       z.nativeEnum(TaskPriority).default(TaskPriority.Medium),
     ]),
-    title: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less"),
+    title: z
+      .string()
+      .min(1, "Title is required")
+      .max(100, "Title must be 100 characters or less"),
   });
 
 // Types

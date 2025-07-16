@@ -27,5 +27,5 @@ afterEach(async () => {
 // Global test teardown
 afterAll(async () => {
   // Force exit to prevent hanging
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 100));
 });

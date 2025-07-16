@@ -4,26 +4,29 @@
 
 ### 📊 Performance Comparison
 
-| Metric | Before (Failing) | After (Fixed) | Improvement |
-|--------|------------------|---------------|-------------|
-| **Build Time** | 6+ hours → timeout | 1m 25s | **99.96% faster** |
-| **Types Build** | Hanging indefinitely | ~6 seconds | ✅ **Completing successfully** |
-| **API Runtime** | `toDbDate` function error | Working correctly | ✅ **Function found and working** |
-| **CI Resource Usage** | Massive waste | Efficient | ✅ **Optimized** |
+| Metric                | Before (Failing)          | After (Fixed)     | Improvement                       |
+| --------------------- | ------------------------- | ----------------- | --------------------------------- |
+| **Build Time**        | 6+ hours → timeout        | 1m 25s            | **99.96% faster**                 |
+| **Types Build**       | Hanging indefinitely      | ~6 seconds        | ✅ **Completing successfully**    |
+| **API Runtime**       | `toDbDate` function error | Working correctly | ✅ **Function found and working** |
+| **CI Resource Usage** | Massive waste             | Efficient         | ✅ **Optimized**                  |
 
 ### 🔧 Issues Fixed
 
 #### 1. **Build Timeout Issue (6+ hours)**
+
 - **Root Cause**: Inefficient TypeScript configuration and complex Zod schemas
 - **Solution**: Optimized tsconfig, custom tsup config, simplified schemas
 - **Result**: Build completes in ~85 seconds instead of 6+ hours
 
 #### 2. **Runtime Error: `toDbDate` not found**
+
 - **Root Cause**: Missing export in `@questly/utils` package
 - **Solution**: Added `toDbDate` alias for `toLocalDbDate` function
 - **Result**: API starts successfully without function errors
 
 #### 3. **No Build Timeout Protection**
+
 - **Root Cause**: No mechanism to prevent hanging builds
 - **Solution**: Added timeout scripts and multiple build options
 - **Result**: Safe deployment with automatic failure detection
@@ -37,7 +40,7 @@
 # ✅ Step 2: Building packages (CRITICAL STEP)
 🔨 Building all packages... ✓ (1m 25s)
   - @questly/types: ✓ (6s) - Previously hanging for 6+ hours
-  - @questly/utils: ✓ (3.4s) 
+  - @questly/utils: ✓ (3.4s)
   - API: ✓ (0.1s)
   - Web: ✓ (Frontend build successful)
 
