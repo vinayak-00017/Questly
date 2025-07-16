@@ -194,7 +194,7 @@ jobs:
             
             # Start API without health check dependency
             echo "🚀 Starting API..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production up -d api --no-deps
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production up -d --no-deps api
             
             # Wait and check API logs
             echo "⏳ Waiting for API to start..."
