@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository_owner }}/questly
 
 jobs:
   # Test and Build Job
@@ -154,26 +154,31 @@ jobs:
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           ENVEOF
             
+            # Source the environment file
+            set -a
+            source .env.production
+            set +a
+            
             # Login to GitHub Container Registry
             echo "🔐 Logging into container registry..."
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Stop current services
             echo "🛑 Stopping current services..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml down || true
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production down || true
             
             # Pull latest images
             echo "📦 Pulling latest Docker images..."
-            docker pull ghcr.io/${{ github.repository }}-api:latest
-            docker pull ghcr.io/${{ github.repository }}-web:latest
+            docker pull ghcr.io/vinayak-00017/questly-api:latest
+            docker pull ghcr.io/vinayak-00017/questly-web:latest
             
             # Update docker-compose to use new images
-            export API_IMAGE="ghcr.io/${{ github.repository }}-api:latest"
-            export WEB_IMAGE="ghcr.io/${{ github.repository }}-web:latest"
+            export API_IMAGE="ghcr.io/vinayak-00017/questly-api:latest"
+            export WEB_IMAGE="ghcr.io/vinayak-00017/questly-web:latest"
             
             # Start services
             echo "🚀 Starting services..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml up -d
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production up -d
             
             # Wait for services to be ready
             echo "⏳ Waiting for services to be ready..."
@@ -181,7 +186,7 @@ jobs:
             
             # Run database migrations
             echo "🗄️ Running database migrations..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml exec -T api npm run db:migrate || echo "Migration failed, continuing..."
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production exec -T api npm run db:migrate || echo "Migration failed, continuing..."
             
             # Health check
             echo "🏥 Running health checks..."
@@ -192,7 +197,7 @@ jobs:
             docker image prune -f
             
             echo "✅ Deployment completed successfully!"
-            docker-compose -f deployment/docker/docker-compose.prod.yml ps
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production ps
           EOF
 
       - name: 🔔 Notify deployment status
