@@ -9,10 +9,14 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsup --config tsup.config.ts",
+    "build:safe": "./build-with-timeout.sh",
+    "build:fast": "tsup --no-dts --format cjs,esm",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "dev": "tsup --watch",
     "lint": "eslint src/",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

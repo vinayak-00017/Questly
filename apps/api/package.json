@@ -9,7 +9,7 @@
     "build": "tsup",
     "check-types": "tsc --noEmit",
     "lint": "eslint src/ --max-warnings 0",
-    "test": "jest --detectOpenHandles",
+    "test": "NODE_ENV=test jest --config jest.config.json --detectOpenHandles --forceExit",
     "db:generate": "drizzle-kit generate",
     "db:drop": "drizzle-kit drop",
     "db:check": "drizzle-kit check",

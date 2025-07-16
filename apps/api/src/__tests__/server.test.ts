@@ -4,7 +4,8 @@ import { createServer } from "../server";
 
 describe("Server", () => {
   it("health check returns 200", async () => {
-    await supertest(createServer())
+    const app = await createServer({ skipSchedulers: true });
+    await supertest(app)
       .get("/status")
       .expect(200)
       .then((res) => {
@@ -13,7 +14,8 @@ describe("Server", () => {
   });
 
   it("message endpoint says hello", async () => {
-    await supertest(createServer())
+    const app = await createServer({ skipSchedulers: true });
+    await supertest(app)
       .get("/message/jared")
       .expect(200)
       .then((res) => {

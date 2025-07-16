@@ -14,10 +14,15 @@
       ],
       "inputs": ["src/**", "package.json", "tsconfig.json", ".env*"]
     },
+    "@questly/types#build": {
+      "dependsOn": [],
+      "outputs": ["dist/**"],
+      "inputs": ["src/**", "package.json", "tsconfig.json", "tsup.config.ts"]
+    },
     "test": {
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"],
-      "inputs": ["src/**/*.ts", "src/**/*.tsx", "test/**"]
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", "test/**", "__tests__/**"]
     },
     "lint": {
       "dependsOn": ["^build"],

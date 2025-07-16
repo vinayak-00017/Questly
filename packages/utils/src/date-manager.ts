@@ -31,6 +31,9 @@ export function toLocalDbDate(date: Date | string | null | undefined): string {
   return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`;
 }
 
+// Alias for backward compatibility
+export const toDbDate = toLocalDbDate;
+
 // Get today's date at midnight for comparison purposes
 export function getTodayMidnight(): Date {
   const today = new Date();

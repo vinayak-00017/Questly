@@ -11,7 +11,7 @@ import instanceRouter from "./routes/instance";
 import userRouter from "./routes/user";
 import { initializeScheduler } from "../services/quest-scheduler";
 import { initXpScheduler } from "../services/xp-scheduler";
-export const createServer = async (): Promise<Express> => {
+export const createServer = async (options: { skipSchedulers?: boolean } = {}): Promise<Express> => {
   const app = express();
   app
     .disable("x-powered-by")
@@ -53,10 +53,18 @@ export const createServer = async (): Promise<Express> => {
       });
       return res.json(session);
     });
-  await initializeScheduler();
-  console.log("Server initialized with scheduled tasks");
-  initXpScheduler();
-  console.log("Xp awarded to users!");
+
+  // Only initialize schedulers in production mode or when explicitly requested
+  const isTest = process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID;
+  
+  if (!options.skipSchedulers && !isTest) {
+    await initializeScheduler();
+    console.log("Server initialized with scheduled tasks");
+    initXpScheduler();
+    console.log("Xp awarded to users!");
+  } else if (isTest) {
+    console.log("Skipping schedulers in test mode");
+  }
 
   return app;
 };

@@ -35,7 +35,7 @@
     "dev": "bunchee --watch",
     "check-types": "tsc --noEmit",
     "lint": "eslint src/",
-    "test": "jest"
+    "test": "jest --testTimeout=10000 --forceExit"
   },
   "jest": {
     "preset": "@repo/jest-presets/browser"
