@@ -33,10 +33,7 @@ services:
       - app-network
 
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile.digitalocean
-      target: api
+    image: ${API_IMAGE:-ghcr.io/vinayak-00017/questly-api:latest}
     restart: unless-stopped # Better than 'always' - won't restart if manually stopped
     ports:
       - "8080:8080"
@@ -72,10 +69,7 @@ services:
         window: 120s # Reset attempt counter after 2 minutes
 
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile.digitalocean
-      target: web
+    image: ${WEB_IMAGE:-ghcr.io/vinayak-00017/questly-web:latest}
     restart: unless-stopped # Better restart policy
     ports:
       - "3000:3000"
