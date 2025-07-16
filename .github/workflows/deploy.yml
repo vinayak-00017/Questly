@@ -190,7 +190,7 @@ jobs:
             # Check postgres status
             echo "📊 PostgreSQL status:"
             docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production ps postgres
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production logs postgres --tail=10
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production logs --tail=10 postgres
             
             # Start API without health check dependency
             echo "🚀 Starting API..."
@@ -203,7 +203,7 @@ jobs:
             echo "� API status:"
             docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production ps api
             echo "📋 API logs:"
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production logs api --tail=30
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production logs --tail=30 api
             
             # Test API health endpoint manually
             echo "🏥 Testing API health endpoint..."
