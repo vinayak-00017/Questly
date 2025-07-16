@@ -178,23 +178,41 @@ jobs:
             
             # Start services
             echo "🚀 Starting services..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production up -d
             
-            # Wait for services to be ready
-            echo "⏳ Waiting for services to be ready..."
+            # Start postgres first
+            echo "🗄️ Starting PostgreSQL..."
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production up -d postgres
+            
+            # Wait for postgres to be ready
+            echo "⏳ Waiting for PostgreSQL to be ready..."
+            sleep 20
+            
+            # Check postgres status
+            echo "📊 PostgreSQL status:"
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production ps postgres
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production logs postgres --tail 10
+            
+            # Start API without health check dependency
+            echo "🚀 Starting API..."
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production up -d api --no-deps
+            
+            # Wait and check API logs
+            echo "⏳ Waiting for API to start..."
             sleep 30
             
-            # Check service status
-            echo "📊 Checking service status..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production ps
+            echo "� API status:"
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production ps api
+            echo "📋 API logs:"
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production logs api --tail 30
             
-            # Check API logs if it's not healthy
-            echo "📋 Checking API logs..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production logs api --tail 20
+            # Test API health endpoint manually
+            echo "🏥 Testing API health endpoint..."
+            sleep 10
+            curl -f http://localhost:8080/health || echo "API health check failed"
             
-            # Additional wait for health checks
-            echo "⏳ Waiting for health checks to pass..."
-            sleep 60
+            # Start remaining services
+            echo "🚀 Starting remaining services..."
+            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production up -d
             
             # Run database migrations
             echo "🗄️ Running database migrations..."
