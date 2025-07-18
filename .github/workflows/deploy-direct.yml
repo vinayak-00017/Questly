@@ -26,11 +26,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: 🔨 Build packages
-        run: pnpm build
+        run: pnpm exec turbo run build
         timeout-minutes: 10
 
       - name: 🧪 Run tests
-        run: pnpm test
+        run: pnpm exec turbo run test
         timeout-minutes: 5
 
   # Direct deployment to DigitalOcean
@@ -79,22 +79,22 @@ jobs:
             mkdir -p /var/www/questly/apps/api
             mkdir -p /var/www/questly/apps/web
             cd /var/www/questly
-            
+
             # Clone only if needed for package.json files
             if [ ! -d ".git" ]; then
               git clone --depth 1 https://github.com/${{ github.repository }}.git .
             else
               git fetch origin && git reset --hard origin/main
             fi
-            
+
             # Install only production runtime dependencies (no build)
             export NODE_OPTIONS="--max-old-space-size=768"
             pnpm install --frozen-lockfile --prod --ignore-scripts
-            
+
             # Copy built assets (this will be done via SCP next)
             pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js
             pm2 save
-            
+
             echo "✅ Deployment completed successfully!"
 
       - name: 📤 Upload built assets

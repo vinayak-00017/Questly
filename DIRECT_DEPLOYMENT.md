@@ -19,6 +19,7 @@ This guide explains how to deploy Questly directly on a DigitalOcean droplet wit
 ## Initial Server Setup
 
 1. **Run the setup script on your droplet:**
+
 ```bash
 # On your DigitalOcean droplet
 wget https://raw.githubusercontent.com/vinayak-00017/Questly/main/deployment/scripts/setup-server.sh
@@ -27,6 +28,7 @@ chmod +x setup-server.sh
 ```
 
 2. **Configure environment variables:**
+
 ```bash
 cd /var/www/questly
 cp .env.example .env
@@ -34,6 +36,7 @@ nano .env  # Update with your actual values
 ```
 
 3. **Update nginx configuration:**
+
 ```bash
 sudo nano /etc/nginx/sites-available/questly
 # Replace 'your-domain.com' with your actual domain
@@ -41,6 +44,7 @@ sudo nginx -t && sudo systemctl reload nginx
 ```
 
 4. **Start the applications:**
+
 ```bash
 pm2 start ecosystem.config.js
 pm2 save
@@ -55,11 +59,13 @@ Go to your GitHub repository → Settings → Secrets and variables → Actions 
 
 ### Required Secrets:
 
-1. **`DO_HOST`** 
+1. **`DO_HOST`**
+
    - Value: Your DigitalOcean droplet's IP address (e.g., `123.456.789.012`)
    - Find this in your DigitalOcean dashboard under Droplets
 
 2. **`DO_USER`**
+
    - Value: SSH username (usually `root` for DigitalOcean droplets)
    - If you created a non-root user, use that username instead
 
@@ -110,6 +116,7 @@ Every push to the `main` branch will:
 ## Managing Your Applications
 
 ### PM2 Commands
+
 ```bash
 pm2 status                 # Check process status
 pm2 logs                   # View all logs
@@ -121,6 +128,7 @@ pm2 delete all             # Delete all processes
 ```
 
 ### Database Management
+
 ```bash
 # Access PostgreSQL
 sudo -u postgres psql
@@ -134,6 +142,7 @@ pnpm db:migrate
 ```
 
 ### Nginx Management
+
 ```bash
 sudo systemctl status nginx    # Check nginx status
 sudo systemctl reload nginx    # Reload configuration
@@ -177,6 +186,7 @@ sudo certbot --nginx -d your-domain.com
 ## Troubleshooting
 
 ### Application won't start
+
 ```bash
 pm2 logs                   # Check for errors
 cd /var/www/questly
@@ -184,12 +194,14 @@ pnpm build                 # Rebuild manually
 ```
 
 ### Database connection issues
+
 ```bash
 sudo systemctl status postgresql
 sudo -u postgres psql -c "\l"  # List databases
 ```
 
 ### Nginx issues
+
 ```bash
 sudo nginx -t              # Test configuration
 sudo systemctl status nginx
