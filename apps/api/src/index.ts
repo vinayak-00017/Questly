@@ -1,7 +1,7 @@
 import { createServer } from "./server";
 
 async function startServer() {
-  const port = process.env.PORT || 5001;
+  const port = process.env.PORT || 4000;
   try {
     const app = await createServer();
     app.listen(port, () => {
