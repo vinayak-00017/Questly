@@ -25,7 +25,7 @@ echo "⚡ Installing PM2..."
 npm install -g pm2
 pm2 install pm2-logrotate
 
-# Install PostgreSQL
+#   Install PostgreSQL
 echo "🐘 Installing PostgreSQL..."
 sudo apt install -y postgresql postgresql-contrib
 

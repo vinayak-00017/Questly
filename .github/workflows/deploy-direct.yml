@@ -81,7 +81,7 @@ jobs:
               npm install -g pm2
               pm2 install pm2-logrotate
             fi
-            
+
             # Create directory structure
             mkdir -p /var/www/questly/apps/api
             mkdir -p /var/www/questly/apps/web
