@@ -75,6 +75,13 @@ jobs:
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
           script: |
+            # Install PM2 if not installed
+            if ! command -v pm2 &> /dev/null; then
+              echo "⚡ Installing PM2..."
+              npm install -g pm2
+              pm2 install pm2-logrotate
+            fi
+            
             # Create directory structure
             mkdir -p /var/www/questly/apps/api
             mkdir -p /var/www/questly/apps/web
@@ -90,6 +97,10 @@ jobs:
             # Install only production runtime dependencies (no build)
             export NODE_OPTIONS="--max-old-space-size=768"
             pnpm install --frozen-lockfile --prod --ignore-scripts
+
+            # Create PM2 log directory
+            sudo mkdir -p /var/log/pm2
+            sudo chown -R $USER:$USER /var/log/pm2
 
             # Copy built assets (this will be done via SCP next)
             pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js
