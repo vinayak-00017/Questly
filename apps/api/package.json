@@ -1,7 +1,6 @@
 {
   "name": "api",
   "version": "0.0.0",
-  "type": "module",
   "private": true,
   "scripts": {
     "start": "node dist/index.js",

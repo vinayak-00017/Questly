@@ -3,10 +3,10 @@ import { defineConfig, type Options } from "tsup";
 export default defineConfig((options: Options) => ({
   entryPoints: ["src/index.ts"],
   clean: true,
-  format: ["esm"], // Use ESM format to match package.json type: "module"
+  format: ["cjs"], // Use CommonJS format for better Docker compatibility
   outExtension: () => {
     return {
-      js: ".js", // Ensure .js extension for ESM
+      js: ".js", // Keep .js extension but output CommonJS
     };
   },
   ...options,
