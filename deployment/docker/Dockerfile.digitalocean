@@ -37,8 +37,11 @@ RUN apk add --no-cache curl
 COPY --from=base /app/apps/api/dist ./dist
 COPY --from=base /app/apps/api/package.json ./package.json
 
-# Copy the already-built node_modules from base stage
+# Copy the monorepo node_modules (contains all workspace packages)
 COPY --from=base /app/node_modules ./node_modules
+
+# Also copy workspace packages that the API depends on
+COPY --from=base /app/packages ./packages
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
