@@ -79,6 +79,18 @@ jobs:
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
           script: |
+            # Install Node.js and pnpm if not installed
+            if ! command -v node &> /dev/null; then
+              echo "🟢 Installing Node.js..."
+              curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+              sudo apt install -y nodejs
+            fi
+            
+            if ! command -v pnpm &> /dev/null; then
+              echo "📦 Installing pnpm..."
+              npm install -g pnpm
+            fi
+            
             # Install PM2 if not installed
             if ! command -v pm2 &> /dev/null; then
               echo "⚡ Installing PM2..."
@@ -98,19 +110,11 @@ jobs:
               git fetch origin && git reset --hard origin/main
             fi
 
-            # Install only production runtime dependencies (no build)
-            export NODE_OPTIONS="--max-old-space-size=768"
-            pnpm install --frozen-lockfile --prod --ignore-scripts
-
             # Create PM2 log directory
             sudo mkdir -p /var/log/pm2
             sudo chown -R $USER:$USER /var/log/pm2
 
-            # Copy built assets (this will be done via SCP next)
-            pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js
-            pm2 save
-
-            echo "✅ Deployment completed successfully!"
+            echo "✅ Server preparation completed successfully!"
 
       - name: 📤 Upload built assets
         uses: appleboy/scp-action@v0.1.7
@@ -121,3 +125,26 @@ jobs:
           source: "deploy-package/*"
           target: "/var/www/questly/"
           strip_components: 1
+
+      - name: � Start Services
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/questly
+            
+            # Install only production runtime dependencies
+            export NODE_OPTIONS="--max-old-space-size=768"
+            pnpm install --frozen-lockfile --prod --ignore-scripts
+
+            # Stop existing PM2 processes
+            pm2 stop all || true
+            pm2 delete all || true
+
+            # Start applications with PM2
+            pm2 start ecosystem.config.js
+            pm2 save
+
+            echo "✅ Services started successfully!"
