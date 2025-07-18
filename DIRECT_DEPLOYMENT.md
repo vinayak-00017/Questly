@@ -49,11 +49,52 @@ pm2 startup  # Follow the instructions to enable auto-start
 
 ## GitHub Secrets Setup
 
-Add these secrets to your GitHub repository (Settings → Secrets and variables → Actions):
+**IMPORTANT**: You must configure these secrets before the deployment workflow will work.
 
-- `DROPLET_HOST`: Your droplet's IP address
-- `DROPLET_USER`: SSH username (usually `root` or `ubuntu`)
-- `DROPLET_SSH_KEY`: Your private SSH key content
+Go to your GitHub repository → Settings → Secrets and variables → Actions → New repository secret:
+
+### Required Secrets:
+
+1. **`DO_HOST`** 
+   - Value: Your DigitalOcean droplet's IP address (e.g., `123.456.789.012`)
+   - Find this in your DigitalOcean dashboard under Droplets
+
+2. **`DO_USER`**
+   - Value: SSH username (usually `root` for DigitalOcean droplets)
+   - If you created a non-root user, use that username instead
+
+3. **`DO_SSH_PRIVATE_KEY`**
+   - Value: Your private SSH key content (the entire key including headers)
+   - This should be the private key that matches the public key you added to your droplet
+   - Include the full key from `-----BEGIN OPENSSH PRIVATE KEY-----` to `-----END OPENSSH PRIVATE KEY-----`
+
+### How to get your SSH key:
+
+```bash
+# On your local machine, display your private key:
+cat ~/.ssh/id_rsa
+
+# Or if you created a specific key for the droplet:
+cat ~/.ssh/your_droplet_key
+
+# Copy the ENTIRE output (including the BEGIN/END lines) and paste as the secret value
+```
+
+### SSH Key Setup for DigitalOcean:
+
+If you haven't set up SSH keys yet:
+
+```bash
+# Generate a new SSH key pair
+ssh-keygen -t rsa -b 4096 -C "your-email@example.com"
+
+# Copy your public key to the droplet
+ssh-copy-id root@your-droplet-ip
+
+# Or manually add the public key to the droplet
+cat ~/.ssh/id_rsa.pub
+# Copy this output and add it to /root/.ssh/authorized_keys on your droplet
+```
 
 ## Deployment Process
 

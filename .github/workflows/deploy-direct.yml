@@ -42,9 +42,9 @@ jobs:
       - name: 🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DROPLET_HOST }}
-          username: ${{ secrets.DROPLET_USER }}
-          key: ${{ secrets.DROPLET_SSH_KEY }}
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/questly || git clone https://github.com/${{ github.repository }}.git /var/www/questly
             cd /var/www/questly
