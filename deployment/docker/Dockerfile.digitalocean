@@ -33,14 +33,12 @@ WORKDIR /app
 # Install curl for health checks
 RUN apk add --no-cache curl
 
-# Copy built API and dependencies
+# Copy built API files
 COPY --from=base /app/apps/api/dist ./dist
 COPY --from=base /app/apps/api/package.json ./package.json
-COPY --from=base /app/node_modules ./node_modules
-COPY --from=base /app/packages ./packages
 
-# Install production dependencies to ensure all modules are available
-RUN npm install --production --ignore-scripts
+# Copy the already-built node_modules from base stage
+COPY --from=base /app/node_modules ./node_modules
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
@@ -65,7 +63,6 @@ RUN apk add --no-cache wget
 COPY --from=base /app/apps/web/.next/standalone ./
 COPY --from=base /app/apps/web/.next/static ./.next/static
 COPY --from=base /app/apps/web/public ./public
-COPY --from=base /app/packages ./packages
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
