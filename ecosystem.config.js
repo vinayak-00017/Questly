@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "questly-api",
-      script: "./api-dist/index.js",
+      script: "./apps/api/dist/index.js",
       cwd: "/var/www/questly",
       instances: 1,
       exec_mode: "fork",
@@ -23,7 +23,7 @@ module.exports = {
       name: "questly-web",
       script: "node_modules/next/dist/bin/next",
       args: "start",
-      cwd: "/var/www/questly",
+      cwd: "/var/www/questly/apps/web",
       instances: 1,
       exec_mode: "fork",
       autorestart: true,

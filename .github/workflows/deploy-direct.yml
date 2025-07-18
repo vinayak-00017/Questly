@@ -63,14 +63,23 @@ jobs:
 
       - name: 📁 Create deployment package
         run: |
-          mkdir -p deploy-package
-          cp -r apps/api/dist deploy-package/api-dist
-          cp -r apps/web/.next deploy-package/web-next
-          cp -r apps/web/public deploy-package/web-public
-          cp apps/api/package.json deploy-package/api-package.json
-          cp apps/web/package.json deploy-package/web-package.json
+          mkdir -p deploy-package/apps/api
+          mkdir -p deploy-package/apps/web
+          
+          # Copy API built files
+          cp -r apps/api/dist deploy-package/apps/api/
+          cp apps/api/package.json deploy-package/apps/api/
+          
+          # Copy Web built files
+          cp -r apps/web/.next deploy-package/apps/web/
+          cp -r apps/web/public deploy-package/apps/web/
+          cp apps/web/package.json deploy-package/apps/web/
+          
+          # Copy root files
           cp ecosystem.config.js deploy-package/
-          cp package.json deploy-package/root-package.json
+          cp package.json deploy-package/
+          cp pnpm-lock.yaml deploy-package/
+          cp pnpm-workspace.yaml deploy-package/
 
       - name: �🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.3
@@ -135,9 +144,9 @@ jobs:
           script: |
             cd /var/www/questly
             
-            # Install only production runtime dependencies
+            # Install ALL dependencies (including dev) for the monorepo to ensure all runtime deps are available
             export NODE_OPTIONS="--max-old-space-size=768"
-            pnpm install --frozen-lockfile --prod --ignore-scripts
+            pnpm install --frozen-lockfile --ignore-scripts
 
             # Stop existing PM2 processes
             pm2 stop all || true
