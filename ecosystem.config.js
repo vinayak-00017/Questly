@@ -21,7 +21,7 @@ module.exports = {
     },
     {
       name: "questly-web",
-      script: "node_modules/next/dist/bin/next",
+      script: "./node_modules/next/dist/bin/next",
       args: "start",
       cwd: "/var/www/questly/apps/web",
       instances: 1,
