@@ -52,10 +52,10 @@ jobs:
           cache: "pnpm"
 
       - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile --prod
+        run: pnpm install --frozen-lockfile
 
       - name: 🔨 Build packages
-        run: pnpm build
+        run: pnpm exec turbo run build
 
       - name: 📁 Create deployment package
         run: |
