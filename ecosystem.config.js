@@ -2,13 +2,13 @@ module.exports = {
   apps: [
     {
       name: 'questly-api',
-      script: './apps/api/dist/index.js',
+      script: './api-dist/index.js',
       cwd: '/var/www/questly',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
       watch: false,
-      max_memory_restart: '1G',
+      max_memory_restart: '512M',
       restart_delay: 5000,
       env: {
         NODE_ENV: 'production',
@@ -21,14 +21,14 @@ module.exports = {
     },
     {
       name: 'questly-web',
-      script: 'npm',
+      script: 'node_modules/next/dist/bin/next',
       args: 'start',
-      cwd: '/var/www/questly/apps/web',
+      cwd: '/var/www/questly',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
       watch: false,
-      max_memory_restart: '1G',
+      max_memory_restart: '512M',
       restart_delay: 5000,
       env: {
         NODE_ENV: 'production',

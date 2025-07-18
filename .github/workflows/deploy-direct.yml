@@ -39,24 +39,70 @@ jobs:
     needs: test-and-build
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: 🚀 Deploy to DigitalOcean
+      - name: � Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile --prod
+
+      - name: 🔨 Build packages
+        run: pnpm build
+
+      - name: 📁 Create deployment package
+        run: |
+          mkdir -p deploy-package
+          cp -r apps/api/dist deploy-package/api-dist
+          cp -r apps/web/.next deploy-package/web-next
+          cp -r apps/web/public deploy-package/web-public
+          cp apps/api/package.json deploy-package/api-package.json
+          cp apps/web/package.json deploy-package/web-package.json
+          cp ecosystem.config.js deploy-package/
+          cp package.json deploy-package/root-package.json
+
+      - name: �🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/questly || git clone https://github.com/${{ github.repository }}.git /var/www/questly
+            # Create directory structure
+            mkdir -p /var/www/questly/apps/api
+            mkdir -p /var/www/questly/apps/web
             cd /var/www/questly
-            git fetch origin
-            git reset --hard origin/main
             
-            # Install dependencies and build
-            pnpm install --frozen-lockfile --prod
-            pnpm build
+            # Clone only if needed for package.json files
+            if [ ! -d ".git" ]; then
+              git clone --depth 1 https://github.com/${{ github.repository }}.git .
+            else
+              git fetch origin && git reset --hard origin/main
+            fi
             
-            # Restart PM2 processes
+            # Install only production runtime dependencies (no build)
+            export NODE_OPTIONS="--max-old-space-size=768"
+            pnpm install --frozen-lockfile --prod --ignore-scripts
+            
+            # Copy built assets (this will be done via SCP next)
             pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js
             pm2 save
             
             echo "✅ Deployment completed successfully!"
+
+      - name: 📤 Upload built assets
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          source: "deploy-package/*"
+          target: "/var/www/questly/"
+          strip_components: 1
