@@ -1,2 +1,8 @@
-export const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "/api";
+// API Configuration for versioned endpoints
+export const BASE_URL = process.env.NODE_ENV === "production" 
+  ? "/v1/api"  // Express API (production)
+  : "http://localhost:5001";  // Direct connection (development)
+
+export const NEXT_API_URL = process.env.NODE_ENV === "production"
+  ? "/v2/api"  // Next.js API routes (production) 
+  : "/api";    // Next.js API routes (development)

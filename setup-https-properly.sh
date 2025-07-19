@@ -68,8 +68,9 @@ server {
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
 
-    # API proxy
-    location /api {
+    # Express API (v1) - Remove /v1 from path before forwarding
+    location /v1/api {
+        rewrite ^/v1/api(.*)$ /api$1 break;
         proxy_pass http://localhost:5001;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
@@ -85,6 +86,31 @@ server {
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
+    }
+
+    # Next.js API routes (v2) - Remove /v2 from path before forwarding
+    location /v2/api {
+        rewrite ^/v2/api(.*)$ /api$1 break;
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_cache_bypass $http_upgrade;
+        
+        # Timeouts
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # Legacy API redirect (optional - redirect old /api calls to v1)
+    location /api {
+        return 301 https://$host/v1/api$request_uri;
     }
 
     # Main application (Next.js) - CRITICAL: Proper proxy headers
@@ -165,8 +191,15 @@ echo "   https://questly.me"
 echo ""
 echo "🎯 Key Changes Made:"
 echo "- ✅ Removed assetPrefix (let Next.js auto-detect)"
-echo "- ✅ Added trustHost for proxy detection"
-echo "- ✅ Proper X-Forwarded-* headers"
+echo "- ✅ Proper X-Forwarded-* headers for HTTPS"
 echo "- ✅ Separate /_next/static/ handling"
+echo "- ✅ Versioned API routing:"
+echo "    • /v1/api → Express server (localhost:5001)"
+echo "    • /v2/api → Next.js API routes (localhost:3000)"
+echo "    • /api → redirects to /v1/api (legacy support)"
+echo ""
+echo "🔍 Test your APIs:"
+echo "   • Express API: https://questly.me/v1/api/health"
+echo "   • Next.js API: https://questly.me/v2/api/auth/get-session"
 echo ""
 echo "If issues persist, check browser dev tools for specific 404 URLs"
