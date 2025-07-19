@@ -8,10 +8,10 @@ set -e
 echo "🔒 Setting up HTTPS for Questly..."
 
 # Check if we're in the right directory
-if [ ! -f "deployment/configs/nginx-https.conf" ]; then
+if [ ! -f "deployment/configs/nginx-https-fixed.conf" ]; then
     echo "❌ Error: Please run this script from the questly project root directory"
     echo "Current directory: $(pwd)"
-    echo "Expected file: deployment/configs/nginx-https.conf"
+    echo "Expected file: deployment/configs/nginx-https-fixed.conf"
     exit 1
 fi
 
@@ -42,7 +42,7 @@ echo "🌐 Domain: $DOMAIN"
 
 # Copy HTTPS nginx configuration
 echo "📝 Setting up Nginx HTTPS configuration..."
-sudo cp deployment/configs/nginx-https.conf /etc/nginx/sites-available/questly
+sudo cp deployment/configs/nginx-https-fixed.conf /etc/nginx/sites-available/questly
 
 # Update server_name in nginx config
 echo "� Updating domain in Nginx configuration..."

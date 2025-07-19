@@ -52,6 +52,17 @@ sudo ufw allow 'Nginx Full'
 sudo ufw allow 3000  # Next.js dev server (if needed)
 sudo ufw allow 5001  # API server
 
+# Stop any existing Docker containers that might be using port 80
+echo "🐳 Stopping any existing Docker containers..."
+if command -v docker &> /dev/null; then
+    docker stop $(docker ps -q) 2>/dev/null || echo "No Docker containers to stop"
+    docker system prune -f 2>/dev/null || echo "Docker cleanup completed"
+fi
+
+# Stop any other services that might be using port 80
+echo "🔧 Checking for port conflicts..."
+sudo fuser -k 80/tcp 2>/dev/null || echo "Port 80 is now available"
+
 # Setup PostgreSQL database
 echo "🗄️  Setting up PostgreSQL database..."
 sudo -u postgres psql -c "CREATE DATABASE questly;" 2>/dev/null || echo "Database 'questly' may already exist"
@@ -111,8 +122,26 @@ sudo rm -f /etc/nginx/sites-enabled/default
 # Test and reload Nginx
 echo "🧪 Testing Nginx configuration..."
 sudo nginx -t
+
+# Stop Nginx if it's already running
+sudo systemctl stop nginx 2>/dev/null || echo "Nginx was not running"
+
+# Add rate limiting to nginx.conf for HTTPS setup
+echo "🔧 Adding rate limiting configuration..."
+sudo sed -i '/http {/a \    # Rate limiting zones for HTTPS\n    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;\n    limit_req_zone $binary_remote_addr zone=web:10m rate=30r/s;' /etc/nginx/nginx.conf
+
+# Enable and start Nginx
+echo "🌐 Starting Nginx..."
 sudo systemctl enable nginx
 sudo systemctl start nginx
+
+# Verify Nginx is running
+if sudo systemctl is-active nginx &>/dev/null; then
+    echo "✅ Nginx started successfully"
+else
+    echo "❌ Nginx failed to start, checking status..."
+    sudo systemctl status nginx --no-pager
+fi
 
 # Setup PM2 startup
 echo "⚡ Setting up PM2 startup..."
