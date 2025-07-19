@@ -86,9 +86,7 @@ jobs:
           cp ecosystem.config.js deploy-package/
           cp package.json deploy-package/
           cp pnpm-lock.yaml deploy-package/
-          cp pnpm-workspace.yaml deploy-package/
-
-      - name: 🚀 Deploy to DigitalOcean
+          cp pnpm-workspace.yaml deploy-package/      - name: �🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DO_HOST }}
