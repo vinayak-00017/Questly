@@ -1,134 +1,158 @@
 #!/bin/bash
 
-# DigitalOcean Droplet Setup Script
-# Run this on a fresh Ubuntu 22.04 droplet
+# 🚀 Complete DigitalOcean Droplet Setup for Questly (PM2 Version)
+# Run this script on a fresh Ubuntu droplet
 
 set -e
 
-echo "🌊 Setting up DigitalOcean droplet for Questly..."
+echo "🚀 Setting up DigitalOcean droplet for Questly..."
 
 # Update system
 echo "📦 Updating system packages..."
 sudo apt update && sudo apt upgrade -y
 
 # Install essential packages
-echo "📦 Installing essential packages..."
-sudo apt install -y curl git nginx ufw htop
+echo "� Installing essential packages..."
+sudo apt install -y curl wget git unzip software-properties-common apt-transport-https ca-certificates gnupg lsb-release nginx ufw htop
 
-# Install Node.js 18
-echo "📦 Installing Node.js 18..."
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+# Install Node.js 20
+echo "📦 Installing Node.js 20..."
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
 
 # Install pnpm
 echo "📦 Installing pnpm..."
-npm install -g pnpm
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
+source ~/.bashrc
 
-# Install Docker
-echo "📦 Installing Docker..."
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
+# Install PM2 globally
+echo "📦 Installing PM2..."
+sudo npm install -g pm2
 
-# Install Docker Compose
-echo "📦 Installing Docker Compose..."
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
+# Install PostgreSQL
+echo "🗄️  Installing PostgreSQL..."
+sudo apt install -y postgresql postgresql-contrib
+
+# Start and enable PostgreSQL
+echo "�️  Starting PostgreSQL..."
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Install Certbot for Let's Encrypt
+echo "🔒 Installing Certbot..."
+sudo apt install -y certbot python3-certbot-nginx
 
 # Setup firewall
-echo "🔥 Configuring firewall..."
-sudo ufw allow OpenSSH
-sudo ufw allow 'Nginx Full'
-sudo ufw allow 80
-sudo ufw allow 443
+echo "🔥 Configuring UFW firewall..."
 sudo ufw --force enable
+sudo ufw allow ssh
+sudo ufw allow 'Nginx Full'
+sudo ufw allow 3000  # Next.js dev server (if needed)
+sudo ufw allow 5001  # API server
+
+# Setup PostgreSQL database
+echo "🗄️  Setting up PostgreSQL database..."
+sudo -u postgres psql -c "CREATE DATABASE questly;" 2>/dev/null || echo "Database 'questly' may already exist"
+sudo -u postgres psql -c "CREATE USER questly WITH PASSWORD 'questly123';" 2>/dev/null || echo "User 'questly' may already exist"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE questly TO questly;" 2>/dev/null || true
 
 # Create application directory
 echo "📁 Creating application directory..."
 sudo mkdir -p /var/www/questly
-sudo chown $USER:$USER /var/www/questly
+sudo chown -R $USER:$USER /var/www/questly
 
-# Clone repository (you'll need to replace with your repo)
-echo "📥 Cloning repository..."
-cd /var/www/questly
-git clone https://github.com/vinayak-00017/questly.git .
+# Create basic Nginx configuration (HTTP only, for now)
+echo "🌐 Setting up basic Nginx configuration..."
+sudo tee /etc/nginx/sites-available/questly > /dev/null <<EOF
+server {
+    listen 80;
+    server_name _;
 
-# Install dependencies
-echo "📦 Installing dependencies..."
-pnpm install
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
 
-# Build applications
-echo "🔨 Building applications..."
-pnpm build
+    # API proxy
+    location /api {
+        proxy_pass http://localhost:5001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+    }
 
-# Setup systemd services
-echo "⚙️ Setting up systemd services..."
-
-# API service
-sudo tee /etc/systemd/system/questly-api.service > /dev/null <<EOF
-[Unit]
-Description=Questly API
-After=network.target
-
-[Service]
-Type=simple
-User=$USER
-WorkingDirectory=/var/www/questly/apps/api
-Environment=NODE_ENV=production
-Environment=PORT=8080
-ExecStart=/usr/bin/node dist/index.js
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
+    # Main application
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}
 EOF
 
-# Web service
-sudo tee /etc/systemd/system/questly-web.service > /dev/null <<EOF
-[Unit]
-Description=Questly Web
-After=network.target
-
-[Service]
-Type=simple
-User=$USER
-WorkingDirectory=/var/www/questly/apps/web
-Environment=NODE_ENV=production
-ExecStart=/usr/bin/npm start
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Setup Nginx configuration
-echo "🌐 Setting up Nginx..."
-sudo cp nginx.conf /etc/nginx/sites-available/questly
+# Enable the site
+echo "🔗 Enabling Nginx site..."
 sudo ln -sf /etc/nginx/sites-available/questly /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 
-# Test Nginx configuration
+# Test and reload Nginx
+echo "🧪 Testing Nginx configuration..."
 sudo nginx -t
+sudo systemctl enable nginx
+sudo systemctl start nginx
 
-# Enable and start services
-echo "🚀 Starting services..."
-sudo systemctl daemon-reload
-sudo systemctl enable questly-api questly-web nginx
-sudo systemctl restart nginx
-
-echo "✅ Droplet setup complete!"
+# Setup PM2 startup
+echo "⚡ Setting up PM2 startup..."
+pm2 startup
+# Display system information
 echo ""
-echo "Next steps:"
-echo "1. Update your domain DNS to point to this droplet's IP"
-echo "2. Setup SSL certificate with Let's Encrypt:"
-echo "   sudo apt install certbot python3-certbot-nginx"
-echo "   sudo certbot --nginx -d yourdomain.com"
-echo "3. Create .env file with your production environment variables"
-echo "4. Setup your database (PostgreSQL)"
-echo "5. Start the services:"
-echo "   sudo systemctl start questly-api"
-echo "   sudo systemctl start questly-web"
+echo "✅ Droplet setup completed!"
 echo ""
-echo "🌐 Your droplet IP: $(curl -s http://ipv4.icanhazip.com)"
+echo "� System Information:"
+echo "   - Node.js: $(node --version)"
+echo "   - npm: $(npm --version)"
+echo "   - pnpm: $(pnpm --version 2>/dev/null || echo 'Run: source ~/.bashrc and try again')"
+echo "   - PM2: $(pm2 --version)"
+echo "   - PostgreSQL: $(sudo -u postgres psql -c 'SELECT version();' -t | head -1 | xargs)"
+echo "   - Nginx: $(nginx -v 2>&1)"
+echo ""
+echo "🗄️  Database Information:"
+echo "   - Database: questly"
+echo "   - User: questly"
+echo "   - Password: questly123"
+echo "   - Connection: postgresql://questly:questly123@localhost:5432/questly"
+echo ""
+echo "🌐 Server Status:"
+echo "   - Nginx: $(sudo systemctl is-active nginx)"
+echo "   - PostgreSQL: $(sudo systemctl is-active postgresql)"
+echo ""
+echo "🔥 Firewall Status:"
+sudo ufw status
+echo ""
+echo "📋 Next Steps:"
+echo "1. Source your shell: source ~/.bashrc"
+echo "2. Complete PM2 setup: run the command shown above, then 'pm2 save'"
+echo "3. Deploy via GitHub Actions or manually clone to /var/www/questly"
+echo "4. For HTTPS: ./setup-https.sh your-domain.com"
+echo ""
+echo "🔧 Useful Commands:"
+echo "   - sudo systemctl status nginx"
+echo "   - sudo systemctl status postgresql"
+echo "   - pm2 status"
+echo "   - pm2 logs"
+echo "   - sudo nginx -t"
+echo ""
+echo "🌐 Your droplet IP: $(curl -s http://ipv4.icanhazip.com || echo 'Could not fetch IP')"
