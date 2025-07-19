@@ -21,8 +21,7 @@ module.exports = {
     },
     {
       name: "questly-web",
-      script: "npm",
-      args: "start",
+      script: ".next/standalone/server.js",
       cwd: "/var/www/questly/apps/web",
       instances: 1,
       exec_mode: "fork",
