@@ -15,6 +15,20 @@ if [ ! -f "deployment/configs/nginx-https.conf" ]; then
     exit 1
 fi
 
+# Check if Nginx is installed
+if ! command -v nginx &> /dev/null; then
+    echo "❌ Error: Nginx is not installed"
+    echo "Please run the droplet setup script first: ./setup-droplet.sh"
+    exit 1
+fi
+
+# Check if Certbot is installed
+if ! command -v certbot &> /dev/null; then
+    echo "❌ Error: Certbot is not installed"
+    echo "Please run the droplet setup script first: ./setup-droplet.sh"
+    exit 1
+fi
+
 # Check if domain argument is provided
 if [ -z "$1" ]; then
     echo "❌ Error: Please provide your domain name"
