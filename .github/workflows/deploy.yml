@@ -15,6 +15,8 @@ jobs:
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
 
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
@@ -26,11 +28,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: 🔨 Build packages
-        run: pnpm build
+        run: pnpm exec turbo run build
         timeout-minutes: 10
 
       - name: 🧪 Run tests
-        run: pnpm test
+        run: pnpm exec turbo run test
         timeout-minutes: 5
 
   # Direct deployment to DigitalOcean
@@ -39,215 +41,129 @@ jobs:
     needs: test-and-build
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: 🚀 Deploy to DigitalOcean
+      - name: � Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔨 Build packages
+        run: pnpm exec turbo run build
+
+      - name: 📁 Create deployment package
+        run: |
+          mkdir -p deploy-package/apps/api
+          mkdir -p deploy-package/apps/web
+          mkdir -p deploy-package/packages
+          
+          # Copy API built files
+          cp -r apps/api/dist deploy-package/apps/api/
+          cp apps/api/package.json deploy-package/apps/api/
+          
+          # Copy Web built files
+          cp -r apps/web/.next deploy-package/apps/web/
+          cp -r apps/web/public deploy-package/apps/web/
+          cp apps/web/package.json deploy-package/apps/web/
+          
+          # Copy ALL workspace packages (needed for runtime)
+          cp -r packages/types deploy-package/packages/ || echo "types package not found"
+          cp -r packages/utils deploy-package/packages/ || echo "utils package not found"
+          cp -r packages/logger deploy-package/packages/ || echo "logger package not found"
+          cp -r packages/ui deploy-package/packages/ || echo "ui package not found"
+          
+          # Copy root files
+          cp ecosystem.config.js deploy-package/
+          cp package.json deploy-package/
+          cp pnpm-lock.yaml deploy-package/
+          cp pnpm-workspace.yaml deploy-package/      - name: �🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DROPLET_HOST }}
-          username: ${{ secrets.DROPLET_USER }}
-          key: ${{ secrets.DROPLET_SSH_KEY }}
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/questly || git clone https://github.com/${{ github.repository }}.git /var/www/questly
+            # Install Node.js and pnpm if not installed
+            if ! command -v node &> /dev/null; then
+              echo "🟢 Installing Node.js..."
+              curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+              sudo apt install -y nodejs
+            fi
+
+            if ! command -v pnpm &> /dev/null; then
+              echo "📦 Installing pnpm..."
+              npm install -g pnpm
+            fi
+
+            # Install PM2 if not installed
+            if ! command -v pm2 &> /dev/null; then
+              echo "⚡ Installing PM2..."
+              npm install -g pm2
+              pm2 install pm2-logrotate
+            fi
+
+            # Create directory structure
+            mkdir -p /var/www/questly/apps/api
+            mkdir -p /var/www/questly/apps/web
             cd /var/www/questly
-            git fetch origin
-            git reset --hard origin/main
+
+            # Clone only if needed for package.json files
+            if [ ! -d ".git" ]; then
+              git clone --depth 1 https://github.com/${{ github.repository }}.git .
+            else
+              git fetch origin && git reset --hard origin/main
+            fi
+
+            # Create PM2 log directory
+            sudo mkdir -p /var/log/pm2
+            sudo chown -R $USER:$USER /var/log/pm2
+
+            echo "✅ Server preparation completed successfully!"
+
+      - name: 📤 Upload built assets
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          source: "deploy-package/*"
+          target: "/var/www/questly/"
+          strip_components: 1
+
+      - name: � Start Services
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/questly
             
-            # Install dependencies and build
-            pnpm install --frozen-lockfile --prod
-            pnpm build
-            
-            # Restart PM2 processes
-            pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js
+            # Install ALL dependencies (including workspace packages) - workspace packages need to be linked properly
+            export NODE_OPTIONS="--max-old-space-size=768"
+            pnpm install --frozen-lockfile --ignore-scripts
+
+            # Verify that built assets exist
+            ls -la apps/api/dist/ || echo "API dist not found"
+            ls -la apps/web/.next/ || echo "Web .next not found"
+            ls -la packages/ || echo "Packages not found"
+
+            # Stop existing PM2 processes
+            pm2 stop all || true
+            pm2 delete all || true
+
+            # Start applications with PM2
+            pm2 start ecosystem.config.js
             pm2 save
-            
-            echo "✅ Deployment completed successfully!"
-      matrix:
-        service: [api, web]
 
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🐳 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: 🔐 Log in to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 📝 Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: 🔨 Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./deployment/docker/Dockerfile.digitalocean
-          target: ${{ matrix.service }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  # Deploy to DigitalOcean
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [test-and-build, docker-build]
-    if: github.ref == 'refs/heads/main'
-    environment: production
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔐 Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
-
-      - name: 📝 Add server to known hosts
-        run: |
-          ssh-keyscan -H ${{ secrets.DO_HOST }} >> ~/.ssh/known_hosts
-
-      - name: 🚀 Deploy to DigitalOcean
-        run: |
-          ssh ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << 'EOF'
-            set -e
-            echo "🌊 Starting deployment..."
-            
-            # Navigate to application directory
-            cd /var/www/questly
-            
-            # Pull latest changes
-            echo "📥 Pulling latest code..."
-            git pull origin main
-            
-            # Create production environment file
-            echo "🔧 Setting up environment variables..."
-            cat > .env.production << 'ENVEOF'
-            # Production Environment Variables
-            NODE_ENV=production
-            PORT=3001
-            
-            # Database
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            
-            # Authentication
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
-            BETTER_AUTH_URL=${{ secrets.API_URL }}
-            
-            # API Configuration
-            API_URL=${{ secrets.API_URL }}
-            
-            # Frontend Configuration
-            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-            NEXT_PUBLIC_API_URL=${{ secrets.API_URL }}
-            NEXT_PUBLIC_AUTH_URL=${{ secrets.API_URL }}
-            
-            # Google OAuth
-            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-            
-            # PostgreSQL Container Config
-            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          ENVEOF
-            
-            # Source the environment file
-            set -a
-            source .env.production
-            set +a
-            
-            # Login to GitHub Container Registry
-            echo "🔐 Logging into container registry..."
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # Stop current services
-            echo "🛑 Stopping current services..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production down || true
-            
-            # Pull latest images
-            echo "📦 Pulling latest Docker images..."
-            docker pull ghcr.io/vinayak-00017/questly-api:latest
-            docker pull ghcr.io/vinayak-00017/questly-web:latest
-            
-            # Update docker-compose to use new images
-            export API_IMAGE="ghcr.io/vinayak-00017/questly-api:latest"
-            export WEB_IMAGE="ghcr.io/vinayak-00017/questly-web:latest"
-            
-            # Start services
-            echo "🚀 Starting services..."
-            
-            # Start postgres first
-            echo "🗄️ Starting PostgreSQL..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production up -d postgres
-            
-            # Wait for postgres to be ready
-            echo "⏳ Waiting for PostgreSQL to be ready..."
-            sleep 20
-            
-            # Check postgres status
-            echo "📊 PostgreSQL status:"
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production ps postgres
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production logs --tail=10 postgres
-            
-            # Start API without health check dependency
-            echo "🚀 Starting API..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production up -d --no-deps api
-            
-            # Wait and check API logs
-            echo "⏳ Waiting for API to start..."
-            sleep 30
-            
-            echo "� API status:"
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production ps api
-            echo "📋 API logs:"
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production logs --tail=30 api
-            
-            # Test API health endpoint manually
-            echo "🏥 Testing API health endpoint..."
-            sleep 10
-            curl -f http://localhost:8080/health || echo "API health check failed"
-            
-            # Start remaining services
-            echo "🚀 Starting remaining services..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production up -d
-            
-            # Run database migrations
-            echo "🗄️ Running database migrations..."
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production exec -T api npm run db:migrate || echo "Migration failed, continuing..."
-            
-            # Health check
-            echo "🏥 Running health checks..."
-            timeout 60 bash -c 'until curl -f http://localhost:8080/health >/dev/null 2>&1; do sleep 2; done' || echo "Health check timeout"
-            
-            # Clean up old images
-            echo "🧹 Cleaning up old Docker images..."
-            docker image prune -f
-            
-            echo "✅ Deployment completed successfully!"
-            docker-compose -f deployment/docker/docker-compose.prod.yml --env-file .env.production ps
-          EOF
-
-      - name: 🔔 Notify deployment status
-        if: always()
-        run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            MESSAGE="✅ Questly deployment to DigitalOcean completed successfully!"
-          else
-            MESSAGE="❌ Questly deployment to DigitalOcean failed!"
-          fi
-          echo "Deployment status: $MESSAGE"
+            echo "✅ Services started successfully!"
