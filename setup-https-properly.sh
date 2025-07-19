@@ -19,15 +19,9 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ["types", "utils"],
   
-  // HTTPS-aware configuration
-  ...(process.env.NODE_ENV === "production" && {
-    // Let Next.js know it's behind a proxy
-    experimental: {
-      trustHost: true,
-    },
-    // Don't set assetPrefix - let Next.js handle it automatically
-    // The proxy headers will tell Next.js the correct protocol
-  }),
+  // HTTPS-aware configuration - let Next.js auto-detect protocol from headers
+  // Remove assetPrefix to allow Next.js to handle it automatically
+  // The X-Forwarded-Proto header will tell Next.js the correct protocol
   
   eslint: {
     ignoreDuringBuilds: true,
