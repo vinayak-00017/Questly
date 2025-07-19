@@ -1,10 +1,3 @@
-// Utility to get the correct API base URL
-function getApiBaseUrl() {
-  if (process.env.NODE_ENV === "production") {
-    return process.env.NEXT_PUBLIC_API_URL || "https://questly.me/v1/api";
-  }
-  return "http://localhost:5001";
-}
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
@@ -13,6 +6,7 @@ import { authClient, useSession } from "@/lib/auth-client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { getApiBaseUrl } from "@/config";
 
 function UpgradeCallbackContent() {
   const router = useRouter();

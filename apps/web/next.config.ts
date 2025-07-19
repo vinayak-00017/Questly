@@ -5,11 +5,11 @@ const nextConfig: NextConfig = {
     domains: ["lh3.googleusercontent.com"],
   },
   transpilePackages: ["types", "utils"],
-  
+
   // HTTPS-aware configuration - let Next.js auto-detect protocol from headers
   // Remove assetPrefix to allow Next.js to handle it automatically
   // The X-Forwarded-Proto header will tell Next.js the correct protocol
-  
+
   eslint: {
     // Allow production builds to successfully complete even with ESLint errors
     ignoreDuringBuilds: true,

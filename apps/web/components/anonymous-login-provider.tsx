@@ -3,26 +3,26 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { authClient, useSession } from "@/lib/auth-client";
 import { WelcomeDialog } from "./welcome-dialog";
+import { getApiBaseUrl } from "@/config";
 
 interface AnonymousUserContextType {
   isAnonymous: boolean;
-  upgradeAccount: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  upgradeWithOAuth: (provider: "google") => Promise<{ success: boolean; error?: string }>;
+  upgradeAccount: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  upgradeWithOAuth: (
+    provider: "google"
+  ) => Promise<{ success: boolean; error?: string }>;
   createAnonymousSession: () => Promise<void>;
   hasUserLoggedOut: boolean;
   showWelcomeDialog: boolean;
   setShowWelcomeDialog: (show: boolean) => void;
-
-
-const AnonymousUserContext = createContext<AnonymousUserContextType | null>(null);
-
-// Utility to get the correct API base URL
-function getApiBaseUrl() {
-  if (process.env.NODE_ENV === "production") {
-    return process.env.NEXT_PUBLIC_API_URL || "https://questly.me/v1/api";
-  }
-  return "http://localhost:5001";
 }
+
+const AnonymousUserContext = createContext<AnonymousUserContextType | null>(
+  null
+);
 
 interface AnonymousLoginProviderProps {
   children: React.ReactNode;
@@ -89,7 +89,11 @@ export function AnonymousLoginProvider({
 
       // Don't show on auth pages
       const pathname = window.location.pathname;
-      if (pathname === "/login" || pathname === "/register" || pathname.startsWith("/auth/")) {
+      if (
+        pathname === "/login" ||
+        pathname === "/register" ||
+        pathname.startsWith("/auth/")
+      ) {
         return false;
       }
 
@@ -135,8 +139,6 @@ export function AnonymousLoginProvider({
     setShowWelcomeDialog(false);
   };
 
-
-
   const upgradeAccount = async (email: string, password: string) => {
     if (!session?.user || !isAnonymous) {
       return { success: false, error: "Not an anonymous user" };
@@ -163,7 +165,8 @@ export function AnonymousLoginProvider({
       if (exists) {
         return {
           success: false,
-          error: "An account with this email already exists. Please sign in instead."
+          error:
+            "An account with this email already exists. Please sign in instead.",
         };
       }
 
@@ -177,7 +180,7 @@ export function AnonymousLoginProvider({
         body: JSON.stringify({
           email,
           password,
-          userId: session.user.id
+          userId: session.user.id,
         }),
       });
 
@@ -200,7 +203,10 @@ export function AnonymousLoginProvider({
       console.error("Account upgrade error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "An unexpected error occurred"
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
       };
     }
   };
@@ -212,13 +218,14 @@ export function AnonymousLoginProvider({
 
     try {
       // Store the current anonymous user ID in sessionStorage so we can retrieve it after OAuth
-      sessionStorage.setItem('anonymousUpgradeUserId', session.user.id);
-      sessionStorage.setItem('isUpgradeFlow', 'true');
+      sessionStorage.setItem("anonymousUpgradeUserId", session.user.id);
+      sessionStorage.setItem("isUpgradeFlow", "true");
 
       // Use environment-based callback URL
-      const callbackURL = process.env.NODE_ENV === "production"
-        ? "/auth/upgrade-callback"
-        : "http://localhost:3000/auth/upgrade-callback";
+      const callbackURL =
+        process.env.NODE_ENV === "production"
+          ? "/auth/upgrade-callback"
+          : "http://localhost:3000/auth/upgrade-callback";
 
       // Proceed with OAuth - the callback will handle the account existence check
       await authClient.signIn.social({
@@ -231,7 +238,10 @@ export function AnonymousLoginProvider({
       console.error("OAuth upgrade error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "An unexpected error occurred"
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
       };
     }
   };
@@ -287,7 +297,9 @@ function showWelcomeNotification() {
 export function useAnonymousUser() {
   const context = useContext(AnonymousUserContext);
   if (!context) {
-    throw new Error("useAnonymousUser must be used within AnonymousLoginProvider");
+    throw new Error(
+      "useAnonymousUser must be used within AnonymousLoginProvider"
+    );
   }
   return context;
 }
