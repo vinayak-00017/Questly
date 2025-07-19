@@ -65,6 +65,7 @@ jobs:
         run: |
           mkdir -p deploy-package/apps/api
           mkdir -p deploy-package/apps/web
+          mkdir -p deploy-package/packages
           
           # Copy API built files
           cp -r apps/api/dist deploy-package/apps/api/
@@ -75,13 +76,17 @@ jobs:
           cp -r apps/web/public deploy-package/apps/web/
           cp apps/web/package.json deploy-package/apps/web/
           
+          # Copy ALL workspace packages (needed for runtime)
+          cp -r packages/types deploy-package/packages/ || echo "types package not found"
+          cp -r packages/utils deploy-package/packages/ || echo "utils package not found"
+          cp -r packages/logger deploy-package/packages/ || echo "logger package not found"
+          cp -r packages/ui deploy-package/packages/ || echo "ui package not found"
+          
           # Copy root files
           cp ecosystem.config.js deploy-package/
           cp package.json deploy-package/
           cp pnpm-lock.yaml deploy-package/
-          cp pnpm-workspace.yaml deploy-package/
-
-      - name: �🚀 Deploy to DigitalOcean
+          cp pnpm-workspace.yaml deploy-package/      - name: �🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DO_HOST }}
@@ -94,12 +99,12 @@ jobs:
               curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
               sudo apt install -y nodejs
             fi
-            
+
             if ! command -v pnpm &> /dev/null; then
               echo "📦 Installing pnpm..."
               npm install -g pnpm
             fi
-            
+
             # Install PM2 if not installed
             if ! command -v pm2 &> /dev/null; then
               echo "⚡ Installing PM2..."
@@ -144,13 +149,14 @@ jobs:
           script: |
             cd /var/www/questly
             
-            # Install only production runtime dependencies - no builds needed since we upload pre-built assets
+            # Install ALL dependencies (including workspace packages) - workspace packages need to be linked properly
             export NODE_OPTIONS="--max-old-space-size=768"
-            pnpm install --frozen-lockfile --prod --ignore-scripts
+            pnpm install --frozen-lockfile --ignore-scripts
 
             # Verify that built assets exist
             ls -la apps/api/dist/ || echo "API dist not found"
             ls -la apps/web/.next/ || echo "Web .next not found"
+            ls -la packages/ || echo "Packages not found"
 
             # Stop existing PM2 processes
             pm2 stop all || true
