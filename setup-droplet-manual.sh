@@ -43,11 +43,15 @@ sudo chown -R $USER:$USER /var/log/pm2
 echo "🌐 Installing and configuring Nginx..."
 sudo apt install -y nginx
 
-# Create Nginx configuration
+# Install Certbot for Let's Encrypt SSL
+echo "🔒 Installing Certbot for SSL..."
+sudo apt install -y certbot python3-certbot-nginx
+
+# Create Nginx configuration (HTTP first, will upgrade to HTTPS)
 sudo tee /etc/nginx/sites-available/questly > /dev/null <<EOF
 server {
     listen 80;
-    server_name your-domain.com;  # Replace with your domain
+    server_name your-domain.com;  # Replace with your actual domain
 
     # Web app (Next.js)
     location / {
@@ -113,18 +117,25 @@ sudo ufw --force enable
 echo "✅ Droplet setup completed!"
 echo ""
 echo "📋 Next steps:"
-echo "1. Update the Nginx configuration with your actual domain"
-echo "2. Configure your GitHub secrets:"
+echo "1. Replace 'your-domain.com' in /etc/nginx/sites-available/questly with your actual domain"
+echo "2. Point your domain's DNS A record to this droplet's IP address"
+echo "3. Configure your GitHub secrets:"
 echo "   - DO_HOST: your-droplet-ip"
 echo "   - DO_USER: your-username"
 echo "   - DO_SSH_PRIVATE_KEY: your-private-key"
-echo "3. Update your .env file with database connection:"
+echo "4. Update your .env file with database connection:"
 echo "   DATABASE_URL=postgresql://questly:your-secure-password@localhost:5432/questly"
-echo "4. Push your code to GitHub to trigger deployment"
+echo "5. Push your code to GitHub to trigger deployment"
+echo "6. 🔒 ENABLE HTTPS: Run 'sudo certbot --nginx -d your-domain.com' after deployment"
 echo ""
-echo "🔍 Useful commands:"
+echo "� SSL Certificate Setup (run AFTER domain DNS is configured):"
+echo "   sudo certbot --nginx -d your-domain.com"
+echo "   sudo systemctl enable certbot.timer  # Auto-renewal"
+echo ""
+echo "�🔍 Useful commands:"
 echo "   - pm2 status"
 echo "   - pm2 logs"
 echo "   - sudo nginx -t"
 echo "   - sudo systemctl status nginx"
 echo "   - sudo systemctl status postgresql"
+echo "   - sudo certbot certificates  # Check SSL status"
