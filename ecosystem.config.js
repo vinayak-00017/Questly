@@ -12,7 +12,7 @@ module.exports = {
       restart_delay: 5000,
       env: {
         NODE_ENV: "production",
-        PORT: 4000,
+        PORT: 5001,
       },
       error_file: "/var/log/pm2/questly-api-error.log",
       out_file: "/var/log/pm2/questly-api-out.log",
@@ -21,7 +21,7 @@ module.exports = {
     },
     {
       name: "questly-web",
-      script: "./node_modules/next/dist/bin/next",
+      script: "npm",
       args: "start",
       cwd: "/var/www/questly/apps/web",
       instances: 1,
