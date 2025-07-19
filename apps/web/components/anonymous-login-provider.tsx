@@ -12,9 +12,17 @@ interface AnonymousUserContextType {
   hasUserLoggedOut: boolean;
   showWelcomeDialog: boolean;
   setShowWelcomeDialog: (show: boolean) => void;
-}
+
 
 const AnonymousUserContext = createContext<AnonymousUserContextType | null>(null);
+
+// Utility to get the correct API base URL
+function getApiBaseUrl() {
+  if (process.env.NODE_ENV === "production") {
+    return process.env.NEXT_PUBLIC_API_URL || "https://questly.me/v1/api";
+  }
+  return "http://localhost:5001";
+}
 
 interface AnonymousLoginProviderProps {
   children: React.ReactNode;
@@ -127,14 +135,17 @@ export function AnonymousLoginProvider({
     setShowWelcomeDialog(false);
   };
 
+
+
   const upgradeAccount = async (email: string, password: string) => {
     if (!session?.user || !isAnonymous) {
       return { success: false, error: "Not an anonymous user" };
     }
 
     try {
+      const API_BASE = getApiBaseUrl();
       // First check if email is already registered
-      const checkResponse = await fetch("http://localhost:5001/api/check-email", {
+      const checkResponse = await fetch(`${API_BASE}/api/check-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -157,7 +168,7 @@ export function AnonymousLoginProvider({
       }
 
       // Proceed with upgrade
-      const upgradeResponse = await fetch("http://localhost:5001/api/upgrade-account", {
+      const upgradeResponse = await fetch(`${API_BASE}/api/upgrade-account`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -204,10 +215,15 @@ export function AnonymousLoginProvider({
       sessionStorage.setItem('anonymousUpgradeUserId', session.user.id);
       sessionStorage.setItem('isUpgradeFlow', 'true');
 
+      // Use environment-based callback URL
+      const callbackURL = process.env.NODE_ENV === "production"
+        ? "/auth/upgrade-callback"
+        : "http://localhost:3000/auth/upgrade-callback";
+
       // Proceed with OAuth - the callback will handle the account existence check
       await authClient.signIn.social({
         provider,
-        callbackURL: `http://localhost:3000/auth/upgrade-callback`,
+        callbackURL,
       });
 
       return { success: true };

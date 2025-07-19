@@ -1,3 +1,10 @@
+// Utility to get the correct API base URL
+function getApiBaseUrl() {
+  if (process.env.NODE_ENV === "production") {
+    return process.env.NEXT_PUBLIC_API_URL || "https://questly.me/v1/api";
+  }
+  return "http://localhost:5001";
+}
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
@@ -42,8 +49,9 @@ function UpgradeCallbackContent() {
         }
 
         // Check if this OAuth account already exists for a non-anonymous user
+        const API_BASE = getApiBaseUrl();
         const checkResponse = await fetch(
-          "http://localhost:5001/api/check-oauth-account-callback",
+          `${API_BASE}/api/check-oauth-account-callback`,
           {
             method: "POST",
             headers: {
@@ -85,7 +93,7 @@ function UpgradeCallbackContent() {
 
         // Account doesn't exist, proceed with upgrade
         const upgradeResponse = await fetch(
-          "http://localhost:5001/api/complete-oauth-upgrade",
+          `${API_BASE}/api/complete-oauth-upgrade`,
           {
             method: "POST",
             headers: {
