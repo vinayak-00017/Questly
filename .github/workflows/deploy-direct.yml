@@ -144,9 +144,13 @@ jobs:
           script: |
             cd /var/www/questly
             
-            # Install ALL dependencies (including dev) for the monorepo to ensure all runtime deps are available
+            # Install only production runtime dependencies - no builds needed since we upload pre-built assets
             export NODE_OPTIONS="--max-old-space-size=768"
-            pnpm install --frozen-lockfile --ignore-scripts
+            pnpm install --frozen-lockfile --prod --ignore-scripts
+
+            # Verify that built assets exist
+            ls -la apps/api/dist/ || echo "API dist not found"
+            ls -la apps/web/.next/ || echo "Web .next not found"
 
             # Stop existing PM2 processes
             pm2 stop all || true
