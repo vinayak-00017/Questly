@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
     domains: ["lh3.googleusercontent.com"],
   },
   transpilePackages: ["types", "utils"],
-  output: "standalone",
+  // Remove standalone output for now
+  // output: "standalone",
   eslint: {
     // Allow production builds to successfully complete even with ESLint errors
     ignoreDuringBuilds: true,
