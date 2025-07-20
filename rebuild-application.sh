@@ -31,12 +31,9 @@ pnpm build
 echo "🔧 Updating PM2 configuration..."
 # The ecosystem.config.js should already have the correct path
 
-# Restart PM2 with rebuilt applications → DOWNTIME ENDS
+# Restart PM2 with rebuilt applications
 echo "🚀 Starting PM2 processes..."
-pm2 start ecosystem.config.js || {
-    echo "❌ Failed to start PM2 processes"
-    exit 1
-}
+pm2 start ecosystem.config.js
 
 # Save PM2 configuration
 pm2 save
