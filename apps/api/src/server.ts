@@ -19,6 +19,10 @@ export const createServer = async (
     .disable("x-powered-by")
     .use(morgan("dev"))
     .use(urlencoded({ extended: true }))
+    .use((req, res, next) => {
+      console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Headers: ${JSON.stringify(req.headers, null, 2)}`);
+      next();
+    })
     .use(
       cors({
         origin: [
@@ -30,7 +34,11 @@ export const createServer = async (
         credentials: true,
       })
     )
-    .all("/api/auth/*splat", toNodeHandler(auth))
+    .all("/api/auth/*", (req, res, next) => {
+      console.log(`[AUTH] ${req.method} ${req.path} - Original URL: ${req.originalUrl}`);
+      next();
+    })
+    .all("/api/auth/*", toNodeHandler(auth))
     .use(json())
     .use("/quest", questRouter)
     .use("/instance", instanceRouter)
