@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { authClient, useSession } from "@/lib/auth-client";
 import { WelcomeDialog } from "./welcome-dialog";
-import { getApiBaseUrl } from "@/config";
+import { BASE_URL } from "@/config";
 
 interface AnonymousUserContextType {
   isAnonymous: boolean;
@@ -145,9 +145,8 @@ export function AnonymousLoginProvider({
     }
 
     try {
-      const API_BASE = getApiBaseUrl();
       // First check if email is already registered
-      const checkResponse = await fetch(`${API_BASE}/api/check-email`, {
+      const checkResponse = await fetch(`${BASE_URL}/api/check-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -171,7 +170,7 @@ export function AnonymousLoginProvider({
       }
 
       // Proceed with upgrade
-      const upgradeResponse = await fetch(`${API_BASE}/api/upgrade-account`, {
+      const upgradeResponse = await fetch(`${BASE_URL}/api/upgrade-account`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

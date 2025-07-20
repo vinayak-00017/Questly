@@ -7,7 +7,7 @@ const getAuthBaseURL = () => {
     // Use full URL for production - Better Auth requires absolute URLs
     return process.env.NEXT_PUBLIC_AUTH_URL || "https://questly.me/v1";
   }
-  return "http://localhost:5001";  // Direct connection for development
+  return "http://localhost:5001"; // Direct connection for development
 };
 
 export const authClient = createAuthClient({

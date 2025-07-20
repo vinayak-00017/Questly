@@ -2,14 +2,7 @@ import { json, urlencoded } from "body-parser";
 import express, { type Express } from "express";
 import morgan from "morgan";
 import cors from "cors";
-import dotenv from "dotenv";
-
-// Load environment-specific .env file
-const env = process.env.NODE_ENV || "development";
-dotenv.config({ path: `.env.${env}` });
-// Fallback to .env if environment-specific file doesn't exist
-dotenv.config();
-
+import "dotenv/config";
 import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import { auth } from "../lib/auth";
 import questRouter from "./routes/quest";
