@@ -35,12 +35,59 @@ jobs:
         run: pnpm exec turbo run test
         timeout-minutes: 5
 
-  # Deploy to DigitalOcean using rebuild script
+  # Direct deployment to DigitalOcean
   deploy:
     runs-on: ubuntu-latest
     needs: test-and-build
     if: github.ref == 'refs/heads/main'
     steps:
+      - name: � Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔨 Build packages
+        run: pnpm exec turbo run build
+
+      - name: 📁 Create deployment package
+        run: |
+          mkdir -p deploy-package/apps/api
+          mkdir -p deploy-package/apps/web
+          mkdir -p deploy-package/packages
+
+          # Copy API built files
+          cp -r apps/api/dist deploy-package/apps/api/
+          cp apps/api/package.json deploy-package/apps/api/
+
+          # Copy Web built files
+          cp -r apps/web/.next deploy-package/apps/web/
+          cp -r apps/web/public deploy-package/apps/web/
+          cp apps/web/package.json deploy-package/apps/web/
+
+          # Copy ALL workspace packages (needed for runtime)
+          cp -r packages/types deploy-package/packages/ || echo "types package not found"
+          cp -r packages/utils deploy-package/packages/ || echo "utils package not found"
+          cp -r packages/logger deploy-package/packages/ || echo "logger package not found"
+          cp -r packages/ui deploy-package/packages/ || echo "ui package not found"
+
+          # Copy root files
+          cp ecosystem.config.js deploy-package/
+          cp package.json deploy-package/
+          cp pnpm-lock.yaml deploy-package/
+          cp pnpm-workspace.yaml deploy-package/
+
       - name: 🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -67,18 +114,58 @@ jobs:
               pm2 install pm2-logrotate
             fi
 
-            # Create directory structure and clone if needed
-            mkdir -p /var/www/questly
+            # Create directory structure
+            mkdir -p /var/www/questly/apps/api
+            mkdir -p /var/www/questly/apps/web
             cd /var/www/questly
 
+            # Clone only if needed for package.json files
             if [ ! -d ".git" ]; then
-              git clone https://github.com/${{ github.repository }}.git .
+              git clone --depth 1 https://github.com/${{ github.repository }}.git .
+            else
+              git fetch origin && git reset --hard origin/main
             fi
 
             # Create PM2 log directory
             sudo mkdir -p /var/log/pm2
             sudo chown -R $USER:$USER /var/log/pm2
 
-            # Run the rebuild script (handles everything: git pull, migrations, build, deploy)
-            chmod +x rebuild-application.sh
-            ./rebuild-application.sh
+            echo "✅ Server preparation completed successfully!"
+
+      - name: 📤 Upload built assets
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          source: "deploy-package/*"
+          target: "/var/www/questly/"
+          strip_components: 1
+
+      - name: � Start Services
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/questly
+
+            # Install ALL dependencies (including workspace packages) - workspace packages need to be linked properly
+            export NODE_OPTIONS="--max-old-space-size=768"
+            pnpm install --frozen-lockfile --ignore-scripts
+
+            # Verify that built assets exist
+            ls -la apps/api/dist/ || echo "API dist not found"
+            ls -la apps/web/.next/ || echo "Web .next not found"
+            ls -la packages/ || echo "Packages not found"
+
+            # Stop existing PM2 processes
+            pm2 stop all || true
+            pm2 delete all || true
+
+            # Start applications with PM2
+            pm2 start ecosystem.config.js
+            pm2 save
+
+            echo "✅ Services started successfully!"
