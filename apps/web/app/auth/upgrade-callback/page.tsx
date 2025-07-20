@@ -6,7 +6,7 @@ import { authClient, useSession } from "@/lib/auth-client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
-import { getApiBaseUrl } from "@/config";
+import { BASE_URL } from "@/config";
 
 function UpgradeCallbackContent() {
   const router = useRouter();
@@ -43,9 +43,8 @@ function UpgradeCallbackContent() {
         }
 
         // Check if this OAuth account already exists for a non-anonymous user
-        const API_BASE = getApiBaseUrl();
         const checkResponse = await fetch(
-          `${API_BASE}/api/check-oauth-account-callback`,
+          `${BASE_URL}/api/check-oauth-account-callback`,
           {
             method: "POST",
             headers: {
@@ -87,7 +86,7 @@ function UpgradeCallbackContent() {
 
         // Account doesn't exist, proceed with upgrade
         const upgradeResponse = await fetch(
-          `${API_BASE}/api/complete-oauth-upgrade`,
+          `${BASE_URL}/api/complete-oauth-upgrade`,
           {
             method: "POST",
             headers: {

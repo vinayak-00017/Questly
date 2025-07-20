@@ -5,7 +5,7 @@ import { anonymousClient } from "better-auth/client/plugins";
 const getAuthBaseURL = () => {
   if (process.env.NODE_ENV === "production") {
     // Use full URL for production - Better Auth requires absolute URLs
-    return process.env.NEXT_PUBLIC_AUTH_URL || "https://questly.me/v1/api";
+    return process.env.NEXT_PUBLIC_AUTH_URL || "https://questly.me/v1";
   }
   return "http://localhost:5001";  // Direct connection for development
 };
