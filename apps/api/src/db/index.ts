@@ -9,8 +9,11 @@ dotenv.config();
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 
-export const db = drizzle({
+const db = drizzle({
   client: new pg.Client({
     connectionString: process.env.DATABASE_URL!,
   }),
 });
+
+export { db };
+export default db;
