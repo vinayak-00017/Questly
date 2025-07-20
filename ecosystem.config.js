@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "questly-api",
-      script: "./apps/api/dist/index.js",
+      script: "./apps/api/dist/index.cjs",
       cwd: "/var/www/questly",
       instances: 1,
       exec_mode: "fork",
