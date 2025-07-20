@@ -12,7 +12,10 @@ export const NEXT_API_URL =
 // Utility to get the correct API base URL
 export function getApiBaseUrl() {
   if (process.env.NODE_ENV === "production") {
-    return process.env.NEXT_PUBLIC_API_URL || "https://questly.me/v1/api";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://questly.me/v1/api";
+    console.log("Production API URL:", apiUrl);
+    console.log("NEXT_PUBLIC_API_URL env var:", process.env.NEXT_PUBLIC_API_URL);
+    return apiUrl;
   }
   return "http://localhost:5001";
 }
