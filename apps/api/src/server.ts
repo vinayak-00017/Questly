@@ -34,11 +34,11 @@ export const createServer = async (
         credentials: true,
       })
     )
-    .all("/api/auth/*", (req, res, next) => {
+    .use("/api/auth", (req, res, next) => {
       console.log(`[AUTH] ${req.method} ${req.path} - Original URL: ${req.originalUrl}`);
       next();
     })
-    .all("/api/auth/*", toNodeHandler(auth))
+    .use("/api/auth", toNodeHandler(auth))
     .use(json())
     .use("/quest", questRouter)
     .use("/instance", instanceRouter)
