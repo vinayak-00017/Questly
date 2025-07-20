@@ -9,8 +9,6 @@ dotenv.config();
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-console.log("NODE_ENV:", process.env.NODE_ENV);
-console.log("DATABASE_URL:", JSON.stringify(process.env.DATABASE_URL));
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL!,
 });
