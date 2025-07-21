@@ -6,7 +6,7 @@ describe("Server", () => {
   it("health check returns 200", async () => {
     const app = await createServer({ skipSchedulers: true });
     await supertest(app)
-      .get("/status")
+      .get("/v1/status")
       .expect(200)
       .then((res) => {
         expect(res.ok).toBe(true);
@@ -16,7 +16,7 @@ describe("Server", () => {
   it("message endpoint says hello", async () => {
     const app = await createServer({ skipSchedulers: true });
     await supertest(app)
-      .get("/message/jared")
+      .get("/v1/message/jared")
       .expect(200)
       .then((res) => {
         expect(res.body).toEqual({ message: "hello jared" });
