@@ -120,7 +120,9 @@ export function AnonymousLoginProvider({
       setShowWelcomeDialog(false);
 
       console.log("🎭 Creating anonymous user session...");
-      const result = await authClient.anonymous();
+      console.log("🔍 About to call authClient.signIn.anonymous()");
+      const result = await authClient.signIn.anonymous();
+      console.log("🔍 Anonymous call result:", result);
 
       if (result.data) {
         console.log("✅ Anonymous user created successfully");

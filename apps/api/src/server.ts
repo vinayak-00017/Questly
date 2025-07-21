@@ -42,6 +42,13 @@ export const createServer = async (
       );
       console.log(`[AUTH] Better Auth API methods:`, Object.keys(auth.api));
       console.log(`[AUTH] Environment: ${process.env.NODE_ENV}`);
+      console.log(`[AUTH] Full request URL breakdown:`);
+      console.log(`  - req.url: ${req.url}`);
+      console.log(`  - req.path: ${req.path}`);
+      console.log(`  - req.originalUrl: ${req.originalUrl}`);
+      console.log(`[AUTH] Request headers:`, JSON.stringify(req.headers, null, 2));
+      console.log(`[AUTH] Request body:`, JSON.stringify(req.body, null, 2));
+      console.log(`[AUTH] Content-Type:`, req.get('Content-Type'));
       next();
     })
     .use("/api/auth", toNodeHandler(auth))
