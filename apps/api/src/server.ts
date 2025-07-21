@@ -2,7 +2,14 @@ import { json, urlencoded } from "body-parser";
 import express, { type Express } from "express";
 import morgan from "morgan";
 import cors from "cors";
-import "dotenv/config";
+import dotenv from "dotenv";
+
+// Load environment-specific .env file
+const env = process.env.NODE_ENV || "development";
+dotenv.config({ path: `.env.${env}` });
+// Fallback to .env if environment-specific file doesn't exist
+dotenv.config();
+
 import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import { auth } from "../lib/auth";
 import questRouter from "./routes/quest";
@@ -19,13 +26,6 @@ export const createServer = async (
     .disable("x-powered-by")
     .use(morgan("dev"))
     .use(urlencoded({ extended: true }))
-    .use(json()) // Move JSON parser BEFORE auth middleware
-    .use((req, res, next) => {
-      console.log(
-        `[${new Date().toISOString()}] ${req.method} ${req.path} - Headers: ${JSON.stringify(req.headers, null, 2)}`
-      );
-      next();
-    })
     .use(
       cors({
         origin: [
@@ -37,22 +37,8 @@ export const createServer = async (
         credentials: true,
       })
     )
-    .use("/api/auth", (req, res, next) => {
-      console.log(
-        `[AUTH] ${req.method} ${req.path} - Original URL: ${req.originalUrl}`
-      );
-      console.log(`[AUTH] Better Auth API methods:`, Object.keys(auth.api));
-      console.log(`[AUTH] Environment: ${process.env.NODE_ENV}`);
-      console.log(`[AUTH] Full request URL breakdown:`);
-      console.log(`  - req.url: ${req.url}`);
-      console.log(`  - req.path: ${req.path}`);
-      console.log(`  - req.originalUrl: ${req.originalUrl}`);
-      console.log(`[AUTH] Request headers:`, JSON.stringify(req.headers, null, 2));
-      console.log(`[AUTH] Request body:`, JSON.stringify(req.body, null, 2));
-      console.log(`[AUTH] Content-Type:`, req.headers['content-type']);
-      next();
-    })
-    .use("/api/auth", toNodeHandler(auth))
+    .all("/api/auth/*splat", toNodeHandler(auth))
+    .use(json())
     .use("/quest", questRouter)
     .use("/instance", instanceRouter)
     .use("/main-quest", mainQuestRouter)
