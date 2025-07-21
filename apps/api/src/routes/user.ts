@@ -10,6 +10,7 @@ import {
 import { questInstance, user } from "../db/schema";
 import { and, eq } from "drizzle-orm";
 import { processUserDailyXp } from "../utils/xp";
+import { calculateUserStreak } from "../utils/streak";
 import { performanceService } from "../../services/performance-service";
 
 const router = express.Router();
@@ -17,36 +18,65 @@ const router = express.Router();
 router.get("/userStats", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     const [currUser] = await db.select().from(user).where(eq(user.id, userId));
-    const quests = await db
-      .select({
-        basePoints: questInstance.basePoints,
-        completed: questInstance.completed,
-      })
-      .from(questInstance)
-      .where(
-        and(
-          eq(questInstance.userId, userId),
-          eq(questInstance.date, today.toISOString().split("T")[0])
-        )
-      );
 
     if (!currUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Get today's date in the user's timezone using the same format as quest creation
+    const currentUTC = new Date();
+    const userLocalTime = new Date(
+      currentUTC.toLocaleString("en-US", {
+        timeZone: currUser.timezone || "UTC",
+      })
+    );
+    
+    // Use toDbDate to ensure consistent date format with quest creation
+    const todayString = toDbDate(userLocalTime);
+
+    console.log(`UserStats: Getting quests for user ${userId} on ${todayString} (timezone: ${currUser.timezone})`);
+
+    const quests = await db
+      .select({
+        basePoints: questInstance.basePoints,
+        completed: questInstance.completed,
+        title: questInstance.title,
+        xpReward: questInstance.xpReward,
+      })
+      .from(questInstance)
+      .where(
+        and(
+          eq(questInstance.userId, userId),
+          eq(questInstance.date, todayString)
+        )
+      );
+
+    console.log(`UserStats: Found ${quests.length} quests for today`);
+    quests.forEach(quest => {
+      console.log(`  - ${quest.title}: completed=${quest.completed}, basePoints=${quest.basePoints}, xpReward=${quest.xpReward}`);
+    });
+
     const levelStats = calculateLevelFromXp(currUser.xp);
+    
+    // Calculate today's potential XP (what will be awarded at midnight)
     const todaysXp = calculateXpRewards(quests, levelStats.level, true).reduce(
       (sum, quest) => sum + quest.xpReward,
       0
     );
 
+    // Calculate current streak
+    const streakData = await calculateUserStreak(userId, currUser.timezone);
+
+    console.log(`UserStats: Calculated today's XP: ${todaysXp} for user ${userId}`);
+    console.log(`UserStats: Current streak: ${streakData.streak} days for user ${userId}`);
+
     const userStats = { 
       levelStats, 
       todaysXp, 
+      streak: streakData.streak,
+      isActiveToday: streakData.isActiveToday,
       timezone: currUser.timezone,
       timezoneSetExplicitly: currUser.timezoneSetExplicitly 
     };
@@ -235,3 +265,25 @@ router.get("/questDetails", requireAuth, async (req, res) => {
 });
 
 export default router;
+router.post("/updateStreak", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    
+    const [currUser] = await db.select().from(user).where(eq(user.id, userId));
+    if (!currUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { updateUserStreak } = await import("../utils/streak");
+    const result = await updateUserStreak(userId, currUser.timezone);
+
+    res.status(200).json({
+      message: "Streak updated successfully",
+      result,
+    });
+  } catch (err) {
+    console.error("Error updating streak:", err);
+    res.status(500).json({ message: "Failed to update streak" });
+  }
+});
+

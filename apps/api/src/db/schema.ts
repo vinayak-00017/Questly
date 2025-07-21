@@ -18,6 +18,8 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at").notNull(),
   isAnonymous: boolean("is_anonymous"),
   xp: integer("xp").default(0).notNull(),
+  streak: integer("streak").default(0).notNull(),
+  lastActiveDate: date("last_active_date"),
   timezone: text("timezone").default("UTC").notNull(),
   timezoneSetExplicitly: boolean("timezone_set_explicitly").default(false).notNull(),
 });

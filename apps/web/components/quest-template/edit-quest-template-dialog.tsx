@@ -41,19 +41,52 @@ const EditQuestTemplateDialog: React.FC<EditQuestTemplateDialogProps> = ({
     title: "",
     description: "",
     type: "daily" as QuestType,
-    basePoints: 1,
+    importance: QuestPriority.Standard,
     isActive: true,
     recurrenceRule: "",
     dueDate: "",
   });
 
+  // Helper function to get quest priority from basePoints
+  const getQuestPriority = (basePoints: number | string): QuestPriority => {
+    if (typeof basePoints === "string") {
+      return basePoints as QuestPriority;
+    }
+    // Map number values to priority levels based on points-map.ts
+    if (basePoints === 1) return QuestPriority.Optional;
+    if (basePoints === 2) return QuestPriority.Minor;
+    if (basePoints === 3) return QuestPriority.Standard;
+    if (basePoints === 5) return QuestPriority.Important;
+    if (basePoints >= 8) return QuestPriority.Critical;
+    return QuestPriority.Standard; // default
+  };
+
+  // Helper function to convert importance to basePoints
+  const getBasePointsFromImportance = (importance: QuestPriority): number => {
+    switch (importance) {
+      case QuestPriority.Optional:
+        return 1;
+      case QuestPriority.Minor:
+        return 2;
+      case QuestPriority.Standard:
+        return 3;
+      case QuestPriority.Important:
+        return 5;
+      case QuestPriority.Critical:
+        return 8;
+      default:
+        return 3;
+    }
+  };
+
   useEffect(() => {
     if (questTemplate) {
+      const currentImportance = getQuestPriority(questTemplate.basePoints);
       setFormData({
         title: questTemplate.title || "",
         description: questTemplate.description || "",
         type: questTemplate.type || "daily",
-        basePoints: questTemplate.basePoints || 1,
+        importance: currentImportance,
         isActive: questTemplate.isActive ?? true,
         recurrenceRule: questTemplate.recurrenceRule || "",
         dueDate: questTemplate.dueDate
@@ -82,11 +115,15 @@ const EditQuestTemplateDialog: React.FC<EditQuestTemplateDialogProps> = ({
 
     const updateData = {
       ...formData,
+      basePoints: getBasePointsFromImportance(formData.importance),
       dueDate: formData.dueDate || null,
       recurrenceRule: formData.recurrenceRule || null,
     };
 
-    updateMutation.mutate(updateData);
+    // Remove importance from the data sent to API since it's converted to basePoints
+    const { importance, ...apiData } = updateData;
+
+    updateMutation.mutate(apiData);
   };
 
   const handleClose = () => {
@@ -155,23 +192,51 @@ const EditQuestTemplateDialog: React.FC<EditQuestTemplateDialogProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="basePoints" className="text-slate-200">
-                Base Points
+              <Label htmlFor="importance" className="text-slate-200">
+                Importance
               </Label>
-              <Input
-                id="basePoints"
-                type="number"
-                min="1"
-                value={formData.basePoints}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    basePoints: parseInt(e.target.value) || 1,
-                  })
+              <Select
+                value={formData.importance}
+                onValueChange={(value: QuestPriority) =>
+                  setFormData({ ...formData, importance: value })
                 }
-                className="bg-slate-800 border-slate-600 text-white"
-                required
-              />
+              >
+                <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={QuestPriority.Critical}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                      Critical (8 Points)
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={QuestPriority.Important}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                      Important (5 Points)
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={QuestPriority.Standard}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      Standard (3 Points)
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={QuestPriority.Minor}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      Minor (2 Points)
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={QuestPriority.Optional}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-gray-500"></div>
+                      Optional (1 Points)
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

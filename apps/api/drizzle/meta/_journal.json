@@ -120,6 +120,13 @@
       "when": 1753077597385,
       "tag": "0016_youthful_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1753095586773,
+      "tag": "0017_cold_the_fury",
+      "breakpoints": true
     }
   ]
 }

@@ -19,6 +19,7 @@ import {
   Trophy,
   Crown,
   UserCheck,
+  Clock,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAnonymousUser } from "./anonymous-login-provider";
@@ -46,7 +47,9 @@ export default function AppTopbar({ className }: { className?: string }) {
     },
     todaysXp: 0,
     streak: 0,
+    isActiveToday: false,
     characterClass: "Adventurer",
+    timezone: "UTC",
   };
 
   const handleSignUp = () => {
@@ -56,6 +59,55 @@ export default function AppTopbar({ className }: { className?: string }) {
   const handleSignIn = () => {
     router.push("/login");
   };
+
+  // Helper function to format timezone display
+  const formatTimezone = (timezone: string) => {
+    if (!timezone) return "UTC";
+    
+    // Extract city name from timezone (e.g., "America/New_York" -> "New York")
+    const parts = timezone.split('/');
+    const city = parts[parts.length - 1];
+    return city.replace(/_/g, ' ');
+  };
+
+  // Helper function to get streak display
+  const getStreakDisplay = () => {
+    if (userStats.streak === 0) {
+      return {
+        icon: "🌱",
+        text: "Start today!",
+        color: "text-zinc-500",
+        bgColor: "bg-zinc-500/20",
+        borderColor: "border-zinc-600/20"
+      };
+    } else if (userStats.streak >= 30) {
+      return {
+        icon: "🏆",
+        text: `${userStats.streak} days`,
+        color: "text-purple-300",
+        bgColor: "bg-purple-500/20",
+        borderColor: "border-purple-600/20"
+      };
+    } else if (userStats.streak >= 7) {
+      return {
+        icon: "🔥",
+        text: `${userStats.streak} days`,
+        color: "text-orange-300",
+        bgColor: "bg-orange-500/20",
+        borderColor: "border-orange-600/20"
+      };
+    } else {
+      return {
+        icon: "🔥",
+        text: `${userStats.streak} ${userStats.streak === 1 ? "day" : "days"}`,
+        color: "text-blue-300",
+        bgColor: "bg-blue-500/20",
+        borderColor: "border-blue-600/20"
+      };
+    }
+  };
+
+  const streakDisplay = getStreakDisplay();
 
   return (
     <div
@@ -133,19 +185,31 @@ export default function AppTopbar({ className }: { className?: string }) {
                 </div>
               </div>
 
-              {/* Streak Counter - Improved UI */}
-              <div className="flex items-center gap-2.5 bg-gradient-to-r from-zinc-900/80 to-zinc-800/60 px-3 py-2 rounded-lg border border-blue-600/20 shadow-inner shadow-blue-500/5 hover:scale-105 transition-all duration-300">
-                <div className="h-6 w-6 flex items-center justify-center bg-blue-500/20 rounded-full">
-                  <Shield className="h-3.5 w-3.5 text-blue-400" />
+              {/* Enhanced Streak Counter */}
+              <div className={`flex items-center gap-2.5 bg-gradient-to-r from-zinc-900/80 to-zinc-800/60 px-3 py-2 rounded-lg border ${streakDisplay.borderColor} shadow-inner shadow-orange-500/5 hover:scale-105 transition-all duration-300 relative`}>
+                <div className={`h-6 w-6 flex items-center justify-center ${streakDisplay.bgColor} rounded-full`}>
+                  <span className="text-xs">{streakDisplay.icon}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-zinc-400 text-xs leading-tight">
-                    Streak
+                    {userStats.streak > 0 ? "Streak" : "No Streak"}
                   </span>
-                  <span className="text-blue-300 text-sm font-medium">
-                    {userStats.streak} {userStats.streak === 1 ? "day" : "days"}
+                  <span className={`text-sm font-medium ${streakDisplay.color}`}>
+                    {streakDisplay.text}
                   </span>
                 </div>
+                {/* Active today indicator */}
+                {userStats.isActiveToday && userStats.streak > 0 && (
+                  <div className="absolute -top-1 -right-1 h-3 w-3 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+                    <span className="text-[8px] text-white font-bold">✓</span>
+                  </div>
+                )}
+                {/* Milestone indicator for 7+ day streaks */}
+                {userStats.streak >= 7 && !userStats.isActiveToday && (
+                  <div className="absolute -top-1 -right-1 h-3 w-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                    <span className="text-[8px] text-white font-bold">★</span>
+                  </div>
+                )}
               </div>
 
               {/* Rank - Improved UI */}
@@ -194,6 +258,23 @@ export default function AppTopbar({ className }: { className?: string }) {
 
         {/* Right Section: User Info and Profile */}
         <div className="flex items-center gap-3">
+          {/* Timezone Indicator */}
+          {session && (
+            <div className="flex items-center gap-2 bg-gradient-to-r from-zinc-900/80 to-zinc-800/60 px-3 py-2 rounded-lg border border-zinc-600/20 shadow-inner shadow-zinc-500/5 hover:scale-105 transition-all duration-300">
+              <div className="h-5 w-5 flex items-center justify-center bg-zinc-500/20 rounded-full">
+                <Clock className="h-3 w-3 text-zinc-400" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-zinc-400 text-xs leading-tight">
+                  Timezone
+                </span>
+                <span className="text-zinc-300 text-sm font-medium">
+                  {formatTimezone(userStats.timezone)}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* User Profile Button and Hover Card */}
           {isAnonymous && (
             <div className="flex space-x-2">
@@ -228,101 +309,6 @@ export default function AppTopbar({ className }: { className?: string }) {
           {session ? (
             <></>
           ) : (
-            // <HoverCard>
-            //   <HoverCardTrigger asChild>
-            //     <button className="flex items-center gap-2 bg-zinc-900/60 hover:bg-black/70 transition-colors px-2 py-1.5 rounded-full border border-zinc-800/50">
-            //       <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-1 ring-amber-500/50 shadow-lg flex items-center justify-center overflow-hidden">
-            //         {session.user?.image ? (
-            //           <Image
-            //             src={session.user.image}
-            //             width={32}
-            //             height={32}
-            //             alt="Profile"
-            //             className="h-full w-full object-cover"
-            //           />
-            //         ) : (
-            //           <User className="h-4 w-4 text-amber-400" />
-            //         )}
-            //       </div>
-            //       <span className="text-white text-sm font-medium mr-1 hidden sm:inline-block">
-            //         {session.user?.name?.split(" ")[0] || "Adventurer"}
-            //       </span>
-            //       <ChevronDown className="h-4 w-4 text-zinc-400" />
-            //     </button>
-            //   </HoverCardTrigger>
-
-            //   <HoverCardContent className="w-72 bg-black/90 border border-zinc-800 text-white shadow-xl p-0 overflow-hidden">
-            //     {/* User Header */}
-            //     <div className="bg-gradient-to-r from-zinc-900 to-zinc-950 p-4">
-            //       <div className="flex items-start gap-3">
-            //         <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-amber-500/50 shadow-lg flex items-center justify-center overflow-hidden">
-            //           {session.user?.image ? (
-            //             <Image
-            //               src={session.user.image}
-            //               width={48}
-            //               height={48}
-            //               alt="Profile"
-            //               className="h-full w-full object-cover"
-            //             />
-            //           ) : (
-            //             <User className="h-6 w-6 text-amber-400" />
-            //           )}
-            //         </div>
-            //         <div className="flex-1">
-            //           <h3 className="text-lg font-bold text-white font-medieval tracking-wide">
-            //             {session.user?.name || "Adventurer"}
-            //           </h3>
-            //           <div className="flex items-center gap-2 text-sm">
-            //             <span className="text-amber-500/90">
-            //               Level {userStats.levelStats.level}{" "}
-            //               {userStats.characterClass}
-            //             </span>
-            //           </div>
-            //         </div>
-            //       </div>
-            //     </div>
-
-            //     <div className="p-4">
-            //       {/* XP Progress - Mobile visible */}
-            //       <div className="md:hidden flex flex-col gap-1 bg-zinc-900/50 p-2 rounded-md mb-3">
-            //         <div className="flex justify-between text-xs">
-            //           <span className="text-zinc-400">Experience</span>
-            //           <span className="text-amber-500/90">
-            //             {userStats.levelStats.currentLevelXp}/
-            //             {userStats.levelStats.xpForThisLevel}
-            //           </span>
-            //         </div>
-            //         <div className="w-full bg-zinc-800/70 h-2 rounded-full overflow-hidden">
-            //           <div
-            //             className="h-full bg-gradient-to-r from-yellow-500 to-amber-500"
-            //             style={{
-            //               width: `${userStats.levelStats.progressPercent}%`,
-            //             }}
-            //           ></div>
-            //         </div>
-            //       </div>
-
-            //       {/* Stats */}
-            //       <div className="grid grid-cols-2 gap-2 text-sm"></div>
-
-            //       {/* Actions */}
-            //       <div className="flex flex-col gap-1 pt-3 mt-3 border-t border-zinc-800/70">
-            //         <Button
-            //           variant="ghost"
-            //           className="w-full justify-start text-zinc-300 hover:text-white hover:bg-zinc-800/70"
-            //         >
-            //           <User className="h-4 w-4 mr-2" /> Profile
-            //         </Button>
-            //         <Button
-            //           variant="ghost"
-            //           className="w-full justify-start text-zinc-300 hover:text-white hover:bg-zinc-800/70"
-            //         >
-            //           <LogOut className="h-4 w-4 mr-2" /> Sign Out
-            //         </Button>
-            //       </div>
-            //     </div>
-            //   </HoverCardContent>
-            // </HoverCard>
             <Button
               onClick={handleSignUp}
               size="sm"
