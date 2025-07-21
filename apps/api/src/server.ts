@@ -19,6 +19,7 @@ export const createServer = async (
     .disable("x-powered-by")
     .use(morgan("dev"))
     .use(urlencoded({ extended: true }))
+    .use(json()) // Move JSON parser BEFORE auth middleware
     .use((req, res, next) => {
       console.log(
         `[${new Date().toISOString()}] ${req.method} ${req.path} - Headers: ${JSON.stringify(req.headers, null, 2)}`
@@ -48,11 +49,10 @@ export const createServer = async (
       console.log(`  - req.originalUrl: ${req.originalUrl}`);
       console.log(`[AUTH] Request headers:`, JSON.stringify(req.headers, null, 2));
       console.log(`[AUTH] Request body:`, JSON.stringify(req.body, null, 2));
-      console.log(`[AUTH] Content-Type:`, req.get('Content-Type'));
+      console.log(`[AUTH] Content-Type:`, req.headers['content-type']);
       next();
     })
     .use("/api/auth", toNodeHandler(auth))
-    .use(json())
     .use("/quest", questRouter)
     .use("/instance", instanceRouter)
     .use("/main-quest", mainQuestRouter)
