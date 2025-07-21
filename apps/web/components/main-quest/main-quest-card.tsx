@@ -149,7 +149,9 @@ const MainQuestCard = () => {
           {isExpanded && (
             <>
               {mainQuests.length === 0 ? (
-                <EmptyState onCreateQuest={handleCreateQuest} />
+                <div className="flex flex-col items-center justify-center w-full px-3 py-6">
+                  <EmptyState onCreateQuest={handleCreateQuest} />
+                </div>
               ) : (
                 <motion.div
                   className="space-y-3 p-3 pt-1"

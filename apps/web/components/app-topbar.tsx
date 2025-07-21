@@ -63,11 +63,11 @@ export default function AppTopbar({ className }: { className?: string }) {
   // Helper function to format timezone display
   const formatTimezone = (timezone: string) => {
     if (!timezone) return "UTC";
-    
+
     // Extract city name from timezone (e.g., "America/New_York" -> "New York")
-    const parts = timezone.split('/');
+    const parts = timezone.split("/");
     const city = parts[parts.length - 1];
-    return city.replace(/_/g, ' ');
+    return city.replace(/_/g, " ");
   };
 
   // Helper function to get streak display
@@ -78,7 +78,7 @@ export default function AppTopbar({ className }: { className?: string }) {
         text: "Start today!",
         color: "text-zinc-500",
         bgColor: "bg-zinc-500/20",
-        borderColor: "border-zinc-600/20"
+        borderColor: "border-zinc-600/20",
       };
     } else if (userStats.streak >= 30) {
       return {
@@ -86,7 +86,7 @@ export default function AppTopbar({ className }: { className?: string }) {
         text: `${userStats.streak} days`,
         color: "text-purple-300",
         bgColor: "bg-purple-500/20",
-        borderColor: "border-purple-600/20"
+        borderColor: "border-purple-600/20",
       };
     } else if (userStats.streak >= 7) {
       return {
@@ -94,7 +94,7 @@ export default function AppTopbar({ className }: { className?: string }) {
         text: `${userStats.streak} days`,
         color: "text-orange-300",
         bgColor: "bg-orange-500/20",
-        borderColor: "border-orange-600/20"
+        borderColor: "border-orange-600/20",
       };
     } else {
       return {
@@ -102,7 +102,7 @@ export default function AppTopbar({ className }: { className?: string }) {
         text: `${userStats.streak} ${userStats.streak === 1 ? "day" : "days"}`,
         color: "text-blue-300",
         bgColor: "bg-blue-500/20",
-        borderColor: "border-blue-600/20"
+        borderColor: "border-blue-600/20",
       };
     }
   };
@@ -119,7 +119,10 @@ export default function AppTopbar({ className }: { className?: string }) {
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
         {/* Left Section: Logo and Navigation */}
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/profile')}>
+          <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => router.push("/profile")}
+          >
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-amber-500/50 shadow-lg flex items-center justify-center">
               {session && session.user && session.user?.image ? (
                 <Image
@@ -186,15 +189,21 @@ export default function AppTopbar({ className }: { className?: string }) {
               </div>
 
               {/* Enhanced Streak Counter */}
-              <div className={`flex items-center gap-2.5 bg-gradient-to-r from-zinc-900/80 to-zinc-800/60 px-3 py-2 rounded-lg border ${streakDisplay.borderColor} shadow-inner shadow-orange-500/5 hover:scale-105 transition-all duration-300 relative`}>
-                <div className={`h-6 w-6 flex items-center justify-center ${streakDisplay.bgColor} rounded-full`}>
+              <div
+                className={`flex items-center gap-2.5 bg-gradient-to-r from-zinc-900/80 to-zinc-800/60 px-3 py-2 rounded-lg border ${streakDisplay.borderColor} shadow-inner shadow-orange-500/5 hover:scale-105 transition-all duration-300 relative`}
+              >
+                <div
+                  className={`h-6 w-6 flex items-center justify-center ${streakDisplay.bgColor} rounded-full`}
+                >
                   <span className="text-xs">{streakDisplay.icon}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-zinc-400 text-xs leading-tight">
                     {userStats.streak > 0 ? "Streak" : "No Streak"}
                   </span>
-                  <span className={`text-sm font-medium ${streakDisplay.color}`}>
+                  <span
+                    className={`text-sm font-medium ${streakDisplay.color}`}
+                  >
                     {streakDisplay.text}
                   </span>
                 </div>
@@ -276,7 +285,7 @@ export default function AppTopbar({ className }: { className?: string }) {
           )}
 
           {/* User Profile Button and Hover Card */}
-          {isAnonymous && (
+          {/* {isAnonymous && (
             <div className="flex space-x-2">
               <Button
                 onClick={handleSignIn}
@@ -305,7 +314,7 @@ export default function AppTopbar({ className }: { className?: string }) {
                 </Button>
               </motion.div>
             </div>
-          )}
+          )} */}
           {session ? (
             <></>
           ) : (

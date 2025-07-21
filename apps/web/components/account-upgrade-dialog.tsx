@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,14 +21,19 @@ interface AccountUpgradeDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function AccountUpgradeDialog({ open, onOpenChange }: AccountUpgradeDialogProps) {
+export function AccountUpgradeDialog({
+  open,
+  onOpenChange,
+}: AccountUpgradeDialogProps) {
   const { upgradeAccount, upgradeWithOAuth } = useAnonymousUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [upgradeMethod, setUpgradeMethod] = useState<"email" | "oauth">("email");
+  const [upgradeMethod, setUpgradeMethod] = useState<"email" | "oauth">(
+    "email"
+  );
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +100,8 @@ export function AccountUpgradeDialog({ open, onOpenChange }: AccountUpgradeDialo
             Upgrade Your Account
           </DialogTitle>
           <DialogDescription className="text-amber-600">
-            Transform your guest journey into a permanent adventure! Create an account to save your progress forever.
+            Transform your guest journey into a permanent adventure! Create an
+            account to save your progress forever.
           </DialogDescription>
         </DialogHeader>
 
@@ -143,7 +155,10 @@ export function AccountUpgradeDialog({ open, onOpenChange }: AccountUpgradeDialo
         {/* Email/Password Upgrade Form */}
         <form onSubmit={handleEmailSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="flex items-center gap-2 text-amber-700">
+            <Label
+              htmlFor="email"
+              className="flex items-center gap-2 text-amber-700"
+            >
               <Mail className="h-4 w-4" />
               Email
             </Label>
@@ -160,7 +175,10 @@ export function AccountUpgradeDialog({ open, onOpenChange }: AccountUpgradeDialo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="flex items-center gap-2 text-amber-700">
+            <Label
+              htmlFor="password"
+              className="flex items-center gap-2 text-amber-700"
+            >
               <Key className="h-4 w-4" />
               Password
             </Label>
@@ -213,8 +231,10 @@ export function AccountUpgradeDialog({ open, onOpenChange }: AccountUpgradeDialo
           </div>
         </form>
 
-        <div className="text-xs text-amber-600 bg-amber-50 p-3 rounded-lg">
-          <strong>Note:</strong> If an account with this email or OAuth provider already exists, you'll need to sign in with that account instead. This prevents accidentally overriding existing user data.
+        <div className="text-xs text-amber-600 bg-gray-800 p-3 rounded-lg">
+          <strong>Note:</strong> If an account with this email or OAuth provider
+          already exists, you'll need to sign in with that account instead. This
+          prevents accidentally overriding existing user data.
         </div>
       </DialogContent>
     </Dialog>

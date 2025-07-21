@@ -23,8 +23,11 @@ export function AnonymousUserBanner() {
             <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm text-amber-800">
-                <span className="font-medium">You're adventuring as a guest!</span>{" "}
-                Your progress might be lost if you close your browser. Create an account to save your journey forever.
+                <span className="font-medium">
+                  You're adventuring as a guest!
+                </span>{" "}
+                Your progress might be lost if you clear your browser data.
+                Create an account to save your journey forever.
               </p>
             </div>
           </div>

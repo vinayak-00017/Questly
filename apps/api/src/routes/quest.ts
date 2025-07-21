@@ -62,10 +62,16 @@ router.patch("/questTemplate/:id", requireAuth, async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, userId: _, createdAt, ...allowedUpdates } = updateData;
 
+    // Convert dueDate to proper Date object if it exists
     const updatedFields = {
       ...allowedUpdates,
       updatedAt: new Date(),
     };
+
+    // Handle dueDate conversion if it exists in the update data
+    if (updatedFields.dueDate !== undefined) {
+      updatedFields.dueDate = updatedFields.dueDate ? toDbTimestamp(updatedFields.dueDate) : null;
+    }
 
     await db
       .update(questTemplate)
