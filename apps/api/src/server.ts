@@ -38,26 +38,26 @@ export const createServer = async (
         credentials: true,
       })
     )
-    .all("/api/auth/*splat", toNodeHandler(auth))
+    .all("/v1/api/auth/*splat", toNodeHandler(auth))
     .use(json())
-    .use("/quest", questRouter)
-    .use("/instance", instanceRouter)
-    .use("/main-quest", mainQuestRouter)
-    .use("/user", userRouter)
-    .get("/message/:name", (req, res) => {
+    .use("/v1/quest", questRouter)
+    .use("/v1/instance", instanceRouter)
+    .use("/v1/main-quest", mainQuestRouter)
+    .use("/v1/user", userRouter)
+    .get("/v1/message/:name", (req, res) => {
       return res.json({ message: `hello ${req.params.name}` });
     })
-    .get("/status", (_, res) => {
+    .get("/v1/status", (_, res) => {
       return res.json({ ok: true });
     })
-    .get("/health", (_, res) => {
+    .get("/v1/health", (_, res) => {
       return res.json({
         status: "healthy",
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
       });
     })
-    .get("/api/me", async (req, res) => {
+    .get("/v1/api/me", async (req, res) => {
       const session = await auth.api.getSession({
         headers: fromNodeHeaders(req.headers),
       });
