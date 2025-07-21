@@ -6,6 +6,9 @@ import jwt from "jsonwebtoken";
 import { anonymous } from "better-auth/plugins";
 import { account, session, user, verification } from "../src/db/schema";
 
+console.log(`[AUTH CONFIG] Environment: ${process.env.NODE_ENV}`);
+console.log(`[AUTH CONFIG] Database URL exists: ${!!process.env.DATABASE_URL}`);
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -32,6 +35,8 @@ export const auth = betterAuth({
   ].filter(Boolean),
   plugins: [anonymous()],
 });
+
+console.log(`[AUTH CONFIG] Auth initialized with plugins:`, Object.keys(auth.api));
 
 //Generate a scheduler token.
 

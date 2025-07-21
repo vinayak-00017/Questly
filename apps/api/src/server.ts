@@ -1,4 +1,9 @@
-import { json, urlencoded } from "body-parser";
+import { json, urlencoded } from "bo    .use("/api/auth", (req, res, next) => {
+      console.log(`[AUTH] ${req.method} ${req.path} - Original URL: ${req.originalUrl}`);
+      console.log(`[AUTH] Available Better Auth endpoints:`, Object.keys(auth.api));
+      next();
+    })
+    .use("/api/auth", toNodeHandler(auth))rser";
 import express, { type Express } from "express";
 import morgan from "morgan";
 import cors from "cors";
@@ -36,6 +41,8 @@ export const createServer = async (
     )
     .use("/api/auth", (req, res, next) => {
       console.log(`[AUTH] ${req.method} ${req.path} - Original URL: ${req.originalUrl}`);
+      console.log(`[AUTH] Better Auth API methods:`, Object.keys(auth.api));
+      console.log(`[AUTH] Environment: ${process.env.NODE_ENV}`);
       next();
     })
     .use("/api/auth", toNodeHandler(auth))
