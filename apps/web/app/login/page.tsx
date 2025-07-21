@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Swords, Key, Mail, ArrowRight, Scroll } from "lucide-react";
+import { Swords, Key, Mail, ArrowRight, Scroll, AlertTriangle, Shield } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -16,6 +16,7 @@ import {
 } from "@/components/auth";
 import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
 import { useAnonymousUser } from "@/components/anonymous-login-provider";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,14 +35,33 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await authClient.signIn.email({
+      const result = await authClient.signIn.email({
         email,
         password,
-        callbackURL: `http://localhost:3000/`,
+        callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}`,
       });
-    } catch (err) {
-      setError("Failed to embark on your journey. Check your scroll and key.");
-      console.error(err);
+      
+      // Check if the result contains an error
+      if (result?.error) {
+        toast.error("Access to the realm denied", {
+          description: "Check your scroll (email) and key (password)",
+          icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+        });
+        return;
+      }
+      
+      // Success case
+      toast.success("Welcome back, adventurer!", {
+        description: "Your quest continues...",
+        icon: <Shield className="h-4 w-4 text-amber-500" />,
+      });
+    } catch (err: any) {
+      console.error("Login error:", err);
+      
+      toast.error("Access to the realm denied", {
+        description: "The portal seems unstable. Try again, brave adventurer.",
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -58,10 +78,13 @@ export default function LoginPage() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: `http://localhost:3000/auth/callback?showTimezone=true`,
+        callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?showTimezone=true`,
       });
-    } catch (err) {
-      setError("Failed to summon the Google portal.");
+    } catch (err: any) {
+      toast.error("Google portal summoning failed", {
+        description: "The ancient Google spirits are not responding. Try again, adventurer.",
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+      });
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -81,8 +104,16 @@ export default function LoginPage() {
       }
       await authClient.signIn.anonymous();
       setShowTimezoneDialog(true);
-    } catch (err) {
-      setError("Failed to enter as a traveler.");
+      
+      toast.success("Welcome, mysterious traveler!", {
+        description: "Your anonymous journey begins...",
+        icon: <Scroll className="h-4 w-4 text-amber-500" />,
+      });
+    } catch (err: any) {
+      toast.error("Traveler's path blocked", {
+        description: "The anonymous portal seems sealed. Try again, wanderer.",
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+      });
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -105,7 +136,7 @@ export default function LoginPage() {
           />
 
           {/* Login form card */}
-          <AuthFormCard error={error} variant="amber">
+          <AuthFormCard variant="amber">
             <form onSubmit={handleSignIn} className="space-y-6">
               <FormInput
                 type="email"

@@ -6,7 +6,7 @@ import PerformanceChart from "@/components/performance-chart";
 import QuestTracker from "@/components/quest-tracking/quest-tracker";
 
 import { userApi } from "@/services/user-api";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -15,7 +15,7 @@ import { useAnonymousUser } from "@/components/anonymous-login-provider";
 import { AnonymousUserBanner } from "@/components/anonymous-user-banner";
 
 export default function Home() {
-  const { isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["userStats"],
     queryFn: userApi.getUserStats,
     select: (data) => {
@@ -27,18 +27,28 @@ export default function Home() {
 
   const { isAnonymous } = useAnonymousUser();
   const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    async function checkTimezone() {
-      if (isAnonymous) {
-        const data = await userApi.getUserStats();
-        if (!data.userStats?.timezone || data.userStats?.timezone === "UTC") {
-          setShowTimezoneDialog(true);
-        }
+    // Check timezone for all users (both authenticated and anonymous)
+    if (data?.userStats) {
+      const userTimezone = data.userStats.timezone;
+      const timezoneSetExplicitly = data.userStats.timezoneSetExplicitly;
+      
+      // Only show dialog if:
+      // 1. User has no timezone set (null/undefined), OR
+      // 2. User has UTC but has never explicitly set their timezone
+      if (!userTimezone || (userTimezone === "UTC" && !timezoneSetExplicitly)) {
+        setShowTimezoneDialog(true);
       }
     }
-    checkTimezone();
-  }, [isAnonymous]);
+  }, [data?.userStats]);
+
+  const handleTimezoneComplete = () => {
+    setShowTimezoneDialog(false);
+    // Refresh user stats to get updated timezone
+    queryClient.invalidateQueries({ queryKey: ["userStats"] });
+  };
 
   if (isLoading)
     return (
@@ -57,7 +67,7 @@ export default function Home() {
       <TimezoneSelectDialog
         open={showTimezoneDialog}
         onOpenChange={setShowTimezoneDialog}
-        onComplete={() => setShowTimezoneDialog(false)}
+        onComplete={handleTimezoneComplete}
       />
       <div>
         <div className="relative min-h-screen">

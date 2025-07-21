@@ -2,7 +2,7 @@
 export const BASE_URL =
   process.env.NODE_ENV === "production"
     ? "/v1" // Express API (production) - nginx routes /v1/* to Express
-    : "http://localhost:5001"; // Direct connection (development)
+    : "http://localhost:5001/v1"; // Direct connection (development)
 
 export const NEXT_API_URL =
   process.env.NODE_ENV === "production"

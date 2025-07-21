@@ -8,24 +8,28 @@ interface FormInputProps {
   type: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: () => void;
   placeholder: string;
   required?: boolean;
   icon: ReactNode;
   label: string;
   showPassword?: boolean;
   setShowPassword?: (show: boolean) => void;
+  error?: string;
 }
 
 export const FormInput: React.FC<FormInputProps> = ({
   type,
   value,
   onChange,
+  onBlur,
   placeholder,
   required = false,
   icon,
   label,
   showPassword,
   setShowPassword,
+  error,
 }) => {
   const isPasswordField =
     type === "password" || (type === "text" && setShowPassword);
@@ -42,7 +46,10 @@ export const FormInput: React.FC<FormInputProps> = ({
           type={type}
           value={value}
           onChange={onChange}
-          className="bg-black/40 border-zinc-800 pl-10 pr-10 text-white focus-visible:ring-purple-500/30 focus-visible:border-purple-600/50"
+          onBlur={onBlur}
+          className={`bg-black/40 border-zinc-800 pl-10 pr-10 text-white focus-visible:ring-purple-500/30 focus-visible:border-purple-600/50 ${
+            error ? 'border-red-500/50 focus-visible:border-red-500/50 focus-visible:ring-red-500/30' : ''
+          }`}
           placeholder={placeholder}
           required={required}
         />

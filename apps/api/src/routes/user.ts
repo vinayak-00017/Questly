@@ -44,7 +44,12 @@ router.get("/userStats", requireAuth, async (req, res) => {
       0
     );
 
-    const userStats = { levelStats, todaysXp, timezone: currUser.timezone };
+    const userStats = { 
+      levelStats, 
+      todaysXp, 
+      timezone: currUser.timezone,
+      timezoneSetExplicitly: currUser.timezoneSetExplicitly 
+    };
 
     res.status(200).json({
       message: "User Stats retrived successfully",
@@ -98,6 +103,7 @@ router.patch("/updateTimezone", requireAuth, async (req, res) => {
       .update(user)
       .set({
         timezone,
+        timezoneSetExplicitly: true,
         updatedAt: new Date(),
       })
       .where(eq(user.id, userId));

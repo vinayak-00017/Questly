@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Key, Mail, User, Sparkles } from "lucide-react";
+import { ArrowRight, Key, Mail, User, Sparkles, AlertTriangle, CheckCircle } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -16,6 +16,8 @@ import {
 } from "@/components/auth";
 import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
 import { useAnonymousUser } from "@/components/anonymous-login-provider";
+import { registerSchema, type RegisterFormData } from "@/lib/validation/auth-schemas";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -28,6 +30,42 @@ export default function RegisterPage() {
   const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
   const { isAnonymous } = useAnonymousUser();
 
+  // Form validation errors
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+  }>({});
+
+  // Real-time validation
+  const validateField = (field: keyof RegisterFormData, value: string) => {
+    try {
+      registerSchema.shape[field].parse(value);
+      setFieldErrors(prev => ({ ...prev, [field]: undefined }));
+    } catch (error: any) {
+      const errorMessage = error.errors?.[0]?.message || "Invalid input";
+      setFieldErrors(prev => ({ ...prev, [field]: errorMessage }));
+    }
+  };
+
+  // Validate entire form
+  const validateForm = (): boolean => {
+    try {
+      registerSchema.parse({ name, email, password });
+      setFieldErrors({});
+      return true;
+    } catch (error: any) {
+      const errors: { [key: string]: string } = {};
+      error.errors?.forEach((err: any) => {
+        if (err.path?.[0]) {
+          errors[err.path[0]] = err.message;
+        }
+      });
+      setFieldErrors(errors);
+      return false;
+    }
+  };
+
   // Handle timezone selection completion
   const handleTimezoneComplete = () => {
     router.push("/");
@@ -36,21 +74,51 @@ export default function RegisterPage() {
   // Sign up with email/password
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      toast.error("Quest creation blocked", {
+        description: "Please fix the errors in your adventurer profile",
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+      });
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
     try {
-      await authClient.signUp.email({
+      const result = await authClient.signUp.email({
+        name,
         email,
         password,
-        name,
+        callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}`,
       });
-      setShowTimezoneDialog(true);
-    } catch (err) {
-      setError(
-        "Failed to create your adventure log. Try a different scroll name or key."
-      );
-      console.error(err);
+
+      // Check if the result contains an error
+      if (result?.error) {
+        toast.error("Adventure creation failed", {
+          description: "This scroll address may already be claimed by another adventurer",
+          icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+        });
+        return;
+      }
+
+      // Success case
+      toast.success("Welcome to the realm, brave adventurer!", {
+        description: "Your epic journey begins now...",
+        icon: <CheckCircle className="h-4 w-4 text-purple-500" />,
+      });
+      
+      // Redirect to homepage after successful registration
+      router.push("/");
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      
+      toast.error("Adventure creation failed", {
+        description: "The realm's scribes are overwhelmed. Try again, brave soul.",
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +133,7 @@ export default function RegisterPage() {
       // We need to keep callbackURL for social auth, but we'll check for timezone in the callback page
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: `http://localhost:3000/auth/callback?showTimezone=true`,
+        callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?showTimezone=true`,
       });
     } catch (err) {
       setError("Failed to summon the Google portal.");
@@ -113,41 +181,91 @@ export default function RegisterPage() {
           {/* Register form card */}
           <AuthFormCard error={error} variant="purple">
             <form onSubmit={handleSignUp} className="space-y-6">
-              <FormInput
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Noble Adventurer"
-                required
-                icon={<User className="h-4 w-4 text-zinc-500" />}
-                label="Adventurer Name"
-              />
+              <div className="space-y-2">
+                <FormInput
+                  type="text"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (e.target.value) validateField('name', e.target.value);
+                  }}
+                  onBlur={() => name && validateField('name', name)}
+                  placeholder="Noble Adventurer"
+                  required
+                  icon={<User className="h-4 w-4 text-zinc-500" />}
+                  label="Adventurer Name"
+                  error={fieldErrors.name}
+                />
+                {fieldErrors.name && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-400 flex items-center gap-1"
+                  >
+                    <AlertTriangle className="h-3 w-3" />
+                    {fieldErrors.name}
+                  </motion.p>
+                )}
+              </div>
 
-              <FormInput
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your-email@realm.com"
-                required
-                icon={<Mail className="h-4 w-4 text-zinc-500" />}
-                label="Your Scroll (Email)"
-              />
+              <div className="space-y-2">
+                <FormInput
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (e.target.value) validateField('email', e.target.value);
+                  }}
+                  onBlur={() => email && validateField('email', email)}
+                  placeholder="your-email@realm.com"
+                  required
+                  icon={<Mail className="h-4 w-4 text-zinc-500" />}
+                  label="Your Scroll (Email)"
+                  error={fieldErrors.email}
+                />
+                {fieldErrors.email && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-400 flex items-center gap-1"
+                  >
+                    <AlertTriangle className="h-3 w-3" />
+                    {fieldErrors.email}
+                  </motion.p>
+                )}
+              </div>
 
               <div className="space-y-2">
                 <FormInput
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (e.target.value) validateField('password', e.target.value);
+                  }}
+                  onBlur={() => password && validateField('password', password)}
                   placeholder="••••••••"
                   required
                   icon={<Key className="h-4 w-4 text-zinc-500" />}
                   label="Create a Key (Password)"
                   showPassword={showPassword}
                   setShowPassword={setShowPassword}
+                  error={fieldErrors.password}
                 />
-                <p className="text-xs text-zinc-500">
-                  At least 8 characters with epic strength
-                </p>
+                {fieldErrors.password ? (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-400 flex items-center gap-1"
+                  >
+                    <AlertTriangle className="h-3 w-3" />
+                    {fieldErrors.password}
+                  </motion.p>
+                ) : (
+                  <p className="text-xs text-zinc-500">
+                    At least 8 characters with at least one letter and one number
+                  </p>
+                )}
               </div>
 
               <div>

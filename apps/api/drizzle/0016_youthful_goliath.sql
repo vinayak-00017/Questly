@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "timezone_set_explicitly" boolean DEFAULT false NOT NULL;

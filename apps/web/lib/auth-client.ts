@@ -7,7 +7,7 @@ const getAuthBaseURL = () => {
     // Better Auth needs the full path including /api/auth for production
     return process.env.NEXT_PUBLIC_AUTH_URL || "https://questly.me/v1/api/auth";
   }
-  return "http://localhost:5001"; // Better Auth will add /api/auth automatically
+  return "http://localhost:5001/v1/api/auth";
 };
 
 export const authClient = createAuthClient({

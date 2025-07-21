@@ -11,6 +11,7 @@ import QueryProvider from "@/components/query-provider";
 import PullToRefresh from "@/components/pull-to-refresh";
 import { SidebarProvider } from "@/contexts/sidebar-context";
 import { AnonymousLoginProvider } from "@/components/anonymous-login-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,6 +63,7 @@ export default function RootLayout({
               <SidebarProvider>
                 <PullToRefresh />
                 {children}
+                <Toaster />
               </SidebarProvider>
             </AnonymousLoginProvider>
           </QueryProvider>
