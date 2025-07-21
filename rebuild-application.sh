@@ -23,6 +23,11 @@ rm -rf node_modules
 echo "📦 Installing dependencies with Node.js $(node --version)..."
 pnpm install
 
+echo "🔧 Loading production environment..."
+export $(grep -v '^#' .env.production | xargs)
+export $(grep -v '^#' apps/web/.env.production | xargs)
+
+
 # Rebuild applications
 echo "🔨 Building applications..."
 pnpm build

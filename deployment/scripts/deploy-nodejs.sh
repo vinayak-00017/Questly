@@ -34,6 +34,11 @@ git pull origin main
 echo "📦 Installing dependencies..."
 pnpm install --frozen-lockfile
 
+# Load production environment variables for build
+echo "🔧 Loading production environment..."
+export $(grep -v '^#' .env.production | xargs)
+export $(grep -v '^#' apps/web/.env.production | xargs)
+
 # Build the application
 echo "🔨 Building application..."
 pnpm build

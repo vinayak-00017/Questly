@@ -10,6 +10,7 @@ module.exports = {
       watch: false,
       max_memory_restart: "512M",
       restart_delay: 5000,
+      env_file: "/var/www/questly/.env.production",
       env: {
         NODE_ENV: "production",
         PORT: 5001,
@@ -34,6 +35,10 @@ module.exports = {
         NODE_ENV: "production",
         PORT: 3000,
         HOSTNAME: "0.0.0.0",
+        NEXT_PUBLIC_API_URL: "https://questly.me/v1",
+        NEXT_PUBLIC_AUTH_URL: "https://questly.me/v1/api/auth",
+        NEXT_PUBLIC_APP_URL: "https://questly.me",
+        BETTER_AUTH_URL_CLIENT: "https://questly.me",
       },
       error_file: "/var/log/pm2/questly-web-error.log",
       out_file: "/var/log/pm2/questly-web-out.log",
