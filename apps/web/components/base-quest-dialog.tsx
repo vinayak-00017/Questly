@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
 import { createQuestTemplateSchema } from "@questly/types";
 import { mainQuestApi } from "@/services/main-quest-api";
-import { questApi } from "@/services/quest-api";
 
 import { QuestDialogHeader } from "./quest-dialog/header";
 import { QuestDialogDecorations } from "./quest-dialog/decorations";
@@ -16,6 +15,7 @@ import { QuestFormFields } from "./quest-dialog/form-fields";
 import { QuestDialogFooter } from "./quest-dialog/footer";
 import { UnsavedChangesAlert } from "./quest-dialog/unsaved-changes-alert";
 import { QuestFormData, getQuestColorStyles } from "./quest-dialog/types";
+import { questApi } from "@/services/quest-api";
 
 export interface BaseQuestDialogProps {
   open: boolean;

@@ -27,6 +27,14 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: 🔧 Setup environment for build
+        run: |
+          # Create temporary .env.production for build
+          echo "NEXT_PUBLIC_API_URL=https://questly.me/v1" >> .env.production
+          echo "NEXT_PUBLIC_AUTH_URL=https://questly.me/v1/api/auth" >> .env.production
+          echo "NEXT_PUBLIC_APP_URL=https://questly.me" >> .env.production
+          echo "NODE_ENV=production" >> .env.production
+
       - name: 🔨 Build packages
         run: pnpm exec turbo run build
         timeout-minutes: 10
@@ -57,6 +65,20 @@ jobs:
 
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: 🔧 Setup environment for build
+        run: |
+          # Create temporary .env.production for build
+          echo "NEXT_PUBLIC_API_URL=https://questly.me/v1" >> .env.production
+          echo "NEXT_PUBLIC_AUTH_URL=https://questly.me/v1/api/auth" >> .env.production
+          echo "NEXT_PUBLIC_APP_URL=https://questly.me" >> .env.production
+          echo "NODE_ENV=production" >> .env.production
+          
+          # Also create web app specific env
+          echo "NEXT_PUBLIC_API_URL=https://questly.me/v1" >> apps/web/.env.production
+          echo "NEXT_PUBLIC_AUTH_URL=https://questly.me/v1/api/auth" >> apps/web/.env.production
+          echo "NEXT_PUBLIC_APP_URL=https://questly.me" >> apps/web/.env.production
+          echo "BETTER_AUTH_URL_CLIENT=https://questly.me" >> apps/web/.env.production
 
       - name: 🔨 Build packages
         run: pnpm exec turbo run build

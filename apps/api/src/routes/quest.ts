@@ -13,7 +13,8 @@ import {
   calculateXpRewards,
   getTodayMidnight,
   isSameDay,
-  toDbTimestamp, toLocalDbDate,
+  toDbTimestamp,
+  toLocalDbDate,
 } from "@questly/utils";
 
 const router = express.Router();
@@ -70,7 +71,9 @@ router.patch("/questTemplate/:id", requireAuth, async (req, res) => {
 
     // Handle dueDate conversion if it exists in the update data
     if (updatedFields.dueDate !== undefined) {
-      updatedFields.dueDate = updatedFields.dueDate ? toDbTimestamp(updatedFields.dueDate) : null;
+      updatedFields.dueDate = updatedFields.dueDate
+        ? toDbTimestamp(updatedFields.dueDate)
+        : null;
     }
 
     await db
@@ -129,7 +132,7 @@ router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
       .where(
         and(
           eq(questInstance.userId, userId),
-            eq(questInstance.date, toLocalDbDate(today)),
+          eq(questInstance.date, toLocalDbDate(today)),
           eq(questTemplate.type, "daily")
         )
       );
@@ -187,7 +190,7 @@ router.get("/sideQuestInstance", requireAuth, async (req, res) => {
       .where(
         and(
           eq(questInstance.userId, userId),
-            eq(questInstance.date, toLocalDbDate(today)),
+          eq(questInstance.date, toLocalDbDate(today)),
           eq(questTemplate.type, "side")
         )
       );
@@ -281,9 +284,15 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
     await db.transaction(async (trx) => {
       await trx.insert(questTemplate).values(newQuest);
 
+      const userTimezoneResult = await db
+        .select({ timezone: user.timezone })
+        .from(user)
+        .where(eq(user.id, userId));
+      const userTimezone = userTimezoneResult[0]?.timezone;
+
       // Create an instance for today if the quest applies to today
       // or if no recurrence rule (one-time quest)
-      const today = getTodayMidnight();
+      const today = getTodayMidnight(userTimezone);
 
       // If no recurrence rule or rule matches today, create an instance
       if (
@@ -348,7 +357,7 @@ router.get("/todaysQuests", requireAuth, async (req, res) => {
       .where(
         and(
           eq(questInstance.userId, userId),
-            eq(questInstance.date, toLocalDbDate(today))
+          eq(questInstance.date, toLocalDbDate(today))
         )
       );
 
@@ -394,19 +403,23 @@ router.get("/activity", requireAuth, async (req, res) => {
     const userId = (req as AuthenticatedRequest).userId;
     const { templateIds, startDate, endDate } = req.query;
 
-    if (!templateIds || typeof templateIds !== 'string') {
+    if (!templateIds || typeof templateIds !== "string") {
       return res.status(400).json({ message: "Template IDs are required" });
     }
 
     if (!startDate || !endDate) {
-      return res.status(400).json({ message: "Start date and end date are required" });
+      return res
+        .status(400)
+        .json({ message: "Start date and end date are required" });
     }
 
     // Parse the comma-separated templateIds
-    const templateIdArray = templateIds.split(',').filter(id => id.trim());
+    const templateIdArray = templateIds.split(",").filter((id) => id.trim());
 
     if (templateIdArray.length === 0) {
-      return res.status(400).json({ message: "At least one template ID is required" });
+      return res
+        .status(400)
+        .json({ message: "At least one template ID is required" });
     }
 
     // Fetch quest instances for the given template IDs and date range
@@ -423,12 +436,14 @@ router.get("/activity", requireAuth, async (req, res) => {
       .where(
         and(
           eq(questInstance.userId, userId),
-          inArray(questInstance.templateId, templateIdArray),
+          inArray(questInstance.templateId, templateIdArray)
           // Add date range filtering if needed
         )
       );
 
-    console.log(`Found ${questInstances.length} quest instances for user ${userId}`);
+    console.log(
+      `Found ${questInstances.length} quest instances for user ${userId}`
+    );
 
     // Group the data by template ID and date
     const activityData: { [templateId: string]: { [date: string]: any } } = {};
