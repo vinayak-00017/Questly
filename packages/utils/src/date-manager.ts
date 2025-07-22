@@ -1,3 +1,6 @@
+import { toZonedTime } from "date-fns-tz";
+import { startOfDay } from "date-fns";
+
 /**
  * Utility functions for consistent date handling throughout the application
  */
@@ -35,10 +38,10 @@ export function toLocalDbDate(date: Date | string | null | undefined): string {
 export const toDbDate = toLocalDbDate;
 
 // Get today's date at midnight for comparison purposes
-export function getTodayMidnight(): Date {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return today;
+export function getTodayMidnight(timezone: string): Date {
+  const now = new Date();
+  const zoned = toZonedTime(now, timezone);
+  return startOfDay(zoned);
 }
 
 // Compare two dates ignoring time component
