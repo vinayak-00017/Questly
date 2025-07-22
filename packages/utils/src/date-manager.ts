@@ -1,4 +1,4 @@
-import { toZonedTime } from "date-fns-tz";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import { startOfDay } from "date-fns";
 
 /**
@@ -40,8 +40,12 @@ export const toDbDate = toLocalDbDate;
 // Get today's date at midnight for comparison purposes
 export function getTodayMidnight(timezone: string): Date {
   const now = new Date();
+  // Convert current time to the specified timezone
   const zoned = toZonedTime(now, timezone);
-  return startOfDay(zoned);
+  // Get start of day in that timezone
+  const startOfDayZoned = startOfDay(zoned);
+  // Convert back to UTC for consistent storage/comparison
+  return fromZonedTime(startOfDayZoned, timezone);
 }
 
 // Compare two dates ignoring time component

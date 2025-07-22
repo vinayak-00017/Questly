@@ -2,7 +2,7 @@ import { taskApi } from "@/services/task-api";
 import { TaskInstance } from "@questly/types";
 import { numberToTaskTag } from "@questly/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ListChecks, Check } from "lucide-react";
+import { ListChecks, Check, X } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 import { Progress } from "../ui/progress";
@@ -72,6 +72,53 @@ const QuestTasks = ({
       // });
       // queryClient.invalidateQueries({ queryKey: ["questInstance"] });
       toast.success("Task updated");
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: ({
+      taskId,
+      questInstanceId,
+    }: {
+      taskId: string;
+      questInstanceId: string;
+    }) => taskApi.deleteTaskInstance({ taskId, questInstanceId }),
+    onMutate: async ({ taskId }) => {
+      await queryClient.cancelQueries({
+        queryKey: ["taskInstances", questInstanceId],
+      });
+      const previousTasks = queryClient.getQueryData([
+        "taskInstances",
+        questInstanceId,
+      ]);
+
+      queryClient.setQueryData(
+        ["taskInstances", questInstanceId],
+        (old: any) => {
+          if (!old || !old.taskInstances) return old;
+
+          return {
+            ...old,
+            taskInstances: old.taskInstances.filter((task: TaskInstance) =>
+              task.id !== taskId
+            ),
+          };
+        }
+      );
+
+      return { previousTasks };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(
+          ["taskInstances", questInstanceId],
+          context.previousTasks
+        );
+      }
+      toast.error("Failed to delete task");
+    },
+    onSuccess: () => {
+      toast.success("Task deleted successfully");
     },
   });
 
@@ -176,10 +223,25 @@ const QuestTasks = ({
                   {task.completed && <Check className="h-3 w-3 text-white" />}
                 </div>
                 <span
-                  className={`${task.completed ? "line-through text-zinc-500" : ""} text-xs flex-1 truncate max-w-[180px]`}
+                  className={`${task.completed ? "line-through text-zinc-500" : ""} text-xs flex-1 truncate max-w-[140px]`}
                 >
                   {task.title}
                 </span>
+
+                {/* Delete button - appears on hover */}
+                <button
+                  className="opacity-0 group-hover/task:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-500/20 rounded-sm flex-shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent task completion toggle
+                    deleteTaskMutation.mutate({
+                      taskId: task.id,
+                      questInstanceId,
+                    });
+                  }}
+                  title="Delete task"
+                >
+                  <X className="h-3 w-3 text-red-400 hover:text-red-300" />
+                </button>
               </li>
             ))}
           </ul>

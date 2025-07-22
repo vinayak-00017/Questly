@@ -98,4 +98,53 @@ router.patch("/status", requireAuth, async (req, res) => {
   }
 });
 
+// Securely delete a task instance by joining questInstance to check user ownership
+import { questInstance } from "../db/schema";
+
+router.delete("/:taskId", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { questInstanceId, taskId } = req.params;
+
+    if (!questInstanceId || !taskId) {
+      return res
+        .status(400)
+        .json({ message: "Quest ID and Task ID parameters are required." });
+    }
+
+    // Check if the questInstance belongs to the user
+    const quest = await db
+      .select({ userId: questInstance.userId })
+      .from(questInstance)
+      .where(
+        and(
+          eq(questInstance.id, questInstanceId),
+          eq(questInstance.userId, userId)
+        )
+      )
+      .then((rows) => rows[0]);
+
+    if (!quest) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this task." });
+    }
+
+    // Delete the task instance
+    const result = await db
+      .delete(taskInstance)
+      .where(
+        and(
+          eq(taskInstance.questInstanceId, questInstanceId),
+          eq(taskInstance.id, taskId)
+        )
+      );
+
+    res.status(200).json({ message: "Task instance deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting task instance:", err);
+    res.status(500).json({ message: "Failed to delete task instance" });
+  }
+});
+
 export default router;

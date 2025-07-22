@@ -59,6 +59,24 @@ export const taskApi = {
     if (!response.ok) throw new Error(`Failed to add task`);
     return response.json();
   },
+
+  deleteTaskInstance: async ({
+    taskId,
+    questInstanceId,
+  }: {
+    taskId: string;
+    questInstanceId: string;
+  }) => {
+    const response = await fetch(
+      `${BASE_URL}/quest/quest-instance/${questInstanceId}/task-instance/${taskId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+    if (!response.ok) throw new Error(`Failed to delete task`);
+    return response.json();
+  },
   // updateTask: async (taskId: string, updates: Partial<UserTask>) => {
   //   console.log(updates);
   //   const response = await fetch(`${BASE_URL}/tasks/${taskId}`, {
