@@ -23,7 +23,10 @@ export function toDbTimestamp(
 }
 
 // Format for database date columns (YYYY-MM-DD)
-export function toLocalDbDate(date: Date | string | null | undefined): string {
+export function toLocalDbDate(
+  date: Date | string | null | undefined,
+  timezone?: string
+): string {
   const pad = (n: number) => n.toString().padStart(2, "0");
   let dateObj: Date;
   if (!date) {
@@ -31,7 +34,9 @@ export function toLocalDbDate(date: Date | string | null | undefined): string {
   } else {
     dateObj = date instanceof Date ? date : new Date(date);
   }
-  return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`;
+  // If timezone is provided, convert to that timezone
+  const localDate = timezone ? toZonedTime(dateObj, timezone) : dateObj;
+  return `${localDate.getFullYear()}-${pad(localDate.getMonth() + 1)}-${pad(localDate.getDate())}`;
 }
 
 // Alias for backward compatibility

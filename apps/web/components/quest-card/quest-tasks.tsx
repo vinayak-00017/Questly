@@ -99,8 +99,8 @@ const QuestTasks = ({
 
           return {
             ...old,
-            taskInstances: old.taskInstances.filter((task: TaskInstance) =>
-              task.id !== taskId
+            taskInstances: old.taskInstances.filter(
+              (task: TaskInstance) => task.id !== taskId
             ),
           };
         }
@@ -182,7 +182,7 @@ const QuestTasks = ({
             {sortedTasks.map((task: TaskInstance) => (
               <li
                 key={task.id}
-                className="group/task flex items-center gap-1.5 text-xs text-zinc-300 py-0.5 px-0.5 hover:bg-black/30 rounded cursor-pointer transition-colors"
+                className="group/task flex items-center gap-1.5 text-xs text-zinc-300 py-0.5 px-0.5 hover:bg-black/30 rounded cursor-pointer transition-colors w-full"
                 onClick={() => {
                   const newStatus = !task.completed;
                   completeTaskMutation.mutate({
@@ -223,14 +223,14 @@ const QuestTasks = ({
                   {task.completed && <Check className="h-3 w-3 text-white" />}
                 </div>
                 <span
-                  className={`${task.completed ? "line-through text-zinc-500" : ""} text-xs flex-1 truncate max-w-[140px]`}
+                  className={`${task.completed ? "line-through text-zinc-500" : ""} text-xs flex-1 truncate`}
                 >
                   {task.title}
                 </span>
 
                 {/* Delete button - appears on hover */}
                 <button
-                  className="opacity-0 group-hover/task:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-500/20 rounded-sm flex-shrink-0"
+                  className="ml-auto opacity-0 group-hover/task:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-500/20 rounded-sm flex-shrink-0"
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent task completion toggle
                     deleteTaskMutation.mutate({

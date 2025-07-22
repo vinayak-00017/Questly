@@ -112,8 +112,16 @@ router.delete("/questTemplate/:id", requireAuth, async (req, res) => {
 router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const userTimezoneResult = await db
+      .select({ timezone: user.timezone })
+      .from(user)
+      .where(eq(user.id, userId));
+    const userTimezone = userTimezoneResult[0]?.timezone;
+
+    // Create an instance for today if the quest applies to today
+    // or if no recurrence rule (one-time quest)
+    const today = getTodayMidnight(userTimezone);
+
     const dailyQuestsData = await db
       .select({
         instanceId: questInstance.id,
@@ -132,7 +140,7 @@ router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
       .where(
         and(
           eq(questInstance.userId, userId),
-          eq(questInstance.date, toLocalDbDate(today)),
+          eq(questInstance.date, toLocalDbDate(today, userTimezone)),
           eq(questTemplate.type, "daily")
         )
       );
@@ -170,8 +178,13 @@ router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
 router.get("/sideQuestInstance", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const userTimezoneResult = await db
+      .select({ timezone: user.timezone })
+      .from(user)
+      .where(eq(user.id, userId));
+    const userTimezone = userTimezoneResult[0]?.timezone;
+    const today = getTodayMidnight(userTimezone);
+
     const sideQuestsData = await db
       .select({
         instanceId: questInstance.id,
@@ -190,7 +203,7 @@ router.get("/sideQuestInstance", requireAuth, async (req, res) => {
       .where(
         and(
           eq(questInstance.userId, userId),
-          eq(questInstance.date, toLocalDbDate(today)),
+          eq(questInstance.date, toLocalDbDate(today, userTimezone)),
           eq(questTemplate.type, "side")
         )
       );
@@ -294,10 +307,6 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
       // or if no recurrence rule (one-time quest)
       const today = getTodayMidnight(userTimezone);
 
-      console.log(today);
-      console.log(dueDateObj);
-      console.log(isSameDay(dueDateObj, today));
-
       // If no recurrence rule or rule matches today, create an instance
       if (
         doesRRuleMatchDate(recurrenceRule, today) ||
@@ -309,7 +318,7 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
           id: questInstanceId,
           templateId: newQuest.id,
           userId,
-          date: toLocalDbDate(today),
+          date: toLocalDbDate(today, userTimezone),
           completed: false,
           title,
           description,
@@ -332,15 +341,15 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
 router.get("/todaysQuests", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     const currentUser = await db
-      .select({ totalXp: user.xp })
+      .select({ totalXp: user.xp, timezone: user.timezone })
       .from(user)
       .where(eq(user.id, userId))
       .then((rows) => rows[0]);
 
+    const userTimezone = currentUser?.timezone;
+    const today = getTodayMidnight(userTimezone);
     const totalXp = currentUser?.totalXp || 0;
     const levelInfo = calculateLevelFromXp(totalXp);
 
@@ -362,7 +371,7 @@ router.get("/todaysQuests", requireAuth, async (req, res) => {
       .where(
         and(
           eq(questInstance.userId, userId),
-          eq(questInstance.date, toLocalDbDate(today))
+          eq(questInstance.date, toLocalDbDate(today, userTimezone))
         )
       );
 
