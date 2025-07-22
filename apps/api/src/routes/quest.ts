@@ -294,11 +294,16 @@ router.post("/questTemplate", requireAuth, async (req, res) => {
       // or if no recurrence rule (one-time quest)
       const today = getTodayMidnight(userTimezone);
 
+      console.log(today);
+      console.log(dueDateObj);
+      console.log(isSameDay(dueDateObj, today));
+
       // If no recurrence rule or rule matches today, create an instance
       if (
         doesRRuleMatchDate(recurrenceRule, today) ||
         (!recurrenceRule && dueDateObj && isSameDay(dueDateObj, today))
       ) {
+        console.log("Creating instance for today");
         const questInstanceId = uuidv4();
         await trx.insert(questInstance).values({
           id: questInstanceId,
