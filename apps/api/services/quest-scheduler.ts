@@ -1,4 +1,4 @@
-import "./config/env";
+import "../src/config/env";
 import * as cron from "node-cron";
 import axios from "axios";
 import db from "../src/db";
