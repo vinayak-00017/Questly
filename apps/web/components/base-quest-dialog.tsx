@@ -138,6 +138,7 @@ export function BaseQuestDialog({
       queryClient.invalidateQueries({ queryKey });
       // Also invalidate the combined todaysQuests cache so Today's Quests card updates
       queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
+      queryClient.invalidateQueries({ queryKey: ["questTemplates"] });
       toast.success(`${type === "daily" ? "Daily" : "Side"} quest added!`);
       onSuccess?.();
       onOpenChange(false);

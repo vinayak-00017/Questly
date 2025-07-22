@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { questTemplateApi } from "@/services/quest-template-api";
 import { questApi } from "@/services/quest-api";
+import { useSession } from "@/lib/auth-client";
 
 type TrackedQuest = {
   id: string;
@@ -52,8 +53,8 @@ type QuestActivityData = {
 const QuestTracker: React.FC = () => {
   const [trackedQuests, setTrackedQuests] = useState<TrackedQuest[]>(() => {
     // Load from localStorage only once on initial render
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('trackedQuests');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("trackedQuests");
       if (saved) {
         try {
           return JSON.parse(saved);
@@ -80,12 +81,23 @@ const QuestTracker: React.FC = () => {
   const availableTemplates = useMemo(() => {
     const trackedTemplateIds = trackedQuests.map((q) => q.templateId);
     return (templatesData || [])
-      .filter((template) => template.isActive && !trackedTemplateIds.includes(template.id))
+      .filter(
+        (template) =>
+          template.isActive && !trackedTemplateIds.includes(template.id)
+      )
       .sort((a, b) => {
         // Sort by priority: Critical > Important > Standard > Minor > Optional
-        const priorityOrder = { critical: 0, important: 1, standard: 2, minor: 3, optional: 4 };
-        const aPriority = priorityOrder[a.basePoints as keyof typeof priorityOrder] ?? 2;
-        const bPriority = priorityOrder[b.basePoints as keyof typeof priorityOrder] ?? 2;
+        const priorityOrder = {
+          critical: 0,
+          important: 1,
+          standard: 2,
+          minor: 3,
+          optional: 4,
+        };
+        const aPriority =
+          priorityOrder[a.basePoints as keyof typeof priorityOrder] ?? 2;
+        const bPriority =
+          priorityOrder[b.basePoints as keyof typeof priorityOrder] ?? 2;
         return aPriority - bPriority;
       });
   }, [templatesData, trackedQuests]);
@@ -121,13 +133,20 @@ const QuestTracker: React.FC = () => {
 
   // Fetch quest activity data for tracked quests
   const { data: activityData } = useQuery({
-    queryKey: ["questActivity", trackedQuests.map(q => q.templateId), dateRange[0]?.toISOString().split('T')[0], dateRange[dateRange.length - 1]?.toISOString().split('T')[0]],
+    queryKey: [
+      "questActivity",
+      trackedQuests.map((q) => q.templateId),
+      dateRange[0]?.toISOString().split("T")[0],
+      dateRange[dateRange.length - 1]?.toISOString().split("T")[0],
+    ],
     queryFn: () => {
       if (trackedQuests.length === 0 || dateRange.length === 0) return {};
 
-      const templateIds = trackedQuests.map(q => q.templateId);
-      const startDate = dateRange[0].toISOString().split('T')[0];
-      const endDate = dateRange[dateRange.length - 1].toISOString().split('T')[0];
+      const templateIds = trackedQuests.map((q) => q.templateId);
+      const startDate = dateRange[0].toISOString().split("T")[0];
+      const endDate = dateRange[dateRange.length - 1]
+        .toISOString()
+        .split("T")[0];
 
       return questApi.fetchQuestActivity(templateIds, startDate, endDate);
     },
@@ -136,13 +155,16 @@ const QuestTracker: React.FC = () => {
   });
 
   // Get quest activity for a specific quest and date
-  const getQuestActivity = (questId: string, date: Date): QuestActivityData | null => {
+  const getQuestActivity = (
+    questId: string,
+    date: Date
+  ): QuestActivityData | null => {
     if (!activityData) return null;
 
-    const quest = trackedQuests.find(q => q.id === questId);
+    const quest = trackedQuests.find((q) => q.id === questId);
     if (!quest) return null;
 
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = date.toISOString().split("T")[0];
     const questActivity = activityData[quest.templateId];
 
     if (questActivity && questActivity[dateStr]) {
@@ -163,7 +185,10 @@ const QuestTracker: React.FC = () => {
       title: template.title,
       type: template.type,
       templateId: template.id,
-      priority: typeof template.basePoints === 'string' ? template.basePoints : 'standard', // Add priority
+      priority:
+        typeof template.basePoints === "string"
+          ? template.basePoints
+          : "standard", // Add priority
     };
 
     setTrackedQuests((prev) => [...prev, newTrackedQuest]);
@@ -212,9 +237,17 @@ const QuestTracker: React.FC = () => {
   // Sort tracked quests by priority
   const sortedTrackedQuests = useMemo(() => {
     return [...trackedQuests].sort((a, b) => {
-      const priorityOrder = { critical: 0, important: 1, standard: 2, minor: 3, optional: 4 };
-      const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 2;
-      const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] ?? 2;
+      const priorityOrder = {
+        critical: 0,
+        important: 1,
+        standard: 2,
+        minor: 3,
+        optional: 4,
+      };
+      const aPriority =
+        priorityOrder[a.priority as keyof typeof priorityOrder] ?? 2;
+      const bPriority =
+        priorityOrder[b.priority as keyof typeof priorityOrder] ?? 2;
       return aPriority - bPriority;
     });
   }, [trackedQuests]);
@@ -222,15 +255,15 @@ const QuestTracker: React.FC = () => {
   // Helper function to get priority badge style
   const getPriorityBadgeStyle = (priority: string) => {
     switch (priority?.toLowerCase()) {
-      case 'critical':
+      case "critical":
         return "bg-red-500/20 text-red-400 border-red-500/30";
-      case 'important':
+      case "important":
         return "bg-orange-500/20 text-orange-400 border-orange-500/30";
-      case 'standard':
+      case "standard":
         return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-      case 'minor':
+      case "minor":
         return "bg-green-500/20 text-green-400 border-green-500/30";
-      case 'optional':
+      case "optional":
         return "bg-gray-500/20 text-gray-400 border-gray-500/30";
       default:
         return "bg-blue-500/20 text-blue-400 border-blue-500/30";
@@ -240,25 +273,24 @@ const QuestTracker: React.FC = () => {
   // Helper function to get priority icon
   const getPriorityIcon = (priority: string) => {
     switch (priority?.toLowerCase()) {
-      case 'critical':
+      case "critical":
         return "🔥";
-      case 'important':
+      case "important":
         return "⚡";
-      case 'standard':
+      case "standard":
         return "⭐";
-      case 'minor':
+      case "minor":
         return "📌";
-      case 'optional':
+      case "optional":
         return "💡";
       default:
         return "⭐";
     }
   };
 
-
   // Persist trackedQuests to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('trackedQuests', JSON.stringify(trackedQuests));
+    localStorage.setItem("trackedQuests", JSON.stringify(trackedQuests));
   }, [trackedQuests]);
 
   return (
@@ -267,7 +299,7 @@ const QuestTracker: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-amber-500/20 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-amber-400"/>
+              <TrendingUp className="h-5 w-5 text-amber-400" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white font-medieval">
@@ -280,12 +312,12 @@ const QuestTracker: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigateDate("prev")}
-                className="text-slate-400 hover:text-white hover:bg-slate-700/50"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigateDate("prev")}
+              className="text-slate-400 hover:text-white hover:bg-slate-700/50"
             >
-              <ChevronLeft className="h-4 w-4"/>
+              <ChevronLeft className="h-4 w-4" />
             </Button>
 
             <h4 className="text-white font-medium min-w-[200px] text-center">
@@ -293,22 +325,23 @@ const QuestTracker: React.FC = () => {
             </h4>
 
             <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigateDate("next")}
-                className="text-slate-400 hover:text-white hover:bg-slate-700/50"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigateDate("next")}
+              className="text-slate-400 hover:text-white hover:bg-slate-700/50"
             >
-              <ChevronRight className="h-4 w-4"/>
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
           <div className="flex gap-3 ">
-
             <Select
-                value={selectedView}
-                onValueChange={(value: "week" | "month") => setSelectedView(value)}
+              value={selectedView}
+              onValueChange={(value: "week" | "month") =>
+                setSelectedView(value)
+              }
             >
               <SelectTrigger className="w-24 bg-slate-800/50 border-slate-600 text-white">
-                <SelectValue/>
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="week">Week</SelectItem>
@@ -319,11 +352,11 @@ const QuestTracker: React.FC = () => {
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button
-                    size="sm"
-                    className="bg-amber-600 hover:bg-amber-700 text-white"
-                    disabled={availableTemplates.length === 0}
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  disabled={availableTemplates.length === 0}
                 >
-                  <Plus className="h-4 w-4 mr-1"/>
+                  <Plus className="h-4 w-4 mr-1" />
                   Track Quest
                 </Button>
               </DialogTrigger>
@@ -335,38 +368,38 @@ const QuestTracker: React.FC = () => {
                 </DialogHeader>
                 <div className="space-y-4">
                   <Select
-                      value={selectedTemplate}
-                      onValueChange={setSelectedTemplate}
+                    value={selectedTemplate}
+                    onValueChange={setSelectedTemplate}
                   >
                     <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                      <SelectValue placeholder="Select a quest template..."/>
+                      <SelectValue placeholder="Select a quest template..." />
                     </SelectTrigger>
                     <SelectContent>
                       {availableTemplates.map((template) => (
-                          <SelectItem key={template.id} value={template.id}>
-                            <div className="flex items-center gap-2">
-                              {template.type === "daily" ? (
-                                  <Flame className="h-3 w-3 text-amber-400"/>
-                              ) : (
-                                  <Compass className="h-3 w-3 text-sky-400"/>
-                              )}
-                              {template.title}
-                            </div>
-                          </SelectItem>
+                        <SelectItem key={template.id} value={template.id}>
+                          <div className="flex items-center gap-2">
+                            {template.type === "daily" ? (
+                              <Flame className="h-3 w-3 text-amber-400" />
+                            ) : (
+                              <Compass className="h-3 w-3 text-sky-400" />
+                            )}
+                            {template.title}
+                          </div>
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <div className="flex justify-end gap-2">
                     <Button
-                        variant="outline"
-                        onClick={() => setIsAddDialogOpen(false)}
+                      variant="outline"
+                      onClick={() => setIsAddDialogOpen(false)}
                     >
                       Cancel
                     </Button>
                     <Button
-                        onClick={addQuestToTracker}
-                        disabled={!selectedTemplate}
-                        className="bg-amber-600 hover:bg-amber-700"
+                      onClick={addQuestToTracker}
+                      disabled={!selectedTemplate}
+                      className="bg-amber-600 hover:bg-amber-700"
                     >
                       Add to Tracker
                     </Button>
@@ -376,8 +409,6 @@ const QuestTracker: React.FC = () => {
             </Dialog>
           </div>
         </div>
-
-
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -394,13 +425,17 @@ const QuestTracker: React.FC = () => {
           <div className="space-y-6">
             {/* Date Headers */}
             <div className="flex">
-              <div className="w-48 flex-shrink-0"></div> {/* Space for quest names */}
-              <div className={cn(
-                "flex gap-1",
-                selectedView === "week" ? "max-w-md" : "flex-1"
-              )}>
+              <div className="w-48 flex-shrink-0"></div>{" "}
+              {/* Space for quest names */}
+              <div
+                className={cn(
+                  "flex gap-1",
+                  selectedView === "week" ? "max-w-md" : "flex-1"
+                )}
+              >
                 {dateRange.map((date) => {
-                  const isToday = date.toDateString() === new Date().toDateString();
+                  const isToday =
+                    date.toDateString() === new Date().toDateString();
                   return (
                     <div
                       key={date.toISOString()}
@@ -418,7 +453,9 @@ const QuestTracker: React.FC = () => {
                             isToday ? "text-amber-400" : "text-slate-400"
                           )}
                         >
-                          {date.toLocaleDateString("en-US", { weekday: "short" })}
+                          {date.toLocaleDateString("en-US", {
+                            weekday: "short",
+                          })}
                         </div>
                       )}
                       <div
@@ -433,7 +470,6 @@ const QuestTracker: React.FC = () => {
                   );
                 })}
               </div>
-
               {/* Week view: Add extra content in remaining space */}
               {selectedView === "week" && (
                 <div className="flex-1 pl-8">
@@ -507,13 +543,16 @@ const QuestTracker: React.FC = () => {
                 </div>
 
                 {/* Activity Grid */}
-                <div className={cn(
-                  "flex gap-1",
-                  selectedView === "week" ? "max-w-md" : "flex-1"
-                )}>
+                <div
+                  className={cn(
+                    "flex gap-1",
+                    selectedView === "week" ? "max-w-md" : "flex-1"
+                  )}
+                >
                   {dateRange.map((date, dateIndex) => {
                     const activity = getQuestActivity(quest.id, date);
-                    const isToday = date.toDateString() === new Date().toDateString();
+                    const isToday =
+                      date.toDateString() === new Date().toDateString();
 
                     return (
                       <motion.div
@@ -521,7 +560,7 @@ const QuestTracker: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{
-                          delay: (questIndex * 0.05) + (dateIndex * 0.01),
+                          delay: questIndex * 0.05 + dateIndex * 0.01,
                         }}
                         className={cn(
                           "relative group cursor-pointer transition-all duration-200 rounded-sm",
@@ -560,21 +599,30 @@ const QuestTracker: React.FC = () => {
                   <div className="flex-1 pl-8">
                     <div className="text-xs text-slate-400">
                       {(() => {
-                        const weekActivities = dateRange.map(date => getQuestActivity(quest.id, date));
-                        const completed = weekActivities.filter(a => a?.completed).length;
-                        const attempted = weekActivities.filter(a => a && !a.completed).length;
-                        const totalXp = weekActivities.reduce((sum, a) => sum + (a?.xpEarned || 0), 0);
+                        const weekActivities = dateRange.map((date) =>
+                          getQuestActivity(quest.id, date)
+                        );
+                        const completed = weekActivities.filter(
+                          (a) => a?.completed
+                        ).length;
+                        const attempted = weekActivities.filter(
+                          (a) => a && !a.completed
+                        ).length;
+                        const totalXp = weekActivities.reduce(
+                          (sum, a) => sum + (a?.xpEarned || 0),
+                          0
+                        );
 
                         return (
                           <div className="flex items-center gap-4">
                             <span className="text-slate-300 font-medium">
                               {completed}/{dateRange.length}
                             </span>
-                            <span>
-                              {totalXp > 0 && `${totalXp} XP`}
-                            </span>
+                            <span>{totalXp > 0 && `${totalXp} XP`}</span>
                             {completed === dateRange.length && (
-                              <span className="text-amber-400 font-medium">Perfect Week! 🔥</span>
+                              <span className="text-amber-400 font-medium">
+                                Perfect Week! 🔥
+                              </span>
                             )}
                           </div>
                         );

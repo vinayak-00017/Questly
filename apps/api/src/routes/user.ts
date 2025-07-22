@@ -264,7 +264,45 @@ router.get("/questDetails", requireAuth, async (req, res) => {
   }
 });
 
-export default router;
+router.patch("/updateProfile", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { name, image, timezone } = req.body;
+
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    if (name !== undefined) {
+      updateData.name = name;
+    }
+
+    if (image !== undefined) {
+      updateData.image = image;
+    }
+
+    if (timezone !== undefined) {
+      updateData.timezone = timezone;
+      updateData.timezoneSetExplicitly = true;
+    }
+
+    await db
+      .update(user)
+      .set(updateData)
+      .where(eq(user.id, userId));
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      success: true,
+    });
+  } catch (err) {
+    console.error("Error updating profile:", err);
+    res
+      .status(500)
+      .json({ message: "Failed to update profile", success: false });
+  }
+});
+
 router.post("/updateStreak", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
@@ -287,3 +325,4 @@ router.post("/updateStreak", requireAuth, async (req, res) => {
   }
 });
 
+export default router;

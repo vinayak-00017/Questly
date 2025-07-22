@@ -41,6 +41,19 @@ export const userApi = {
     return response.json();
   },
 
+  updateProfile: async ({ name, image, timezone }: { name?: string; image?: string; timezone?: string }) => {
+    const response = await fetch(`${BASE_URL}/user/updateProfile`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ name, image, timezone }),
+    });
+    if (!response.ok) throw new Error(`Failed to update profile`);
+    return response.json();
+  },
+
   getQuestDetails: async (date: string) => {
     const response = await fetch(`${BASE_URL}/user/questDetails?date=${date}`, {
       credentials: "include",
