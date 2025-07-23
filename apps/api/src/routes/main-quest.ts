@@ -7,7 +7,12 @@ import { mainQuest, questTemplate, questInstance } from "../db/schema";
 import { requireAuth, AuthenticatedRequest } from "../middleware/auth";
 import { basePointsMap } from "../utils/points-map";
 import { createDailyRRule, doesRRuleMatchDate } from "../utils/rrule-utils";
-import { getTodayMidnight, isSameDay, toDbDate } from "@questly/utils";
+import {
+  getTodayMidnight,
+  isSameDay,
+  toDbDate,
+  toLocalDbDate,
+} from "@questly/utils";
 import { getUserTimezone } from "../utils/dates";
 
 const router = express.Router();
@@ -62,6 +67,7 @@ router.post("/", requireAuth, async (req, res) => {
         // Create instances for today if the quest template should apply to today
         const userTimezone = await getUserTimezone(userId);
         const today = getTodayMidnight(userTimezone);
+        const localDateString = toLocalDbDate(today, userTimezone);
         const instancesToCreate = [];
 
         for (const quest of updatedQuests) {
@@ -89,7 +95,7 @@ router.post("/", requireAuth, async (req, res) => {
               id: uuidv4(),
               templateId: quest.id,
               userId,
-              date: toDbDate(today),
+              date: localDateString,
               completed: false,
               title: quest.title,
               description: quest.description,

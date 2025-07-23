@@ -33,14 +33,12 @@ export function doesRRuleMatchDate(
     const rrule = rrulestr(rule);
 
     // Set time to midnight for consistent date comparison
-    const targetDate = new Date(date);
-    targetDate.setHours(0, 0, 0, 0);
-    console.log(targetDate);
+    console.log(date);
 
     // Check if the rule applies to this date
     const occurrences = rrule.between(
-      targetDate,
-      new Date(targetDate.getTime() + 24 * 60 * 60 * 1000 - 1), // End of the day
+      date,
+      new Date(date.getTime() + 24 * 60 * 60 * 1000 - 1), // End of the day
       true
     );
 
