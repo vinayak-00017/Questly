@@ -16,6 +16,7 @@ import {
   toDbTimestamp,
   toLocalDbDate,
 } from "@questly/utils";
+import { getUserTimezone } from "../utils/dates";
 
 const router = express.Router();
 
@@ -112,11 +113,8 @@ router.delete("/questTemplate/:id", requireAuth, async (req, res) => {
 router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
-    const userTimezoneResult = await db
-      .select({ timezone: user.timezone })
-      .from(user)
-      .where(eq(user.id, userId));
-    const userTimezone = userTimezoneResult[0]?.timezone;
+
+    const userTimezone = await getUserTimezone(userId);
 
     // Create an instance for today if the quest applies to today
     // or if no recurrence rule (one-time quest)
@@ -178,11 +176,7 @@ router.get("/dailyQuestInstance", requireAuth, async (req, res) => {
 router.get("/sideQuestInstance", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
-    const userTimezoneResult = await db
-      .select({ timezone: user.timezone })
-      .from(user)
-      .where(eq(user.id, userId));
-    const userTimezone = userTimezoneResult[0]?.timezone;
+    const userTimezone = await getUserTimezone(userId);
     const today = getTodayMidnight(userTimezone);
 
     const sideQuestsData = await db

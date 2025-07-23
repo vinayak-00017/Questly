@@ -1,10 +1,11 @@
 import express from "express";
-import { questInstance, questTemplate } from "../db/schema";
+import { questInstance, questTemplate, user } from "../db/schema";
 import { and, eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import db from "../db";
 import { requireSchedulerAuth } from "../middleware/scheduler-auth";
 import { doesRRuleMatchDate } from "../utils/rrule-utils";
+import { getTodayMidnight, toLocalDbDate } from "@questly/utils";
 
 const router = express.Router();
 
@@ -14,8 +15,13 @@ router.post(
   async (req, res) => {
     try {
       const userId = req.headers["x-user-id"] as string;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Set to beginning of day
+      const userTimezoneResult = await db
+        .select({ timezone: user.timezone })
+        .from(user)
+        .where(eq(user.id, userId));
+      const userTimezone = userTimezoneResult[0]?.timezone;
+
+      const today = getTodayMidnight(userTimezone);
 
       // Get all active templates for this user
       const activeTemplates = await db
@@ -43,10 +49,7 @@ router.post(
       });
 
       // Use local date string instead of UTC to avoid off-by-one errors
-      const pad = (n: number) => n.toString().padStart(2, "0");
-      const localDateString = `${today.getFullYear()}-${pad(
-        today.getMonth() + 1
-      )}-${pad(today.getDate())}`;
+      const localDateString = toLocalDbDate(today, userTimezone);
 
       // Check if instances already exist for today
       const existingInstances = await db
