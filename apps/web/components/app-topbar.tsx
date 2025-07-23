@@ -126,7 +126,7 @@ export default function AppTopbar({ className }: { className?: string }) {
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 ring-2 ring-amber-500/50 shadow-lg flex items-center justify-center">
               {session && session.user && session.user?.image ? (
                 <Image
-                  src={session.user?.image || ""}
+                  src={session.user.image}
                   width={80}
                   height={80}
                   alt="Profile"

@@ -41,16 +41,38 @@ export const userApi = {
     return response.json();
   },
 
-  updateProfile: async ({ name, image, timezone }: { name?: string; image?: string; timezone?: string }) => {
+  updateProfile: async ({ 
+    name, 
+    image, 
+    imagePublicId, 
+    timezone 
+  }: { 
+    name?: string; 
+    image?: string; 
+    imagePublicId?: string; 
+    timezone?: string; 
+  }) => {
     const response = await fetch(`${BASE_URL}/user/updateProfile`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ name, image, timezone }),
+      body: JSON.stringify({ name, image, imagePublicId, timezone }),
     });
     if (!response.ok) throw new Error(`Failed to update profile`);
+    return response.json();
+  },
+
+  deleteImage: async (publicId: string) => {
+    const response = await fetch(`/api/upload`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ publicId }),
+    });
+    if (!response.ok) throw new Error("Failed to delete image");
     return response.json();
   },
 

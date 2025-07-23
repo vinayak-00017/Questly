@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -10,7 +10,6 @@ import {
   Loader2,
   Crown,
   AlertTriangle,
-  Camera,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
 import { userApi } from "@/services/user-api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -47,19 +46,61 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
   const [formData, setFormData] = useState({
     name: session.user?.name || "",
     image: session.user?.image || "",
+    imagePublicId: session.user?.imagePublicId || "",
     timezone: userStats?.timezone || "UTC",
   });
 
   const [showTimezoneWarning, setShowTimezoneWarning] = useState(false);
   const [pendingTimezone, setPendingTimezone] = useState<string>("");
+  const [tempUploadedImages, setTempUploadedImages] = useState<string[]>([]);
+  const [hasUnsavedImageChanges, setHasUnsavedImageChanges] = useState(false);
 
   const queryClient = useQueryClient();
 
+  // Reset form data when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        name: session.user?.name || "",
+        image: session.user?.image || "",
+        imagePublicId: session.user?.imagePublicId || "",
+        timezone: userStats?.timezone || "UTC",
+      });
+      setTempUploadedImages([]);
+      setHasUnsavedImageChanges(false);
+    }
+  }, [isOpen, session.user, userStats]);
+
   const updateProfileMutation = useMutation({
-    mutationFn: userApi.updateProfile,
+    mutationFn: async (updates: any) => {
+      console.log("Starting profile update with:", updates);
+      
+      // Delete old image BEFORE updating profile if there's a new image
+      if (updates.image && updates.image !== session.user?.image) {
+        const oldImagePublicId = session.user?.imagePublicId;
+        if (oldImagePublicId && oldImagePublicId !== updates.imagePublicId) {
+          try {
+            console.log("Deleting old image:", oldImagePublicId);
+            await userApi.deleteImage(oldImagePublicId);
+            console.log("Old image deleted successfully");
+          } catch (error) {
+            console.warn("Failed to delete old image:", error);
+            // Don't fail the entire operation if old image deletion fails
+          }
+        }
+      }
+      
+      // Now update the profile
+      return userApi.updateProfile(updates);
+    },
     onSuccess: () => {
       toast.success("Profile updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["userStats"] });
+
+      // Clear temp uploads since they're now saved
+      setTempUploadedImages([]);
+      setHasUnsavedImageChanges(false);
+
       onProfileUpdate?.();
       onClose();
     },
@@ -89,28 +130,86 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
     setPendingTimezone("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageUpload = (imageUrl: string, publicId: string) => {
+    console.log("Image uploaded:", { imageUrl, publicId });
+    setFormData({
+      ...formData,
+      image: imageUrl,
+      imagePublicId: publicId,
+    });
+    setHasUnsavedImageChanges(true);
+  };
+
+  const handleTempImageUpload = (publicId: string) => {
+    console.log("Temporary image uploaded:", publicId);
+    setTempUploadedImages((prev) => [...prev, publicId]);
+  };
+
+  const handleImageRemove = () => {
+    setFormData({
+      ...formData,
+      image: "",
+      imagePublicId: "",
+    });
+    setHasUnsavedImageChanges(true);
+  };
+
+  const cleanupTempImages = async () => {
+    if (tempUploadedImages.length > 0) {
+      try {
+        console.log("Cleaning up temporary images:", tempUploadedImages);
+        await Promise.all(
+          tempUploadedImages.map((publicId) => userApi.deleteImage(publicId))
+        );
+        console.log(`Cleaned up ${tempUploadedImages.length} temporary images`);
+      } catch (error) {
+        console.warn("Failed to cleanup some temporary images:", error);
+      }
+    }
+  };
+
+  const handleClose = async () => {
+    // If there are unsaved image changes, cleanup temp uploads
+    if (hasUnsavedImageChanges && tempUploadedImages.length > 0) {
+      await cleanupTempImages();
+      toast.info("Unsaved image changes discarded");
+    }
+
+    setTempUploadedImages([]);
+    setHasUnsavedImageChanges(false);
+    onClose();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const updates: { name?: string; image?: string; timezone?: string } = {};
+    const updates: {
+      name?: string;
+      image?: string;
+      imagePublicId?: string;
+      timezone?: string;
+    } = {};
 
     if (formData.name !== session.user?.name && formData.name.trim()) {
       updates.name = formData.name.trim();
     }
 
-    if (formData.image !== session.user?.image && formData.image.trim()) {
-      updates.image = formData.image.trim();
+    if (formData.image !== session.user?.image) {
+      updates.image = formData.image;
+      updates.imagePublicId = formData.imagePublicId;
     }
 
     if (formData.timezone !== userStats?.timezone) {
       updates.timezone = formData.timezone;
     }
 
+    console.log("Submitting updates:", updates);
+
     if (Object.keys(updates).length > 0) {
       updateProfileMutation.mutate(updates);
     } else {
       toast.info("No changes to save");
-      onClose();
+      handleClose();
     }
   };
 
@@ -125,7 +224,7 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-          onClick={onClose}
+          onClick={handleClose}
         />
 
         {/* Timezone Warning Dialog */}
@@ -209,7 +308,7 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={onClose}
+                    onClick={handleClose}
                     className="text-zinc-400 hover:text-white hover:bg-zinc-800/50"
                   >
                     <X className="h-5 w-5" />
@@ -220,43 +319,45 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
               {/* Form */}
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Avatar Section */}
-                <div className="flex items-center gap-6">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-amber-500/20 rounded-full blur-xl"></div>
-                    <Avatar className="w-20 h-20 border-4 border-purple-500/50 shadow-xl relative z-10">
-                      <AvatarImage
-                        src={formData.image || session.user?.image || ""}
-                        alt={formData.name || session.user?.name || "User"}
-                      />
-                      <AvatarFallback className="bg-gradient-to-br from-purple-600 to-amber-600 text-white text-2xl font-bold">
-                        {(formData.name || session.user?.name)
-                          ?.charAt(0)
-                          .toUpperCase() || "A"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="z-50 absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-600 to-orange-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg border border-amber-500/50">
-                      Lv.{userStats?.levelStats?.level || 1}
-                    </div>
-                  </div>
-                  <div className="flex-1">
+                <div className="space-y-3">
+                  <div>
                     <h3 className="text-white font-semibold mb-1">
                       Profile Avatar
                     </h3>
-                    <p className="text-zinc-400 text-sm mb-3">
-                      Enter a URL for your profile picture
+                    <p className="text-zinc-400 text-sm">
+                      Upload or change your profile picture
                     </p>
-                    <div className="relative">
-                      <Camera className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-500" />
-                      <Input
-                        value={formData.image}
-                        onChange={(e) =>
-                          setFormData({ ...formData, image: e.target.value })
-                        }
-                        className="pl-10 bg-zinc-900/50 border-zinc-700/50 text-white placeholder-zinc-500 focus:border-purple-500/50 focus:ring-purple-500/20"
-                        placeholder="https://example.com/your-avatar.jpg"
-                      />
+                  </div>
+
+                  <div className="relative">
+                    <CloudinaryUpload
+                      currentImage={formData.image}
+                      currentImagePublicId={formData.imagePublicId}
+                      onImageUpload={handleImageUpload}
+                      onTempImageUpload={handleTempImageUpload}
+                      onImageRemove={handleImageRemove}
+                      size={80}
+                      fallbackText={
+                        (formData.name || session.user?.name)
+                          ?.charAt(0)
+                          .toUpperCase() || "A"
+                      }
+                      className="flex items-center gap-4"
+                    />
+
+                    {/* Level Badge */}
+                    <div className="z-50 absolute top-0 left-[60px] bg-gradient-to-r from-amber-600 to-orange-600 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg border border-amber-500/50">
+                      Lv.{userStats?.levelStats?.level || 1}
                     </div>
                   </div>
+
+                  {/* Unsaved changes warning */}
+                  {hasUnsavedImageChanges && (
+                    <div className="flex items-center gap-2 text-amber-400 text-sm">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span>You have unsaved image changes</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Name Field */}
@@ -321,7 +422,7 @@ export const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={onClose}
+                    onClick={handleClose}
                     className="flex-1 bg-zinc-900/50 border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-white"
                     disabled={updateProfileMutation.isPending}
                   >

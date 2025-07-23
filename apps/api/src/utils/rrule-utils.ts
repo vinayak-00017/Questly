@@ -32,9 +32,6 @@ export function doesRRuleMatchDate(
   try {
     const rrule = rrulestr(rule);
 
-    // Set time to midnight for consistent date comparison
-    console.log(date);
-
     // Check if the rule applies to this date
     const occurrences = rrule.between(
       date,
@@ -42,7 +39,6 @@ export function doesRRuleMatchDate(
       true
     );
 
-    console.log("_____________________", occurrences.length);
     return occurrences.length > 0;
   } catch (error) {
     console.error("Error parsing RRULE:", error);
