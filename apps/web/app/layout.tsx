@@ -39,6 +39,29 @@ const medievalSharp = MedievalSharp({
 export const metadata: Metadata = {
   title: "Questly",
   description: "Gamify your goals. Turn your life into an epic quest.",
+  openGraph: {
+    title: "Questly – Gamify Your Life",
+    description:
+      "Turn your goals into quests, earn XP, and level up your real life with Questly!",
+    url: "https://questly.me",
+    siteName: "Questly",
+    images: [
+      {
+        url: "https://questly.me/favicon.ico",
+        width: 1200,
+        height: 630,
+        alt: "Questly – Gamify Your Life",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Questly – Gamify Your Life",
+    description:
+      "Turn your goals into quests, earn XP, and level up your real life with Questly!",
+    images: ["https://questly.me/favicon.ico"],
+  },
 };
 
 //component
