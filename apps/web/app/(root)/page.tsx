@@ -34,7 +34,7 @@ export default function Home() {
     if (data?.userStats) {
       const userTimezone = data.userStats.timezone;
       const timezoneSetExplicitly = data.userStats.timezoneSetExplicitly;
-      
+
       // Only show dialog if:
       // 1. User has no timezone set (null/undefined), OR
       // 2. User has UTC but has never explicitly set their timezone
@@ -72,8 +72,8 @@ export default function Home() {
       <div>
         <div className="relative min-h-screen">
           {/* Fantasy background overlay with subtle texture */}
-          <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMDAwMDAwMDUiPjwvcmVjdD4KPHBhdGggZD0iTTAgNUw1IDBaTTYgNEw0IDZaTS0xIDFMMSAtMVoiIHN0cm9rZT0iIzg4ODg4ODA1IiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc+')] opacity-30 z-0"></div>
-          <div className="fixed inset-0 bg-gradient-to-b from-zinc-950/70 via-zinc-900/70 to-black/90 z-0"></div>
+          <div className="pointer-events-none fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMDAwMDAwMDUiPjwvcmVjdD4KPHBhdGggZD0iTTAgNUw1IDBaTTYgNEw0IDZaTS0xIDFMMSAtMVoiIHN0cm9rZT0iIzg4ODg4ODA1IiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc+')] opacity-30 z-0"></div>
+          <div className="pointer-events-none fixed inset-0 bg-gradient-to-b from-zinc-950/70 via-zinc-900/70 to-black/90 z-0"></div>
 
           <div className="relative z-10 flex h-full w-full flex-col px-4 py-6 md:px-8 md:py-8 max-w-6xl mx-auto">
             {/* Top header section with user profile and sign in button */}
@@ -89,11 +89,11 @@ export default function Home() {
               <div className="absolute -bottom-4 -right-4 w-8 h-8 border-b-2 border-r-2 border-amber-500/30 rounded-br-lg"></div>
               <AnonymousUserBanner />
 
-              <h2 className="text-xl text-center text-white font-medieval mb-6 tracking-wider flex items-center justify-center">
+              {/* <h2 className="text-xl text-center text-white font-medieval mb-6 tracking-wider flex items-center justify-center">
                 <Star className="h-5 w-5 mr-2 text-amber-500" />
                 Your Epic Quests
                 <Star className="h-5 w-5 ml-2 text-amber-500" />
-              </h2>
+              </h2> */}
 
               <div className="flex flex-col w-full gap-8">
                 <QuestTracker />

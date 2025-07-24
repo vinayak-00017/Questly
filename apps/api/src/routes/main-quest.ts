@@ -161,4 +161,11 @@ router.get("/ids", requireAuth, async (req, res) => {
   }
 });
 
+// router.get("/getDetails", requireAuth, async(req,res) => {
+//   try{
+//     const userId = (req as AuthenticatedRequest).userId;
+//     const main
+//   }
+// })
+
 export default router;

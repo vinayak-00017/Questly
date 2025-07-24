@@ -62,10 +62,21 @@ const MainQuestCard = () => {
       [Rare]: 2,
       [Common]: 1,
     };
+    const aPriority =
+      importancePriority[a.importance as keyof typeof importancePriority] || 0;
+    const bPriority =
+      importancePriority[b.importance as keyof typeof importancePriority] || 0;
 
-    // If both have urgent deadlines (< 10 days), sort by time left (ascending - least time first)
+    // If both have urgent deadlines (< 10 days)
     if (aHasUrgentDeadline && bHasUrgentDeadline) {
-      return aTimeLeft - bTimeLeft;
+      if (aTimeLeft !== bTimeLeft) {
+        return aTimeLeft - bTimeLeft; // Least time first
+      }
+      // If same time left, sort by importance (higher first)
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority;
+      }
+      return 0;
     }
 
     // If only one has urgent deadline, prioritize the urgent one
@@ -73,10 +84,6 @@ const MainQuestCard = () => {
     if (!aHasUrgentDeadline && bHasUrgentDeadline) return 1;
 
     // If neither has urgent deadline (both > 10 days or no deadline), sort by importance
-    const aPriority =
-      importancePriority[a.importance as keyof typeof importancePriority] || 0;
-    const bPriority =
-      importancePriority[b.importance as keyof typeof importancePriority] || 0;
 
     // Higher importance first (descending)
     if (aPriority !== bPriority) {

@@ -66,4 +66,23 @@ export const mainQuestApi = {
       throw error;
     }
   },
+
+  getDetails: async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/main-quest/details`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const error = await response
+          .json()
+          .catch(() => ({ message: `Server error: ${response.status}` }));
+        throw new Error(error.message || "Failed to fetch main quest details");
+      }
+      return response.json();
+    } catch (error) {
+      console.error("API call failed:", error);
+      throw error;
+    }
+  },
 };

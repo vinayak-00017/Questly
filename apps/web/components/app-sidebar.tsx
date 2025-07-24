@@ -12,12 +12,14 @@ import {
   IconScript,
   IconSwords,
   IconFlame,
-  IconCompass, IconAdjustmentsAlt,
+  IconCompass,
+  IconAdjustmentsAlt,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { useSidebarState } from "@/contexts/sidebar-context";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export function AppSidebar() {
   const { open, setOpen } = useSidebarState();
@@ -155,12 +157,19 @@ export const Logo = () => {
         open ? "justify-start px-2" : "justify-center px-0"
       )}
     >
-      <div
+      <Image
+        className={cn(open ? "h-12 w-12" : "h-8 w-8")}
+        width={50}
+        height={50}
+        src={"/q_tp.png"}
+        alt="questly"
+      ></Image>
+      {/* <div
         className={cn(
           "flex-shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-gradient-to-br from-orange-500 to-amber-500 shadow-sm",
           open ? "h-6 w-6" : "h-8 w-8"
         )}
-      />
+      /> */}
       {open && (
         <motion.span
           initial={{ opacity: 0 }}
