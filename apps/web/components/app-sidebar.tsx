@@ -98,7 +98,33 @@ export function AppSidebar() {
           </div>
         </div>
         <div>
-          <SidebarLink
+          {/* Legal Links */}
+          <div className="mb-2 space-y-1">
+            <SidebarLink
+              link={{
+                label: "Privacy Policy",
+                href: "/privacy-policy",
+                icon: (
+                  <div className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300 flex items-center justify-center">
+                    <span className="text-xs">🔒</span>
+                  </div>
+                ),
+              }}
+            />
+            <SidebarLink
+              link={{
+                label: "Terms of Use",
+                href: "/terms-of-use",
+                icon: (
+                  <div className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300 flex items-center justify-center">
+                    <span className="text-xs">📋</span>
+                  </div>
+                ),
+              }}
+            />
+          </div>
+
+          {/* <SidebarLink
             link={{
               label: "Settings",
               href: "#",
@@ -116,18 +142,7 @@ export function AppSidebar() {
               "flex w-full items-center text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none",
               open ? "px-3 py-2" : "justify-center p-2"
             )}
-          >
-            <img
-              src="https://static.thenounproject.com/png/2059357-200.png"
-              className="h-5 w-5 rounded-full object-cover flex-shrink-0"
-              alt="Avatar"
-            />
-            {open && (
-              <span className="ml-2 text-neutral-700 dark:text-neutral-200">
-                Account
-              </span>
-            )}
-          </button>
+          ></button> */}
           <button
             onClick={handleLogout}
             className={cn(
