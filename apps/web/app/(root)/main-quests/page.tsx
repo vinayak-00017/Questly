@@ -118,7 +118,7 @@ export default function MainQuestsPage() {
                   quest={quest}
                   categoryIcon={CategoryIcon}
                   progress={details.progress}
-                  dailyQuestsCount={details.dailyQuestsCount}
+                  questsCount={quest.attachedQuests.length}
                   category={quest.category}
                   importanceStyle={getImportanceStyle(quest.importance)}
                   index={index}

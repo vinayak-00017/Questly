@@ -14,6 +14,7 @@ export const mainQuestSchema = baseSchema.extend({
   category: z.nativeEnum(MainQuestCategory),
   dueDate: z.string(),
   xpReward: z.number().int().positive().nullable(),
+  attachedQuests: z.array(createQuestTemplateSchema),
 });
 
 export const createMainQuestSchema = mainQuestSchema
