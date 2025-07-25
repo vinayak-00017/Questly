@@ -35,6 +35,8 @@ module.exports = {
         NODE_ENV: "production",
         PORT: 3000,
         HOSTNAME: "0.0.0.0",
+        NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "dogpummfo",
+        NEXT_PUBLIC_CLOUDINARY_API_KEY: "295564923186697",
         NEXT_PUBLIC_API_URL: "https://questly.me/v1",
         NEXT_PUBLIC_AUTH_URL: "https://questly.me/v1/api/auth",
         NEXT_PUBLIC_APP_URL: "https://questly.me",

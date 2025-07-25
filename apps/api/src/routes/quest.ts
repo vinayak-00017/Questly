@@ -405,6 +405,54 @@ router.patch("/completeQuest", requireAuth, async (req, res) => {
   }
 });
 
+// Add endpoint to update quest instance
+router.patch("/questInstance/:instanceId", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { instanceId } = req.params;
+    const { title, description, basePoints } = req.body;
+
+    // Validate required fields
+    if (!title || typeof title !== "string" || title.trim().length === 0) {
+      return res.status(400).json({ message: "Title is required" });
+    }
+
+    if (basePoints !== undefined && (!Number.isInteger(basePoints) || basePoints < 1)) {
+      return res.status(400).json({ message: "Base points must be a positive integer" });
+    }
+
+    // Prepare update fields
+    const updatedFields: any = {
+      title: title.trim(),
+      updatedAt: new Date(),
+    };
+
+    if (description !== undefined) {
+      updatedFields.description = description.trim() || null;
+    }
+
+    if (basePoints !== undefined) {
+      updatedFields.basePoints = basePoints;
+    }
+
+    // Update the quest instance
+    const result = await db
+      .update(questInstance)
+      .set(updatedFields)
+      .where(
+        and(
+          eq(questInstance.id, instanceId),
+          eq(questInstance.userId, userId)
+        )
+      );
+
+    res.status(200).json({ message: "Quest instance updated successfully" });
+  } catch (err) {
+    console.error("Error updating quest instance:", err);
+    res.status(500).json({ message: "Failed to update quest instance" });
+  }
+});
+
 // Add endpoint to fetch quest activity for quest tracker
 router.get("/activity", requireAuth, async (req, res) => {
   try {

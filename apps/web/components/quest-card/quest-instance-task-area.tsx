@@ -23,15 +23,25 @@ const QuestInstanceTaskArea = ({
   colorStyles,
   expandedQuestId,
   quest,
+  onTaskAdded,
 }: {
   colorStyles: any;
   expandedQuestId: string;
   quest: QuestInstance;
+  onTaskAdded?: () => void;
 }) => {
   const { Low, Medium, High, Urgent } = TaskPriority;
   const [taskPriority, setTaskPriority] = useState<TaskPriority>(Medium);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const queryClient = useQueryClient();
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  // Focus input when area is mounted
+  React.useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   // Mutations
   const addTaskMutation = useMutation({
@@ -45,6 +55,7 @@ const QuestInstanceTaskArea = ({
         queryKey: ["taskInstances", expandedQuestId],
       });
       toast.success("Task added successfully");
+      if (onTaskAdded) onTaskAdded();
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to add task");
@@ -72,8 +83,49 @@ const QuestInstanceTaskArea = ({
   // Determine if the quest is completed to apply correct styling
   const isCompleted = quest.completed;
 
+  // Collapse area when clicking outside
+  const areaRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (!onTaskAdded) return;
+    const handleClick = (e: MouseEvent) => {
+      // Use composedPath for robust detection of overlays and dropdowns
+      const path = e.composedPath();
+      const isInOverlay = path.some((el) => {
+        if (!(el instanceof HTMLElement)) return false;
+        // Check for select dropdowns, dialogs, portals, and listbox roles
+        if (
+          el.classList.contains("select-content") ||
+          el.classList.contains("dialog-content") ||
+          el.getAttribute("role") === "dialog" ||
+          el.classList.contains("radix-portal") ||
+          el.getAttribute("role") === "listbox" ||
+          el.hasAttribute("data-radix-portal")
+        ) {
+          return true;
+        }
+        // Check parent for data-radix-portal (for deeply nested dropdowns)
+        let parent = el.parentElement;
+        while (parent) {
+          if (parent.hasAttribute("data-radix-portal")) return true;
+          parent = parent.parentElement;
+        }
+        return false;
+      });
+      if (areaRef.current && !path.includes(areaRef.current) && !isInOverlay) {
+        onTaskAdded();
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+    };
+  }, [onTaskAdded]);
   return (
-    <div className="px-4 relative task-area-container">
+    <div
+      ref={areaRef}
+      className="px-4 relative task-area-container"
+      tabIndex={-1}
+    >
       <div
         className={cn(
           "p-4 relative",
@@ -106,6 +158,7 @@ const QuestInstanceTaskArea = ({
         <div className="flex items-end gap-2 relative z-10">
           <div className="flex-1">
             <Input
+              ref={inputRef}
               placeholder="Add a task..."
               value={newTaskTitle}
               onChange={(e) => setNewTaskTitle(e.target.value)}

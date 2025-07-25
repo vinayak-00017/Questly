@@ -8,6 +8,9 @@ import {
   Trophy,
   Star,
   Sparkles,
+  Edit3,
+  PlusCircle,
+  Plus,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -109,6 +112,7 @@ const QuestCardActionButtons = ({
   quest,
   expandedQuestId,
   toggleExpand,
+  onEditClick,
 }: {
   displayCompleted: boolean;
   queryKey: string[];
@@ -117,6 +121,7 @@ const QuestCardActionButtons = ({
   quest: QuestInstance;
   expandedQuestId: string | null;
   toggleExpand: (questId: string) => void;
+  onEditClick?: () => void;
 }) => {
   const queryClient = useQueryClient();
   const [showConfetti, setShowConfetti] = useState(false);
@@ -329,7 +334,7 @@ const QuestCardActionButtons = ({
         className={cn(
           "h-10 w-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg transform hover:scale-110 active:scale-95",
           !displayCompleted
-            ? `bg-gradient-to-br from-black/60 to-black/80 ring-2 ${colorStyles.cornerBorder} hover:${colorStyles.buttonGradient} hover:ring-2 hover:ring-white/20`
+            ? `bg-gradient-to-br from-black/60 to-black/80 ring-2 ${colorStyles.cornerBorder} hover:bg-zinc-800/60 hover:ring-2 hover:ring-white/20`
             : "bg-gradient-to-br from-green-500/80 to-emerald-600/80 ring-2 ring-green-400/30 hover:from-green-400/80 hover:to-emerald-500/80"
         )}
         title={displayCompleted ? "Mark as incomplete" : "Mark as completed"}
@@ -342,10 +347,29 @@ const QuestCardActionButtons = ({
         />
       </button>
 
+      {/* Edit button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onEditClick?.();
+        }}
+        className={cn(
+          "h-9 w-9 rounded-full bg-black/40 flex items-center justify-center transition-all duration-300 hover:scale-105 ring-1 ring-white/10 hover:bg-zinc-800/60 hover:ring-zinc-400/80"
+        )}
+        title="Edit quest instance"
+        aria-label="Edit quest instance"
+      >
+        <Edit3
+          className={`h-4 w-4 text-zinc-400 ${colorStyles.iconHoverText}`}
+        />
+      </button>
+
       {/* Expand/collapse button - updated to match new style */}
       <button
         onClick={() => toggleExpand(quest.instanceId)}
-        className={`h-9 w-9 rounded-full bg-black/40 flex items-center justify-center ${colorStyles.iconHover} transition-all duration-300 hover:scale-105 ring-1 ring-white/10`}
+        className={cn(
+          "h-9 w-9 rounded-full bg-black/40 flex items-center justify-center transition-all duration-300 hover:scale-105 ring-1 ring-white/10 hover:bg-zinc-800/60 hover:ring-zinc-400/80"
+        )}
         title={
           expandedQuestId === quest.instanceId
             ? "Collapse"
@@ -358,12 +382,12 @@ const QuestCardActionButtons = ({
         }
       >
         {expandedQuestId === quest.instanceId ? (
-          <ChevronUp
-            className={`h-4 w-4 text-zinc-400 ${colorStyles.iconHoverText}`}
+          <Plus
+            className={`h-6 w-6 text-zinc-100 ${colorStyles.iconHoverText}`}
           />
         ) : (
-          <ChevronDown
-            className={`h-4 w-4 text-zinc-400 ${colorStyles.iconHoverText}`}
+          <Plus
+            className={`h-6 w-6 text-zinc-400 ${colorStyles.iconHoverText}`}
           />
         )}
       </button>
