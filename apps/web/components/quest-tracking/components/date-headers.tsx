@@ -56,31 +56,6 @@ export const DateHeaders: React.FC<DateHeadersProps> = ({
           );
         })}
       </div>
-      {/* Week view: Add extra content in remaining space */}
-      {selectedView === "week" && (
-        <div className="flex-1 pl-8">
-          <div className="bg-slate-800/30 rounded-lg p-3 text-xs">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-slate-800/50 border border-slate-700 rounded-sm"></div>
-                <span className="text-slate-400">No Activity</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-slate-600/50 border border-slate-500 rounded-sm"></div>
-                <span className="text-slate-400">Attempted</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-gradient-to-br from-amber-500 to-orange-600 border border-amber-400 rounded-sm"></div>
-                <span className="text-slate-400">Daily</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-gradient-to-br from-sky-500 to-blue-600 border border-sky-400 rounded-sm"></div>
-                <span className="text-slate-400">Side</span>
-              </div>
-            </div>
           </div>
-        </div>
-      )}
-    </div>
   );
 };

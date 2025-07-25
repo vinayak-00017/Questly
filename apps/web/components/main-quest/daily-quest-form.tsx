@@ -11,6 +11,7 @@ import {
 import { QuestPriority, QuestType, CreateQuestTemplate } from "@questly/types";
 import { Plus, Target } from "lucide-react";
 import { useState } from "react";
+import { createDailyRRule } from "@/lib/rrule-utils";
 
 interface DailyQuestFormProps {
   onAddQuest: (quest: CreateQuestTemplate) => void;
@@ -25,13 +26,15 @@ export function DailyQuestForm({ onAddQuest, dueDate }: DailyQuestFormProps) {
 
   const handleAddDailyTask = () => {
     if (dailyQuestTitle.trim()) {
-      onAddQuest({
+      const newQuest = {
         title: dailyQuestTitle.trim(),
         type: QuestType.Daily,
         basePoints: dailyQuestPriority,
-        recurrenceRule: "daily",
+        recurrenceRule: createDailyRRule(),
         dueDate: dueDate instanceof Date ? dueDate.toISOString() : undefined,
-      });
+      };
+      
+      onAddQuest(newQuest);
       setDailyQuestTitle("");
       setDailyQuestPriority(QuestPriority.Standard);
     }

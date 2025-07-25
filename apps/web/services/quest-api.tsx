@@ -65,10 +65,17 @@ export const questApi = {
     return response.json();
   },
 
-  fetchQuestActivity: async (templateIds: string[], startDate: string, endDate: string) => {
-    const response = await fetch(`${BASE_URL}/quest/activity?templateIds=${templateIds.join(',')}&startDate=${startDate}&endDate=${endDate}`, {
-      credentials: "include",
-    });
+  fetchQuestActivity: async (
+    templateIds: string[],
+    startDate: string,
+    endDate: string
+  ) => {
+    const response = await fetch(
+      `${BASE_URL}/quest/activity?templateIds=${templateIds.join(",")}&startDate=${startDate}&endDate=${endDate}`,
+      {
+        credentials: "include",
+      }
+    );
     if (!response.ok) throw new Error("Failed to fetch quest activity");
     return response.json();
   },
@@ -79,24 +86,48 @@ export const questApi = {
     description?: string;
     basePoints: number;
   }) => {
-    const response = await fetch(`${BASE_URL}/quest/questInstance/${updateData.instanceId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        title: updateData.title,
-        description: updateData.description,
-        basePoints: updateData.basePoints,
-      }),
-    });
+    const response = await fetch(
+      `${BASE_URL}/quest/questInstance/${updateData.instanceId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          title: updateData.title,
+          description: updateData.description,
+          basePoints: updateData.basePoints,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const error = await response
         .json()
         .catch(() => ({ message: `Server error: ${response.status}` }));
       throw new Error(error.message || "Failed to update quest instance");
+    }
+
+    return response.json();
+  },
+  deleteQuestInstance: async (instanceId: string) => {
+    const response = await fetch(
+      `${BASE_URL}/quest/questInstance/${instanceId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response
+        .json()
+        .catch(() => ({ message: `Server error: ${response.status}` }));
+      throw new Error(error.message || "Failed to delete quest instance");
     }
 
     return response.json();

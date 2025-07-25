@@ -46,19 +46,17 @@ const TodaysQuestsCard = () => {
   return (
     <>
       <QuestCard
-        externalData={combinedQuests}
         title="Today's Quests"
         description="All your daily and side quests in one place"
         Icon={Calendar}
         EmptyIcon={Calendar}
         type="today"
         themeColor="purple"
-        fetchFn={() => Promise.resolve({ todaysQuests: combinedQuests })}
+        fetchFn={questApi.fetchTodaysQuests}
         queryKey={["todaysQuests"]}
-        dataSelector={(data) => data.todaysQuests || []}
+        dataSelector={(data) => [...(data?.dailyQuests || []), ...(data?.sideQuests || [])]}
         emptyStateTitle="No Quests For Today"
         emptyStateDescription="Add daily or side quests to see them here"
-        isLoading={isLoading}
         onAddQuest={handleAddQuest}
       />
 

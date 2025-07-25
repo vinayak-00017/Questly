@@ -417,8 +417,13 @@ router.patch("/questInstance/:instanceId", requireAuth, async (req, res) => {
       return res.status(400).json({ message: "Title is required" });
     }
 
-    if (basePoints !== undefined && (!Number.isInteger(basePoints) || basePoints < 1)) {
-      return res.status(400).json({ message: "Base points must be a positive integer" });
+    if (
+      basePoints !== undefined &&
+      (!Number.isInteger(basePoints) || basePoints < 1)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Base points must be a positive integer" });
     }
 
     // Prepare update fields
@@ -440,13 +445,30 @@ router.patch("/questInstance/:instanceId", requireAuth, async (req, res) => {
       .update(questInstance)
       .set(updatedFields)
       .where(
-        and(
-          eq(questInstance.id, instanceId),
-          eq(questInstance.userId, userId)
-        )
+        and(eq(questInstance.id, instanceId), eq(questInstance.userId, userId))
       );
 
     res.status(200).json({ message: "Quest instance updated successfully" });
+  } catch (err) {
+    console.error("Error updating quest instance:", err);
+    res.status(500).json({ message: "Failed to update quest instance" });
+  }
+});
+
+// endpoint to delete quest instance
+router.delete("/questInstance/:instanceId", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { instanceId } = req.params;
+
+    // delete the quest instance
+    await db
+      .delete(questInstance)
+      .where(
+        and(eq(questInstance.id, instanceId), eq(questInstance.userId, userId))
+      );
+
+    res.status(200).json({ message: "Quest instance deleted successfully" });
   } catch (err) {
     console.error("Error updating quest instance:", err);
     res.status(500).json({ message: "Failed to update quest instance" });

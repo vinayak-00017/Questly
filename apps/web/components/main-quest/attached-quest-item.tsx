@@ -1,15 +1,15 @@
-// DailyQuestItem.tsx - New component for individual daily quest items
+// AttachedQuestItem.tsx - Component for individual attached quest items
 import { Button } from "@/components/ui/button";
 import { QuestPriority, CreateQuestTemplate } from "@questly/types";
 import { Scroll, X } from "lucide-react";
 
-interface DailyQuestItemProps {
+interface AttachedQuestItemProps {
   task: CreateQuestTemplate;
   index: number;
   onRemove: (index: number) => void;
 }
 
-export function DailyQuestItem({ task, index, onRemove }: DailyQuestItemProps) {
+export function AttachedQuestItem({ task, index, onRemove }: AttachedQuestItemProps) {
   // Function to get priority badge styling
   const getPriorityBadgeStyle = (priority: number | QuestPriority) => {
     const { Optional, Minor, Standard, Important, Critical } = QuestPriority;

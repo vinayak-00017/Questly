@@ -12,7 +12,7 @@ import { QuestInstance } from "@questly/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { questApi } from "@/services/quest-api";
 import { toast } from "sonner";
-import { Edit3, Scroll, Target, AlertCircle, Info } from "lucide-react";
+import { Edit3, Scroll, Target, AlertCircle, Info, Trash2 } from "lucide-react";
 import { UnsavedChangesAlert } from "../quest-dialog/unsaved-changes-alert";
 import {
   numberToQuestTag,
@@ -175,6 +175,28 @@ const EditQuestInstanceDialog: React.FC<EditQuestInstanceDialogProps> = ({
   const [priority, setPriority] = useState<string>("standard");
   const [errors, setErrors] = useState<{ priority?: string }>({});
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  // Delete quest instance mutation
+  const deleteQuestInstanceMutation = useMutation({
+    mutationFn: async (instanceId: string) => {
+      return questApi.deleteQuestInstance(instanceId);
+    },
+    onSuccess: async () => {
+      toast.success("Quest instance deleted successfully!");
+      queryClient.invalidateQueries({ queryKey });
+      // Always invalidate todaysQuests when deleting any quest instance
+      await queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
+      onOpenChange(false);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete quest instance");
+    },
+  });
+  // Handle delete confirmation
+  const handleDelete = () => {
+    if (!questInstance) return;
+    deleteQuestInstanceMutation.mutate(questInstance.instanceId);
+  };
 
   const queryClient = useQueryClient();
 
@@ -224,13 +246,8 @@ const EditQuestInstanceDialog: React.FC<EditQuestInstanceDialogProps> = ({
     onSuccess: () => {
       toast.success("Quest instance updated successfully!");
       queryClient.invalidateQueries({ queryKey });
-      if (
-        Array.isArray(queryKey) &&
-        queryKey.length === 1 &&
-        queryKey[0] !== "todaysQuests"
-      ) {
-        queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
-      }
+      // Always invalidate todaysQuests when updating any quest instance
+      queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
       onOpenChange(false);
     },
     onError: (error: any) => {
@@ -403,39 +420,60 @@ const EditQuestInstanceDialog: React.FC<EditQuestInstanceDialogProps> = ({
           </div>
 
           {/* Footer with actions */}
-          <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-800/50 flex-none px-6 pb-6 relative">
+          <div className="flex justify-between items-center mt-4 pt-4 border-t border-zinc-800/50 flex-none px-6 pb-6 relative">
             <Button
-              variant="outline"
-              onClick={() => {
-                if (handleCloseWithConfirmation(false)) {
-                  onOpenChange(false);
-                }
-              }}
-              className="bg-zinc-800/30 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
+              variant="destructive"
+              onClick={() => setShowDeleteDialog(true)}
+              className="bg-gradient-to-r from-red-600 via-red-500 to-red-700 hover:from-red-700 hover:to-red-900 text-white font-bold shadow-lg border-0 flex items-center gap-2 scale-105 transition-transform duration-150"
+              style={{ boxShadow: "0 0 0 2px #b91c1c, 0 4px 24px 0 #b91c1c55" }}
+              disabled={deleteQuestInstanceMutation.isPending}
             >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              className={`bg-gradient-to-r ${colorStyles.buttonGradient} border-0 text-white shadow-lg ${colorStyles.buttonShadow}`}
-              disabled={
-                !title.trim() ||
-                !hasChanges ||
-                updateQuestInstanceMutation.isPending
-              }
-            >
-              {updateQuestInstanceMutation.isPending ? (
+              {deleteQuestInstanceMutation.isPending ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 rounded-full border-2 border-t-transparent border-white animate-spin"></div>
-                  <span>Saving...</span>
+                  <span>Deleting...</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Edit3 className="h-4 w-4" />
-                  <span>Save Changes</span>
-                </div>
+                <>
+                  <Trash2 className="h-4 w-4 text-white" />
+                  <span>Delete</span>
+                </>
               )}
             </Button>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (handleCloseWithConfirmation(false)) {
+                    onOpenChange(false);
+                  }
+                }}
+                className="bg-zinc-800/30 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                className={`bg-gradient-to-r ${colorStyles.buttonGradient} border-0 text-white shadow-lg ${colorStyles.buttonShadow}`}
+                disabled={
+                  !title.trim() ||
+                  !hasChanges ||
+                  updateQuestInstanceMutation.isPending
+                }
+              >
+                {updateQuestInstanceMutation.isPending ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 rounded-full border-2 border-t-transparent border-white animate-spin"></div>
+                    <span>Saving...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Edit3 className="h-4 w-4" />
+                    <span>Save Changes</span>
+                  </div>
+                )}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -446,6 +484,46 @@ const EditQuestInstanceDialog: React.FC<EditQuestInstanceDialogProps> = ({
         onOpenChange={setShowConfirmDialog}
         onConfirm={confirmClose}
       />
+
+      {/* Delete confirmation dialog */}
+      {showDeleteDialog && (
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent className="max-w-[400px] bg-zinc-900 border border-red-900/40 shadow-xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-700">
+                <Trash2 className="h-5 w-5" /> Delete Quest Instance
+              </DialogTitle>
+            </DialogHeader>
+            <div className="text-zinc-300 text-sm py-2">
+              Are you sure you want to delete this quest instance? This action
+              cannot be undone.
+            </div>
+            <div className="flex justify-end gap-3 mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(false)}
+                className="bg-zinc-800/30 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDelete}
+                className="bg-gradient-to-r from-red-700 to-red-900 text-white border-0 shadow-lg"
+                disabled={deleteQuestInstanceMutation.isPending}
+              >
+                {deleteQuestInstanceMutation.isPending ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 rounded-full border-2 border-t-transparent border-white animate-spin"></div>
+                    <span>Deleting...</span>
+                  </div>
+                ) : (
+                  <span>Delete</span>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 };

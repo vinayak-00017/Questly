@@ -21,7 +21,9 @@ export const user = pgTable("user", {
   streak: integer("streak").default(0).notNull(),
   lastActiveDate: date("last_active_date"),
   timezone: text("timezone").default("UTC").notNull(),
-  timezoneSetExplicitly: boolean("timezone_set_explicitly").default(false).notNull(),
+  timezoneSetExplicitly: boolean("timezone_set_explicitly")
+    .default(false)
+    .notNull(),
 });
 
 export const xpTransaction = pgTable("xp_transaction", {
@@ -92,9 +94,7 @@ export const questTemplate = pgTable("quest_template", {
 // Instances of quests (both daily and side)
 export const questInstance = pgTable("quest_instance", {
   id: text("id").primaryKey(),
-  templateId: text("template_id").references(() => questTemplate.id, {
-    onDelete: "cascade",
-  }),
+  templateId: text("template_id").references(() => questTemplate.id),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),

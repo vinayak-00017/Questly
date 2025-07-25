@@ -24,7 +24,7 @@ import { mainQuestApi } from "@/services/main-quest-api";
 import { Scroll, Sparkles } from "lucide-react";
 import { QuestFormFields } from "./quest-form-fields";
 import { DailyQuestForm } from "./daily-quest-form";
-import { DailyQuestItem } from "./daily-quest-item";
+import { AttachedQuestItem } from "./attached-quest-item";
 
 interface AddQuestDialogProps {
   open: boolean;
@@ -91,7 +91,7 @@ export function AddQuestDialog({
     onSuccess: () => {
       // Invalidate main quests cache
       queryClient.invalidateQueries({ queryKey: ["mainQuests"] });
-      // If there are daily quests associated with this main quest, invalidate related caches
+      // If there are attached quests associated with this main quest, invalidate related caches
       if (dailyQuests.length > 0) {
         queryClient.invalidateQueries({ queryKey: ["dailyQuests"] });
         queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
@@ -201,13 +201,13 @@ export function AddQuestDialog({
             <div className="bg-gradient-to-r from-purple-500/5 to-amber-500/5 p-3 rounded-lg border border-purple-900/20 flex gap-3 items-center mb-3">
               <Sparkles className="h-5 w-5 text-purple-500/70 flex-shrink-0" />
               <div className="text-xs text-zinc-400">
-                <span className="text-purple-400">Daily Quests:</span> Add
-                associated daily quests to help you progress on this main quest.
-                These will appear in your daily tasks.
+                <span className="text-purple-400">Attached Quests:</span> Add
+                attached quests to help you progress on this main quest. These
+                will appear in your daily tasks.
               </div>
             </div>
 
-            {/* Daily Quest Form */}
+            {/* Attached Quest Form */}
             <DailyQuestForm
               onAddQuest={handleAddDailyQuest}
               dueDate={dueDate}
@@ -215,7 +215,7 @@ export function AddQuestDialog({
 
             <div className="space-y-2">
               {dailyQuests.map((task, index) => (
-                <DailyQuestItem
+                <AttachedQuestItem
                   key={index}
                   task={task}
                   index={index}

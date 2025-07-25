@@ -74,7 +74,7 @@ jobs:
           echo "NEXT_PUBLIC_APP_URL=https://questly.me" >> .env.production
           echo "NODE_ENV=production" >> .env.production
           echo "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dogpummfo" >> .env.production
-          
+
           # Also create web app specific env
           echo "NEXT_PUBLIC_API_URL=https://questly.me/v1" >> apps/web/.env.production
           echo "NEXT_PUBLIC_AUTH_URL=https://questly.me/v1/api/auth" >> apps/web/.env.production

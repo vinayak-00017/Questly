@@ -24,6 +24,7 @@ export const createMainQuestSchema = mainQuestSchema
     createdAt: true,
     updatedAt: true,
     xpReward: true,
+    attachedQuests: true,
   })
   .extend({
     quests: z.array(createQuestTemplateSchema).optional(),
