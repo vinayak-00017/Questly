@@ -52,6 +52,7 @@ const getEditQuestColorStyles = (questType: string) => {
         "from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500",
       buttonShadow: "shadow-orange-900/20",
       particles: "bg-orange-500/10",
+      selectItemFocus: "focus:bg-orange-900/40",
     };
   } else {
     return {
@@ -70,6 +71,7 @@ const getEditQuestColorStyles = (questType: string) => {
         "from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500",
       buttonShadow: "shadow-blue-900/20",
       particles: "bg-blue-500/10",
+      selectItemFocus: "focus:bg-blue-900/40",
     };
   }
 };
@@ -191,8 +193,7 @@ const EditQuestInstanceDialog: React.FC<EditQuestInstanceDialogProps> = ({
     questInstance &&
     (title !== questInstance.title ||
       description !== (questInstance.description || "") ||
-      basePoints !== questInstance.basePoints ||
-      numberToQuestTag(basePoints) !== priority);
+      basePoints !== questInstance.basePoints);
 
   // Handle close with confirmation if needed
   const handleCloseWithConfirmation = (newOpenState: boolean) => {
@@ -346,31 +347,31 @@ const EditQuestInstanceDialog: React.FC<EditQuestInstanceDialogProps> = ({
                 <SelectContent className="bg-zinc-800 border-zinc-700">
                   <SelectItem
                     value="optional"
-                    className={`focus:${colorStyles.labelColor}`}
+                    className={colorStyles.selectItemFocus}
                   >
                     Optional
                   </SelectItem>
                   <SelectItem
                     value="minor"
-                    className={`focus:${colorStyles.labelColor}`}
+                    className={colorStyles.selectItemFocus}
                   >
                     Minor Quest
                   </SelectItem>
                   <SelectItem
                     value="standard"
-                    className={`focus:${colorStyles.labelColor}`}
+                    className={colorStyles.selectItemFocus}
                   >
                     Standard
                   </SelectItem>
                   <SelectItem
                     value="important"
-                    className={`focus:${colorStyles.labelColor}`}
+                    className={colorStyles.selectItemFocus}
                   >
                     Important
                   </SelectItem>
                   <SelectItem
                     value="critical"
-                    className={`focus:${colorStyles.labelColor}`}
+                    className={colorStyles.selectItemFocus}
                   >
                     Critical
                   </SelectItem>

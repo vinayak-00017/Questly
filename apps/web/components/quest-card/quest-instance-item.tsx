@@ -35,7 +35,6 @@ const QuestInstanceItem = ({
   const [isQuestCompleted, setIsQuestCompleted] = useState(quest.completed);
   const [completionAnimation, setCompletionAnimation] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [showAddTask, setShowAddTask] = useState(false);
 
   const displayCompleted = isQuestCompleted;
 

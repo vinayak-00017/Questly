@@ -1,5 +1,5 @@
 import { QuestTemplate } from "@questly/types";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import db from "../db";
 import { v4 as uuidv4 } from "uuid";
 import express from "express";
@@ -126,46 +126,14 @@ router.post("/", requireAuth, async (req, res) => {
 router.get("/", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
-    // Fetch all main quests for the user
     const mainQuests = await db
       .select()
       .from(mainQuest)
       .where(eq(mainQuest.userId, userId));
 
-    // Get all main quest IDs
-    const mainQuestIds = mainQuests.map((mq) => mq.id);
-
-    // Fetch all quest templates attached to these main quests
-    let attachedQuests: any[] = [];
-    if (mainQuestIds.length > 0) {
-      attachedQuests = await db
-        .select()
-        .from(questTemplate)
-        .where(inArray(questTemplate.parentQuestId, mainQuestIds));
-    }
-
-    // Group attached quests by parentQuestId
-    const questsByParent: Record<string, any[]> = {};
-    for (const quest of attachedQuests) {
-      const parentId = quest.parentQuestId;
-      if (!parentId) continue;
-      if (!questsByParent[parentId]) {
-        questsByParent[parentId] = [];
-      }
-      questsByParent[parentId].push(quest);
-    }
-
-    // Attach daily and side quests to each main quest
-    const mainQuestsWithAttached = mainQuests.map((mq) => ({
-      ...mq,
-      attachedQuests: (questsByParent[mq.id] || []).filter(
-        (q) => q.type === "daily" || q.type === "side"
-      ),
-    }));
-
     res.status(200).json({
       message: "Main quests retrived successfully",
-      mainQuests: mainQuestsWithAttached,
+      mainQuests,
     });
   } catch (err) {
     console.error("Error getting main quests:", err);
