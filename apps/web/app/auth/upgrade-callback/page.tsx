@@ -21,11 +21,14 @@ function UpgradeCallbackContent() {
   useEffect(() => {
     const handleUpgradeCallback = async () => {
       try {
-        // Get the anonymous user ID we stored before OAuth
+        // Get the anonymous user ID and session token we stored before OAuth
         const anonymousUserId = sessionStorage.getItem(
           "anonymousUpgradeUserId"
         );
         const isUpgradeFlow = sessionStorage.getItem("isUpgradeFlow");
+        const previousAnonymousToken = sessionStorage.getItem(
+          "previousAnonymousToken"
+        );
 
         if (!anonymousUserId || !isUpgradeFlow) {
           setStatus("error");
@@ -44,7 +47,7 @@ function UpgradeCallbackContent() {
 
         // Check if this OAuth account already exists for a non-anonymous user
         const checkResponse = await fetch(
-          `${BASE_URL}/api/check-oauth-account-callback`,
+          `${BASE_URL}/auth/check-oauth-account-callback`,
           {
             method: "POST",
             headers: {
@@ -52,7 +55,7 @@ function UpgradeCallbackContent() {
             },
             credentials: "include",
             body: JSON.stringify({
-              oauthAccountId: session.user.id,
+              oauthUserId: session.user.id,
               oauthEmail: session.user.email,
               provider: "google", // You can make this dynamic based on the OAuth provider
               anonymousUserId: anonymousUserId,
@@ -77,16 +80,27 @@ function UpgradeCallbackContent() {
           // Log out the current session since we don't want to complete this login
           await authClient.signOut();
 
+          // Restore the previous anonymous session if we have the token
+          if (previousAnonymousToken) {
+            // This assumes your backend supports restoring a session from a token (e.g., via a cookie or header)
+            document.cookie = `better-auth.session-token=${previousAnonymousToken}; path=/;`;
+            // Optionally, reload the page or trigger a session refresh
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          }
+
           // Clear the upgrade flow flags
           sessionStorage.removeItem("anonymousUpgradeUserId");
           sessionStorage.removeItem("isUpgradeFlow");
+          sessionStorage.removeItem("previousAnonymousToken");
 
           return;
         }
 
         // Account doesn't exist, proceed with upgrade
         const upgradeResponse = await fetch(
-          `${BASE_URL}/api/complete-oauth-upgrade`,
+          `${BASE_URL}/auth/complete-oauth-upgrade`,
           {
             method: "POST",
             headers: {
@@ -118,6 +132,7 @@ function UpgradeCallbackContent() {
           // Clear the upgrade flow flags
           sessionStorage.removeItem("anonymousUpgradeUserId");
           sessionStorage.removeItem("isUpgradeFlow");
+          sessionStorage.removeItem("previousAnonymousToken");
 
           // Redirect to home after a short delay
           setTimeout(() => {

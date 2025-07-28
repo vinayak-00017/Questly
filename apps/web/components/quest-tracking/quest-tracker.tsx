@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, memo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ViewType } from "./types";
 import { useTrackedQuests } from "./hooks/use-tracked-quests";
@@ -159,4 +159,4 @@ const QuestTracker: React.FC = () => {
   );
 };
 
-export default QuestTracker;
+export default memo(QuestTracker);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { ViewType, QuestActivityData } from "../types";
@@ -12,7 +12,7 @@ interface QuestActivityGridProps {
   questIndex: number;
 }
 
-export const QuestActivityGrid: React.FC<QuestActivityGridProps> = ({
+export const QuestActivityGrid: React.FC<QuestActivityGridProps> = memo(({
   dateRange,
   selectedView,
   questId,
@@ -71,4 +71,6 @@ export const QuestActivityGrid: React.FC<QuestActivityGridProps> = ({
       })}
     </div>
   );
-};
+});
+
+QuestActivityGrid.displayName = 'QuestActivityGrid';

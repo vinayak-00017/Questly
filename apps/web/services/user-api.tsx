@@ -1,6 +1,15 @@
 import { BASE_URL } from "@/config";
 
 export const userApi = {
+  // New batched dashboard endpoint
+  getDashboardData: async (period: string = "weekly") => {
+    const response = await fetch(`${BASE_URL}/user/dashboard?period=${period}`, {
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Failed to fetch dashboard data");
+    return response.json();
+  },
+
   getUserStats: async () => {
     const response = await fetch(`${BASE_URL}/user/userStats`, {
       credentials: "include",

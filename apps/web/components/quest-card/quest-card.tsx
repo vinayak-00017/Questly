@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { Card, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
@@ -252,4 +252,4 @@ const QuestCard: React.FC<QuestCardProps> = ({
   );
 };
 
-export default QuestCard;
+export default memo(QuestCard);

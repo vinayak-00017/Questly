@@ -148,7 +148,7 @@ export function AnonymousLoginProvider({
 
     try {
       // First check if email is already registered
-      const checkResponse = await fetch(`${BASE_URL}/api/check-email`, {
+      const checkResponse = await fetch(`${BASE_URL}/auth/check-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -172,7 +172,7 @@ export function AnonymousLoginProvider({
       }
 
       // Proceed with upgrade
-      const upgradeResponse = await fetch(`${BASE_URL}/api/upgrade-account`, {
+      const upgradeResponse = await fetch(`${BASE_URL}/auth/upgrade-account`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -218,7 +218,44 @@ export function AnonymousLoginProvider({
     }
 
     try {
-      // Store the current anonymous user ID in sessionStorage so we can retrieve it after OAuth
+      // Check if this OAuth account is already registered before starting the OAuth flow
+      // We'll use the /auth/check-oauth-account endpoint
+      const checkResponse = await fetch(
+        `${BASE_URL}/auth/check-oauth-account`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ provider, userId: session.user.id }),
+        }
+      );
+
+      if (!checkResponse.ok) {
+        throw new Error("Failed to check OAuth account availability");
+      }
+
+      const { exists, accountInfo } = await checkResponse.json();
+
+      if (exists) {
+        return {
+          success: false,
+          error: accountInfo?.email
+            ? `A ${provider} account is already registered with email ${accountInfo.email}. Please sign in instead.`
+            : `A ${provider} account is already registered. Please sign in instead.`,
+        };
+      }
+
+      // Utility to get a cookie value by name
+      function getCookie(name: string) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(";").shift() || "";
+        return "";
+      }
+
+      // Store the current anonymous user ID and upgrade flow flag in sessionStorage
       sessionStorage.setItem("anonymousUpgradeUserId", session.user.id);
       sessionStorage.setItem("isUpgradeFlow", "true");
 

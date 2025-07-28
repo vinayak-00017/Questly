@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ interface QuestRowProps {
   onRemoveQuest: (questId: string) => void;
 }
 
-export const QuestRow: React.FC<QuestRowProps> = ({
+export const QuestRow: React.FC<QuestRowProps> = memo(({
   quest,
   questIndex,
   dateRange,
@@ -88,4 +88,6 @@ export const QuestRow: React.FC<QuestRowProps> = ({
       />
     </motion.div>
   );
-};
+});
+
+QuestRow.displayName = 'QuestRow';

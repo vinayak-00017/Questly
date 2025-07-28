@@ -1,18 +1,62 @@
 "use client";
 
-import TodaysQuestsCard from "@/components/quest-card/todays-quests-card";
-import PerformanceChart from "@/components/performance-chart";
-
-import QuestTracker from "@/components/quest-tracking/quest-tracker";
-
 import { userApi } from "@/services/user-api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
 import { useAnonymousUser } from "@/components/anonymous-login-provider";
 import { AnonymousUserBanner } from "@/components/anonymous-user-banner";
+import { useSession } from "@/lib/auth-client";
+
+// Lazy load heavy components to reduce initial bundle size
+const QuestTracker = lazy(
+  () => import("@/components/quest-tracking/quest-tracker")
+);
+const TodaysQuestsCard = lazy(
+  () => import("@/components/quest-card/todays-quests-card")
+);
+const PerformanceChart = lazy(() => import("@/components/performance-chart"));
+
+// Loading skeleton components
+const QuestTrackerSkeleton = () => (
+  <div className="bg-gradient-to-br from-slate-800/80 via-slate-900/60 to-slate-800/80 border-amber-500/20 backdrop-blur-sm rounded-lg border p-6">
+    <div className="animate-pulse">
+      <div className="h-6 bg-slate-700 rounded w-1/3 mb-4"></div>
+      <div className="space-y-3">
+        <div className="h-4 bg-slate-700 rounded w-full"></div>
+        <div className="h-4 bg-slate-700 rounded w-3/4"></div>
+        <div className="h-4 bg-slate-700 rounded w-1/2"></div>
+      </div>
+    </div>
+  </div>
+);
+
+const TodaysQuestsSkeleton = () => (
+  <div className="bg-gradient-to-br from-slate-800/80 via-slate-900/60 to-slate-800/80 border-amber-500/20 backdrop-blur-sm rounded-lg border p-6">
+    <div className="animate-pulse">
+      <div className="h-6 bg-slate-700 rounded w-1/4 mb-4"></div>
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center space-x-4">
+            <div className="h-4 w-4 bg-slate-700 rounded"></div>
+            <div className="h-4 bg-slate-700 rounded flex-1"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const PerformanceChartSkeleton = () => (
+  <div className="bg-gradient-to-br from-slate-800/80 via-slate-900/60 to-slate-800/80 border-amber-500/20 backdrop-blur-sm rounded-lg border p-6">
+    <div className="animate-pulse">
+      <div className="h-6 bg-slate-700 rounded w-1/3 mb-4"></div>
+      <div className="h-64 bg-slate-700 rounded"></div>
+    </div>
+  </div>
+);
 
 export default function Home() {
   const { data, isLoading } = useQuery({
@@ -28,6 +72,8 @@ export default function Home() {
   const { isAnonymous } = useAnonymousUser();
   const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
+  console.log(session);
 
   useEffect(() => {
     // Check timezone for all users (both authenticated and anonymous)
@@ -96,9 +142,15 @@ export default function Home() {
               </h2> */}
 
               <div className="flex flex-col w-full gap-8">
-                <QuestTracker />
-                <TodaysQuestsCard />
-                <PerformanceChart />
+                <Suspense fallback={<QuestTrackerSkeleton />}>
+                  <QuestTracker />
+                </Suspense>
+                <Suspense fallback={<TodaysQuestsSkeleton />}>
+                  <TodaysQuestsCard />
+                </Suspense>
+                <Suspense fallback={<PerformanceChartSkeleton />}>
+                  <PerformanceChart />
+                </Suspense>
               </div>
             </div>
           </div>

@@ -3,7 +3,7 @@ import { QuestInstance } from "@questly/types";
 import { LucideIcon, CalendarDays, Trophy, CheckCircle } from "lucide-react";
 import { numberToQuestTag } from "@questly/utils";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { Card, CardContent } from "../ui/card";
 
 import QuestInstanceTaskArea from "./quest-instance-task-area";
@@ -356,4 +356,4 @@ const QuestInstanceItem = ({
   );
 };
 
-export default QuestInstanceItem;
+export default memo(QuestInstanceItem);

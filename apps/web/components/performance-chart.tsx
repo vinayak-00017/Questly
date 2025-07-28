@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { userApi } from "@/services/user-api";
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -56,7 +56,7 @@ const periodOptions = [
   { value: "overall", label: "All Time", description: "Since you joined" },
 ];
 
-export default function PerformanceChart() {
+const PerformanceChart = memo(function PerformanceChart() {
   const [selectedPeriod, setSelectedPeriod] = useState("weekly");
   const router = useRouter();
 
@@ -65,8 +65,8 @@ export default function PerformanceChart() {
     queryFn: () => userApi.getPerformance(selectedPeriod),
   });
 
-  // Handle click on chart data points
-  const handleChartClick = (data: any) => {
+  // Handle click on chart data points - memoized to prevent re-creation
+  const handleChartClick = useCallback((data: any) => {
     if (data && data.activePayload && data.activePayload[0]) {
       const clickedData = data.activePayload[0].payload;
       const date = clickedData.date;
@@ -77,10 +77,10 @@ export default function PerformanceChart() {
         `/performance/${date}?period=${selectedPeriod}&label=${encodeURIComponent(label)}`
       );
     }
-  };
+  }, [router, selectedPeriod]);
 
-  // Calculate trend line using linear regression
-  const calculateTrendLine = (data: any[]) => {
+  // Calculate trend line using linear regression - memoized for performance
+  const calculateTrendLine = useCallback((data: any[]) => {
     if (data.length < 2) return data;
 
     const n = data.length;
@@ -105,7 +105,7 @@ export default function PerformanceChart() {
       percentage: Math.max(0, Math.min(100, item.percentage)), // Ensure percentage is clamped
       trend: Math.max(0, Math.min(100, slope * index + intercept)), // Clamp between 0-100
     }));
-  };
+  }, []);
 
   // Use API data or fallback to loading state
   const rawChartData = performanceData?.performanceData || [];
@@ -132,8 +132,8 @@ export default function PerformanceChart() {
   );
   const showTrendLine = selectedPeriod !== "weekly" && chartData.length > 1;
 
-  // Calculate trend direction for display
-  const getTrendInfo = () => {
+  // Calculate trend direction for display - memoized
+  const trendInfo = useMemo(() => {
     if (!showTrendLine || chartData.length < 2) return null;
 
     const firstTrend = chartData[0]?.trend || 0;
@@ -145,9 +145,7 @@ export default function PerformanceChart() {
     if (trendDiff > 0)
       return { direction: "improving", icon: "↗", color: "text-green-400" };
     return { direction: "declining", icon: "↘", color: "text-red-400" };
-  };
-
-  const trendInfo = getTrendInfo();
+  }, [showTrendLine, chartData]);
 
   if (isLoading) {
     return (
@@ -326,4 +324,6 @@ export default function PerformanceChart() {
       </CardFooter>
     </Card>
   );
-}
+});
+
+export default PerformanceChart;

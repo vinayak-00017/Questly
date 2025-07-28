@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Calendar } from "lucide-react";
 import QuestCard from "./quest-card";
 import { questApi } from "@/services/quest-api";
@@ -6,7 +6,7 @@ import { QuestTypeChooserDialog } from "./quest-type-chooser-dialog";
 import { AddDailyQuestDialog } from "../quest-dialog/add-daily-quest-dialog";
 import { AddSideQuestDialog } from "../quest-dialog/add-side-quest-dialog";
 import { QuestInstance } from "@questly/types";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 const TodaysQuestsCard = () => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -79,4 +79,4 @@ const TodaysQuestsCard = () => {
   );
 };
 
-export default TodaysQuestsCard;
+export default memo(TodaysQuestsCard);

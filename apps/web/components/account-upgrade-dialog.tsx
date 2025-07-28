@@ -112,7 +112,7 @@ export function AccountUpgradeDialog({
         )}
 
         {/* OAuth Upgrade Options */}
-        <div className="space-y-3">
+        {/* <div className="space-y-3">
           <Button
             onClick={() => handleOAuthUpgrade("google")}
             disabled={isLoading}
@@ -150,7 +150,7 @@ export function AccountUpgradeDialog({
               </span>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Email/Password Upgrade Form */}
         <form onSubmit={handleEmailSubmit} className="space-y-4">

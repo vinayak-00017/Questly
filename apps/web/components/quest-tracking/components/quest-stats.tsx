@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { ViewType, QuestActivityData } from "../types";
 
 interface QuestStatsProps {
@@ -8,7 +8,7 @@ interface QuestStatsProps {
   getQuestActivity: (questId: string, date: Date) => QuestActivityData | null;
 }
 
-export const QuestStats: React.FC<QuestStatsProps> = ({
+export const QuestStats: React.FC<QuestStatsProps> = memo(({
   selectedView,
   dateRange,
   questId,
@@ -35,4 +35,6 @@ export const QuestStats: React.FC<QuestStatsProps> = ({
       </div>
     </div>
   );
-};
+});
+
+QuestStats.displayName = 'QuestStats';
