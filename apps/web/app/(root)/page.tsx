@@ -73,8 +73,6 @@ export default function Home() {
   const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
   const queryClient = useQueryClient();
   const { data: session } = useSession();
-  console.log(session);
-
   useEffect(() => {
     // Check timezone for all users (both authenticated and anonymous)
     if (data?.userStats) {

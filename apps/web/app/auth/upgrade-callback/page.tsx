@@ -80,16 +80,6 @@ function UpgradeCallbackContent() {
           // Log out the current session since we don't want to complete this login
           await authClient.signOut();
 
-          // Restore the previous anonymous session if we have the token
-          if (previousAnonymousToken) {
-            // This assumes your backend supports restoring a session from a token (e.g., via a cookie or header)
-            document.cookie = `better-auth.session-token=${previousAnonymousToken}; path=/;`;
-            // Optionally, reload the page or trigger a session refresh
-            setTimeout(() => {
-              window.location.reload();
-            }, 500);
-          }
-
           // Clear the upgrade flow flags
           sessionStorage.removeItem("anonymousUpgradeUserId");
           sessionStorage.removeItem("isUpgradeFlow");
