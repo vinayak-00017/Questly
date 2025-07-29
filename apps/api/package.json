@@ -38,6 +38,7 @@
     "express": "^5.0.1",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "nanoid": "^5.1.5",
     "node-cron": "^3.0.3",
     "pg": "^8.14.1",
     "rrule": "^2.8.1",

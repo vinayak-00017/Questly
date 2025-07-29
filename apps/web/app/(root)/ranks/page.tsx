@@ -60,21 +60,8 @@ export default function RanksPage() {
       <div className="fixed inset-0 bg-gradient-to-br from-transparent via-zinc-800/20 to-transparent pointer-events-none" />
 
       <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Header */}
-        {/* <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <h1 className="text-4xl font-bold font-medieval bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent mb-4">
-            ⚔️ Adventurer Ranks ⚔️
-          </h1>
-          <p className="text-lg text-zinc-300 max-w-4xl mx-auto">
-            Ascend through the ranks of legend. Each rank represents your
-            mastery and dedication to the quest.
-          </p>
-        </motion.div> */}
+        {/* Visually hidden semantic header for accessibility and SEO */}
+        <h1 className="sr-only">Adventurer Ranks</h1>
 
         {/* Current Rank Section */}
         <CurrentRankSection

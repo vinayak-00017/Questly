@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, X, Sparkles, Star, Crown, Medal, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -69,15 +69,17 @@ export const AchievementNotification: React.FC<
   autoCloseDelay = 8000, // Increased from 5000 to 8000ms
 }) => {
   const [isClosing, setIsClosing] = useState(false);
-  const [particles, setParticles] = useState<Array<{
-    id: number;
-    x: number;
-    y: number;
-    delay: number;
-    duration: number;
-    size: number;
-  }>>([]);
-  
+  const [particles, setParticles] = useState<
+    Array<{
+      id: number;
+      x: number;
+      y: number;
+      delay: number;
+      duration: number;
+      size: number;
+    }>
+  >([]);
+
   const router = useRouter();
   const colors = importanceColors[achievement.importance];
   const IconComponent = importanceIcons[achievement.importance];
@@ -97,6 +99,14 @@ export const AchievementNotification: React.FC<
     }
   }, [isVisible]);
 
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+    }, 300);
+  }, [onClose]);
+
   useEffect(() => {
     if (isVisible && autoClose) {
       const timer = setTimeout(() => {
@@ -105,15 +115,7 @@ export const AchievementNotification: React.FC<
 
       return () => clearTimeout(timer);
     }
-  }, [isVisible, autoClose, autoCloseDelay]);
-
-  const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      onClose();
-      setIsClosing(false);
-    }, 300);
-  };
+  }, [isVisible, autoClose, autoCloseDelay, handleClose]);
 
   const handleClick = () => {
     router.push("/achievements");
@@ -207,7 +209,12 @@ export const AchievementNotification: React.FC<
                     <h2 className="text-2xl font-bold text-white font-medieval">
                       Achievement Unlocked!
                     </h2>
-                    <p className={cn("text-sm font-medium capitalize", colors.accent)}>
+                    <p
+                      className={cn(
+                        "text-sm font-medium capitalize",
+                        colors.accent
+                      )}
+                    >
                       {achievement.importance} Achievement
                     </p>
                   </motion.div>
@@ -225,7 +232,7 @@ export const AchievementNotification: React.FC<
                     <p className="text-sm text-zinc-300 leading-relaxed">
                       {achievement.description}
                     </p>
-                    
+
                     <div className="flex items-center justify-center gap-4 pt-2">
                       <div className="flex items-center gap-1">
                         <Trophy className="w-4 h-4 text-zinc-400" />
@@ -235,7 +242,9 @@ export const AchievementNotification: React.FC<
                       </div>
                       <div className="flex items-center gap-1">
                         <Zap className={cn("w-4 h-4", colors.sparkle)} />
-                        <span className={cn("text-sm font-medium", colors.accent)}>
+                        <span
+                          className={cn("text-sm font-medium", colors.accent)}
+                        >
                           +{achievement.criteria.value} points
                         </span>
                       </div>
@@ -260,7 +269,7 @@ export const AchievementNotification: React.FC<
                       key={particle.id}
                       className={cn(
                         "absolute rounded-full opacity-60",
-                        colors.sparkle.replace('text-', 'bg-')
+                        colors.sparkle.replace("text-", "bg-")
                       )}
                       style={{
                         left: `${particle.x}%`,
@@ -292,22 +301,25 @@ export const AchievementNotification: React.FC<
                     animate={{ opacity: [0, 0.3, 0] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    <div className={cn(
-                      "absolute inset-0 bg-gradient-to-r opacity-20",
-                      colors.bg
-                    )} />
+                    <div
+                      className={cn(
+                        "absolute inset-0 bg-gradient-to-r opacity-20",
+                        colors.bg
+                      )}
+                    />
                   </motion.div>
                 )}
 
-                {(achievement.importance === "epic" || achievement.importance === "legendary") && (
+                {(achievement.importance === "epic" ||
+                  achievement.importance === "legendary") && (
                   <motion.div
                     className="absolute inset-0 pointer-events-none"
-                    animate={{ 
+                    animate={{
                       boxShadow: [
-                        `0 0 20px ${colors.glow.includes('amber') ? '#f59e0b' : colors.glow.includes('purple') ? '#a855f7' : '#3b82f6'}40`,
-                        `0 0 40px ${colors.glow.includes('amber') ? '#f59e0b' : colors.glow.includes('purple') ? '#a855f7' : '#3b82f6'}60`,
-                        `0 0 20px ${colors.glow.includes('amber') ? '#f59e0b' : colors.glow.includes('purple') ? '#a855f7' : '#3b82f6'}40`,
-                      ]
+                        `0 0 20px ${colors.glow.includes("amber") ? "#f59e0b" : colors.glow.includes("purple") ? "#a855f7" : "#3b82f6"}40`,
+                        `0 0 40px ${colors.glow.includes("amber") ? "#f59e0b" : colors.glow.includes("purple") ? "#a855f7" : "#3b82f6"}60`,
+                        `0 0 20px ${colors.glow.includes("amber") ? "#f59e0b" : colors.glow.includes("purple") ? "#a855f7" : "#3b82f6"}40`,
+                      ],
                     }}
                     transition={{ duration: 2, repeat: Infinity }}
                   />

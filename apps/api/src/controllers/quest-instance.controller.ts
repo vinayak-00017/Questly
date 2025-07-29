@@ -1,8 +1,15 @@
+// Helper to safely convert query param to string for Drizzle ORM
+function safeToString(val: unknown): string {
+  if (typeof val === "string") return val;
+  if (Array.isArray(val)) return String(val[0]);
+  return String(val);
+}
 import { Request, Response } from "express";
 import db from "../db";
 import { AuthenticatedRequest } from "../middleware/auth";
 import { questInstance, questTemplate, user } from "../db/schema";
 import { and, eq, inArray } from "drizzle-orm";
+import { gte, lte } from "drizzle-orm";
 import {
   calculateLevelFromXp,
   calculateXpRewards,
@@ -36,7 +43,10 @@ export class QuestInstanceController {
           date: questInstance.date,
         })
         .from(questInstance)
-        .innerJoin(questTemplate, eq(questInstance.templateId, questTemplate.id))
+        .innerJoin(
+          questTemplate,
+          eq(questInstance.templateId, questTemplate.id)
+        )
         .where(
           and(
             eq(questInstance.userId, userId),
@@ -78,7 +88,10 @@ export class QuestInstanceController {
           date: questInstance.date,
         })
         .from(questInstance)
-        .innerJoin(questTemplate, eq(questInstance.templateId, questTemplate.id))
+        .innerJoin(
+          questTemplate,
+          eq(questInstance.templateId, questTemplate.id)
+        )
         .where(
           and(
             eq(questInstance.userId, userId),
@@ -94,7 +107,9 @@ export class QuestInstanceController {
       );
 
       const questsWithXpReward = sideQuestsData.map((quest) => {
-        const xpReward = Math.round((quest.basePoints / totalPoints) * lvlOneXp);
+        const xpReward = Math.round(
+          (quest.basePoints / totalPoints) * lvlOneXp
+        );
         return {
           ...quest,
           xpReward,
@@ -143,7 +158,10 @@ export class QuestInstanceController {
           date: questInstance.date,
         })
         .from(questInstance)
-        .innerJoin(questTemplate, eq(questInstance.templateId, questTemplate.id))
+        .innerJoin(
+          questTemplate,
+          eq(questInstance.templateId, questTemplate.id)
+        )
         .where(
           and(
             eq(questInstance.userId, userId),
@@ -157,7 +175,9 @@ export class QuestInstanceController {
         false
       );
 
-      const dailyQuests = questsWithXp.filter((quest) => quest.type === "daily");
+      const dailyQuests = questsWithXp.filter(
+        (quest) => quest.type === "daily"
+      );
       const sideQuests = questsWithXp.filter((quest) => quest.type === "side");
 
       res.status(200).json({
@@ -179,15 +199,17 @@ export class QuestInstanceController {
       const userId = (req as AuthenticatedRequest).userId;
       const { done, id } = req.body;
       const updatedFields = { completed: done, updatedAt: new Date() };
-      
+
       // Get quest info before updating
       const questInfo = await db
         .select({
           type: questTemplate.type,
-          parentQuestId: questTemplate.parentQuestId,
         })
         .from(questInstance)
-        .innerJoin(questTemplate, eq(questInstance.templateId, questTemplate.id))
+        .innerJoin(
+          questTemplate,
+          eq(questInstance.templateId, questTemplate.id)
+        )
         .where(and(eq(questInstance.userId, userId), eq(questInstance.id, id)))
         .limit(1);
 
@@ -201,20 +223,24 @@ export class QuestInstanceController {
       // Trigger achievement events if quest was completed
       if (done && questInfo.length > 0) {
         const quest = questInfo[0];
-        const questType = quest.parentQuestId ? "main" : "side";
-        
+        // Use the 'type' field directly for questType
+        const questType = quest.type === "daily" ? "daily" : "side";
         try {
-          const achievementResult = await achievementEventService.onQuestCompleted(userId, questType);
+          const achievementResult =
+            await achievementEventService.onQuestCompleted(userId, questType);
           newAchievements = achievementResult.newAchievements;
         } catch (error) {
-          console.error("Error checking achievements after quest completion:", error);
+          console.error(
+            "Error checking achievements after quest completion:",
+            error
+          );
         }
       }
 
-      res.status(200).json({ 
+      res.status(200).json({
         message: "Quest Instance updated successfully",
         newAchievements,
-        achievementCount: newAchievements.length
+        achievementCount: newAchievements.length,
       });
     } catch (err) {
       console.error("Error updating quest:", err);
@@ -264,7 +290,10 @@ export class QuestInstanceController {
         .update(questInstance)
         .set(updatedFields)
         .where(
-          and(eq(questInstance.id, instanceId), eq(questInstance.userId, userId))
+          and(
+            eq(questInstance.id, instanceId),
+            eq(questInstance.userId, userId)
+          )
         );
 
       res.status(200).json({ message: "Quest instance updated successfully" });
@@ -286,7 +315,10 @@ export class QuestInstanceController {
       await db
         .delete(questInstance)
         .where(
-          and(eq(questInstance.id, instanceId), eq(questInstance.userId, userId))
+          and(
+            eq(questInstance.id, instanceId),
+            eq(questInstance.userId, userId)
+          )
         );
 
       res.status(200).json({ message: "Quest instance deleted successfully" });
@@ -303,6 +335,9 @@ export class QuestInstanceController {
     try {
       const userId = (req as AuthenticatedRequest).userId;
       const { templateIds, startDate, endDate } = req.query;
+      // Ensure startDate and endDate are strings for Drizzle ORM and not ParsedQs
+      const startDateStr = safeToString(startDate);
+      const endDateStr = safeToString(endDate);
 
       if (!templateIds || typeof templateIds !== "string") {
         return res.status(400).json({ message: "Template IDs are required" });
@@ -333,23 +368,30 @@ export class QuestInstanceController {
           xpReward: questInstance.xpReward,
         })
         .from(questInstance)
-        .innerJoin(questTemplate, eq(questInstance.templateId, questTemplate.id))
+        .innerJoin(
+          questTemplate,
+          eq(questInstance.templateId, questTemplate.id)
+        )
         .where(
           and(
             eq(questInstance.userId, userId),
-            inArray(questInstance.templateId, templateIdArray)
+            inArray(questInstance.templateId, templateIdArray),
+            gte(questInstance.date, startDateStr),
+            lte(questInstance.date, endDateStr)
           )
         );
 
       // Group the data by template ID and date
-      const activityData: { [templateId: string]: { [date: string]: any } } = {};
+      const activityData: { [templateId: string]: { [date: string]: any } } =
+        {};
 
       questInstances.forEach((instance) => {
-        if (!activityData[instance.templateId]) {
-          activityData[instance.templateId] = {};
+        const templateIdKey = String(instance.templateId);
+        const dateKey = String(instance.date);
+        if (!activityData[templateIdKey]) {
+          activityData[templateIdKey] = {};
         }
-
-        activityData[instance.templateId][instance.date] = {
+        activityData[templateIdKey][dateKey] = {
           date: instance.date,
           completed: instance.completed,
           xpEarned: instance.xpReward || 0,

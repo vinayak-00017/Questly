@@ -194,9 +194,11 @@ class AchievementEventService {
         {} as Record<string, AchievementEventData[]>
       );
 
-      // Process each user's events
+      // Process all events for each user
       for (const [userId, userEvents] of Object.entries(eventsByUser)) {
-        await this.processEvent(userEvents[userEvents.length - 1]); // Process latest event
+        for (const event of userEvents) {
+          await this.processEvent(event);
+        }
       }
     } finally {
       this.processing = false;

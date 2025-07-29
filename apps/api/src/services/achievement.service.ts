@@ -100,8 +100,11 @@ export class AchievementService {
   /**
    * Check which achievements a user has unlocked
    */
-  async getUserAchievements(userId: string): Promise<AchievementProgress[]> {
-    const progress = await this.getUserProgress(userId);
+  async getUserAchievements(
+    userId: string,
+    progressOverride?: UserProgress
+  ): Promise<AchievementProgress[]> {
+    const progress = progressOverride || (await this.getUserProgress(userId));
     const unlockedAchievements = await db
       .select()
       .from(userAchievement)
@@ -158,29 +161,68 @@ export class AchievementService {
    * Check and unlock new achievements for a user
    */
   async checkAndUnlockAchievements(userId: string): Promise<Achievement[]> {
-    const progress = await this.getUserProgress(userId);
-    const currentAchievements = await this.getUserAchievements(userId);
+    // Use a transaction to prevent race conditions and ensure atomicity
+    return await db.transaction(async (trx) => {
+      const progress = await this.getUserProgress(userId);
+      const currentAchievements = await this.getUserAchievements(
+        userId,
+        progress
+      );
 
-    const newlyUnlocked: Achievement[] = [];
+      const newlyUnlocked: Achievement[] = [];
 
-    for (const achievementProgress of currentAchievements) {
-      const {
-        achievement,
-        isUnlocked,
-        progress: currentProgress,
-      } = achievementProgress;
+      for (const achievementProgress of currentAchievements) {
+        const {
+          achievement,
+          isUnlocked,
+          progress: currentProgress,
+        } = achievementProgress;
 
-      // Skip if already unlocked
-      if (isUnlocked) continue;
+        // Skip if already unlocked
+        if (isUnlocked) continue;
 
-      // Check if criteria is met
-      if (currentProgress >= achievement.criteria.value) {
-        await this.unlockAchievement(userId, achievement);
-        newlyUnlocked.push(achievement);
+        // Check if criteria is met
+        if (currentProgress >= achievement.criteria.value) {
+          // Use the transaction connection for unlock
+          await this.unlockAchievementWithTrx(trx, userId, achievement);
+          newlyUnlocked.push(achievement);
+        }
       }
-    }
 
-    return newlyUnlocked;
+      return newlyUnlocked;
+    });
+  }
+
+  // Helper for transactional unlock
+  private async unlockAchievementWithTrx(
+    trx: any,
+    userId: string,
+    achievement: Achievement
+  ): Promise<void> {
+    const now = new Date();
+    const existing = await trx
+      .select()
+      .from(userAchievement)
+      .where(
+        and(
+          eq(userAchievement.userId, userId),
+          eq(userAchievement.achievementId, achievement.id)
+        )
+      );
+    if (existing.length > 0) {
+      return;
+    }
+    await trx.insert(userAchievement).values({
+      id: nanoid(),
+      userId,
+      achievementId: achievement.id,
+      unlockedAt: now,
+      progress: achievement.criteria.value,
+      importance: achievement.importance,
+      lastProgressUpdate: now,
+      createdAt: now,
+      updatedAt: now,
+    });
   }
 
   /**
@@ -191,6 +233,21 @@ export class AchievementService {
     achievement: Achievement
   ): Promise<void> {
     const now = new Date();
+
+    // Check if already unlocked to prevent duplicates
+    const existing = await db
+      .select()
+      .from(userAchievement)
+      .where(
+        and(
+          eq(userAchievement.userId, userId),
+          eq(userAchievement.achievementId, achievement.id)
+        )
+      );
+    if (existing.length > 0) {
+      // Already unlocked, skip insertion
+      return;
+    }
 
     await db.insert(userAchievement).values({
       id: nanoid(),
@@ -281,7 +338,10 @@ export class AchievementService {
     return {
       total: achievements.length,
       unlocked: unlocked.length,
-      percentage: Math.round((unlocked.length / achievements.length) * 100),
+      percentage:
+        achievements.length === 0
+          ? 0
+          : Math.round((unlocked.length / achievements.length) * 100),
       byImportance,
       byCategory,
     };

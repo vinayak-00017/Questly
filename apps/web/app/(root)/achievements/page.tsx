@@ -8,7 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AchievementCard } from "@/components/achievements/achievement-card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { achievementsApi } from "@/services/achievements-api";
@@ -89,22 +95,27 @@ export default function AchievementsPage() {
   const loading = achievementsLoading || statsLoading;
 
   const filteredAchievements = achievements.filter((achievement) => {
-    const matchesSearch = achievement.achievement.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      achievement.achievement.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       achievement.achievement.description
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = selectedCategory === "all" || 
+
+    const matchesCategory =
+      selectedCategory === "all" ||
       achievement.achievement.category === selectedCategory;
-    
-    const matchesImportance = selectedImportance === "all" || 
+
+    const matchesImportance =
+      selectedImportance === "all" ||
       achievement.achievement.importance === selectedImportance;
-    
+
     const matchesUnlocked = !showUnlockedOnly || achievement.isUnlocked;
 
-    return matchesSearch && matchesCategory && matchesImportance && matchesUnlocked;
+    return (
+      matchesSearch && matchesCategory && matchesImportance && matchesUnlocked
+    );
   });
 
   const categories = Array.from(
@@ -115,7 +126,9 @@ export default function AchievementsPage() {
   const recentAchievements = unlockedAchievements
     .sort((a, b) => {
       if (!a.unlockedAt || !b.unlockedAt) return 0;
-      return new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime();
+      return (
+        new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime()
+      );
     })
     .slice(0, 6);
 
@@ -126,11 +139,15 @@ export default function AchievementsPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <Trophy className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
-            <p className="text-zinc-400">Failed to load achievements. Please try again.</p>
-            <Button 
+            <p className="text-zinc-400">
+              Failed to load achievements. Please try again.
+            </p>
+            <Button
               onClick={() => {
                 queryClient.invalidateQueries({ queryKey: ["achievements"] });
-                queryClient.invalidateQueries({ queryKey: ["achievementStats"] });
+                queryClient.invalidateQueries({
+                  queryKey: ["achievementStats"],
+                });
               }}
               className="mt-4"
             >
@@ -165,7 +182,9 @@ export default function AchievementsPage() {
         </div>
         <div>
           <h1 className="text-3xl font-bold text-white">Achievements</h1>
-          <p className="text-zinc-400">Track your progress and unlock rewards</p>
+          <p className="text-zinc-400">
+            Track your progress and unlock rewards
+          </p>
         </div>
       </motion.div>
 
@@ -243,7 +262,10 @@ export default function AchievementsPage() {
                       />
                     </div>
                   </div>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={setSelectedCategory}
+                  >
                     <SelectTrigger className="w-full md:w-48 bg-zinc-900/50 border-zinc-700">
                       <SelectValue placeholder="Category" />
                     </SelectTrigger>
@@ -256,7 +278,10 @@ export default function AchievementsPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={selectedImportance} onValueChange={setSelectedImportance}>
+                  <Select
+                    value={selectedImportance}
+                    onValueChange={setSelectedImportance}
+                  >
                     <SelectTrigger className="w-full md:w-48 bg-zinc-900/50 border-zinc-700">
                       <SelectValue placeholder="Importance" />
                     </SelectTrigger>
@@ -303,7 +328,9 @@ export default function AchievementsPage() {
           {filteredAchievements.length === 0 && (
             <div className="text-center py-12">
               <Trophy className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
-              <p className="text-zinc-400">No achievements found matching your criteria.</p>
+              <p className="text-zinc-400">
+                No achievements found matching your criteria.
+              </p>
             </div>
           )}
         </TabsContent>
@@ -321,7 +348,10 @@ export default function AchievementsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
               >
-                <AchievementCard achievementProgress={achievement} showProgress={false} />
+                <AchievementCard
+                  achievementProgress={achievement}
+                  showProgress={false}
+                />
               </motion.div>
             ))}
           </motion.div>
@@ -329,7 +359,9 @@ export default function AchievementsPage() {
           {recentAchievements.length === 0 && (
             <div className="text-center py-12">
               <Award className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
-              <p className="text-zinc-400">No recent achievements to display.</p>
+              <p className="text-zinc-400">
+                No recent achievements to display.
+              </p>
             </div>
           )}
         </TabsContent>
@@ -337,35 +369,45 @@ export default function AchievementsPage() {
         <TabsContent value="categories" className="space-y-6">
           {stats && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.entries(stats.byCategory).map(([category, categoryStats]) => (
-                <motion.div
-                  key={category}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <Card className="bg-black/50 border-zinc-800/50 hover:border-purple-500/30 transition-colors">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-white">{category}</h3>
-                        <Badge variant="outline" className="text-zinc-400">
-                          {categoryStats.unlocked}/{categoryStats.total}
-                        </Badge>
-                      </div>
-                      <div className="w-full bg-zinc-800 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                          style={{
-                            width: `${(categoryStats.unlocked / categoryStats.total) * 100}%`,
-                          }}
-                        />
-                      </div>
-                      <p className="text-xs text-zinc-400 mt-2">
-                        {Math.round((categoryStats.unlocked / categoryStats.total) * 100)}% complete
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+              {Object.entries(stats.byCategory).map(
+                ([category, categoryStats]) => (
+                  <motion.div
+                    key={category}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <Card className="bg-black/50 border-zinc-800/50 hover:border-purple-500/30 transition-colors">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-semibold text-white">
+                            {category}
+                          </h3>
+                          <Badge variant="outline" className="text-zinc-400">
+                            {categoryStats.unlocked}/{categoryStats.total}
+                          </Badge>
+                        </div>
+                        <div className="w-full bg-zinc-800 rounded-full h-2">
+                          <div
+                            className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                            style={{
+                              width: `${categoryStats.total === 0 ? 0 : (categoryStats.unlocked / categoryStats.total) * 100}%`,
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-zinc-400 mt-2">
+                          {categoryStats.total === 0
+                            ? 0
+                            : Math.round(
+                                (categoryStats.unlocked / categoryStats.total) *
+                                  100
+                              )}
+                          % complete
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              )}
             </div>
           )}
         </TabsContent>

@@ -1,5 +1,5 @@
 import express from "express";
-import { requireAuth } from "../middleware/auth";
+
 import taskInstanceRouter from "./task-instance";
 import taskTemplateRouter from "./task-template";
 import questTemplateRoutes from "./quest-templates";
