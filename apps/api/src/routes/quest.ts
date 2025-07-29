@@ -470,11 +470,10 @@ router.delete("/questInstance/:instanceId", requireAuth, async (req, res) => {
 
     res.status(200).json({ message: "Quest instance deleted successfully" });
   } catch (err) {
-    console.error("Error updating quest instance:", err);
-    res.status(500).json({ message: "Failed to update quest instance" });
+    console.error("Error deleting quest instance:", err);
+    res.status(500).json({ message: "Failed to delete quest instance" });
   }
 });
-
 // Add endpoint to fetch quest activity for quest tracker
 router.get("/activity", requireAuth, async (req, res) => {
   try {

@@ -6,6 +6,7 @@ import {
   boolean,
   integer,
   date,
+  index,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -37,7 +38,10 @@ export const xpTransaction = pgTable("xp_transaction", {
   sourceId: text("source_id"), // ID of the related entity
   note: text("note"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => ({
+  // Index for user XP history queries
+  userDateIdx: index("xp_transaction_user_date_idx").on(table.userId, table.date),
+}));
 
 export const xpTransactionRelations = relations(xpTransaction, ({ one }) => ({
   user: one(user, {
@@ -68,7 +72,12 @@ export const mainQuest = pgTable("main_quest", {
   completed: boolean("completed").default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (table) => ({
+  // Index for user's main quests
+  userIdx: index("main_quest_user_idx").on(table.userId),
+  // Index for completed status queries
+  userCompletedIdx: index("main_quest_user_completed_idx").on(table.userId, table.completed),
+}));
 
 // Template for both daily and side quests
 export const questTemplate = pgTable("quest_template", {
@@ -89,7 +98,12 @@ export const questTemplate = pgTable("quest_template", {
   xpReward: integer("xp_reward"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (table) => ({
+  // Index for fetching user's active quest templates
+  userActiveIdx: index("quest_template_user_active_idx").on(table.userId, table.isActive),
+  // Index for fetching templates by type
+  userTypeIdx: index("quest_template_user_type_idx").on(table.userId, table.type),
+}));
 
 // Instances of quests (both daily and side)
 export const questInstance = pgTable("quest_instance", {
@@ -111,7 +125,16 @@ export const questInstance = pgTable("quest_instance", {
   plannedEndTime: text("planned_end_time"),
   streakCount: integer("streak_count").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => ({
+  // Critical index for daily/today's quests queries (user_id + date)
+  userDateIdx: index("quest_instance_user_date_idx").on(table.userId, table.date),
+  // Index for quest activity queries (template_id + date range)
+  templateDateIdx: index("quest_instance_template_date_idx").on(table.templateId, table.date),
+  // Index for user's quest instances with template info
+  userTemplateIdx: index("quest_instance_user_template_idx").on(table.userId, table.templateId),
+  // Index for performance queries (user + date range)
+  userDateRangeIdx: index("quest_instance_user_date_range_idx").on(table.userId, table.date, table.completed),
+}));
 
 // Tasks that belong to quest templates
 export const taskTemplate = pgTable("task_template", {
@@ -143,7 +166,10 @@ export const taskInstance = pgTable("task_instance", {
   plannedEndTime: text("planned_end_time"),
   updatedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => ({
+  // Index for fetching tasks by quest instance
+  questInstanceIdx: index("task_instance_quest_instance_idx").on(table.questInstanceId),
+}));
 
 // Relations
 export const mainQuestRelations = relations(mainQuest, ({ many }) => ({

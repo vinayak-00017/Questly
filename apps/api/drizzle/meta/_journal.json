@@ -127,6 +127,20 @@
       "when": 1753095586773,
       "tag": "0017_cold_the_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1753450232564,
+      "tag": "0018_giant_daredevil",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1753572946764,
+      "tag": "0019_loose_snowbird",
+      "breakpoints": true
     }
   ]
 }

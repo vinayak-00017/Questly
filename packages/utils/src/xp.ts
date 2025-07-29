@@ -154,3 +154,162 @@ export function checkLevelUp(
     levelsGained: newLevelInfo.level - currentLevelInfo.level,
   };
 }
+
+// To assing a player's rank based on their level
+
+export function getPlayerRank(level: number): string {
+  // Find the highest rank where minLevel <= level
+  const rank = allRanks
+    .slice()
+    .reverse()
+    .find((r) => level >= r.minLevel);
+  return rank ? rank.name : allRanks[0].name;
+}
+
+export function getPlayerRankIcon(level: number): string {
+  const rank = allRanks
+    .slice()
+    .reverse()
+    .find((r) => level >= r.minLevel);
+  return rank ? rank.icon : "";
+}
+
+export function getPlayerRankColor(level: number): string {
+  const rank = allRanks
+    .slice()
+    .reverse()
+    .find((r) => level >= r.minLevel);
+  return rank ? rank.color : "#000000";
+}
+
+export function getPlayerRankDescription(level: number): string {
+  const rank = allRanks
+    .slice()
+    .reverse()
+    .find((r) => level >= r.minLevel);
+  return rank ? rank.description : "";
+}
+
+export const allRanks = [
+  {
+    name: "Beginner",
+    minLevel: 1,
+    maxLevel: 1,
+    icon: "🎒",
+    color: "#7CFC00",
+    description: "Just starting your journey, eager to learn and grow.",
+  },
+  {
+    name: "Novice",
+    minLevel: 2,
+    maxLevel: 3,
+    icon: "🗡️",
+    color: "#32CD32",
+    description:
+      "Gaining confidence and understanding the basics of adventure.",
+  },
+  {
+    name: "Apprentice",
+    minLevel: 4,
+    maxLevel: 5,
+    icon: "📜",
+    color: "#1E90FF",
+    description: "Learning from experience, honing your skills with guidance.",
+  },
+  {
+    name: "Adventurer",
+    minLevel: 6,
+    maxLevel: 8,
+    icon: "🛡️",
+    color: "#00BFFF",
+    description: "Boldly exploring new quests and embracing challenges.",
+  },
+  {
+    name: "Pathfinder",
+    minLevel: 9,
+    maxLevel: 11,
+    icon: "🧭",
+    color: "#20B2AA",
+    description: "Discovering new routes and leading the way for others.",
+  },
+  {
+    name: "Journeyman",
+    minLevel: 12,
+    maxLevel: 14,
+    icon: "🪓",
+    color: "#BFA14A",
+    description: "Skilled and reliable, with a wealth of experience.",
+  },
+  {
+    name: "Craftsman",
+    minLevel: 15,
+    maxLevel: 19,
+    icon: "🔨",
+    color: "#FFA500",
+    description: "Mastering your craft and perfecting your abilities.",
+  },
+  {
+    name: "Challenger",
+    minLevel: 20,
+    maxLevel: 24,
+    icon: "⚔️",
+    color: "#FF8C00",
+    description: "Fearlessly taking on formidable tasks and rivals.",
+  },
+  {
+    name: "Expert",
+    minLevel: 25,
+    maxLevel: 29,
+    icon: "🏹",
+    color: "#8A2BE2",
+    description: "Highly knowledgeable and accomplished in your field.",
+  },
+  {
+    name: "Master",
+    minLevel: 30,
+    maxLevel: 34,
+    icon: "🧙‍♂️",
+    color: "#4B0082",
+    description: "Commanding respect with exceptional skill and wisdom.",
+  },
+  {
+    name: "Champion",
+    minLevel: 35,
+    maxLevel: 39,
+    icon: "🥇",
+    color: "#C0C0C0",
+    description: "Rising above the rest, celebrated for your victories.",
+  },
+  {
+    name: "Conqueror",
+    minLevel: 40,
+    maxLevel: 49,
+    icon: "👑",
+    color: "#B22222",
+    description: "Overcoming the toughest obstacles and adversaries.",
+  },
+  {
+    name: "Mythic",
+    minLevel: 50,
+    maxLevel: 59,
+    icon: "🐲",
+    color: "#9400D3",
+    description: "Achieving legendary feats, your name echoes in tales.",
+  },
+  {
+    name: "Immortal",
+    minLevel: 60,
+    maxLevel: 69,
+    icon: "💀",
+    color: "#FFD700",
+    description: "Your legacy endures, inspiring generations to come.",
+  },
+  {
+    name: "Legendary",
+    minLevel: 70,
+    maxLevel: 999,
+    icon: "🏰",
+    color: "#FF4500",
+    description: "The pinnacle of greatness, your story becomes legend.",
+  },
+];

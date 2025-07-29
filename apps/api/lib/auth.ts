@@ -31,6 +31,14 @@ export const auth = betterAuth({
     "https://questly.me",
   ].filter(Boolean),
   plugins: [anonymous()],
+
+  rateLimit: {
+    enabled: true,
+    window: 10,
+    max: 100,
+    storage: "memory",
+    modelName: "rateLimit",
+  },
 });
 
 //Generate a scheduler token.

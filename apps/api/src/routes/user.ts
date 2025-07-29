@@ -15,6 +15,148 @@ import { performanceService } from "../../services/performance-service";
 
 const router = express.Router();
 
+// New batched dashboard endpoint
+router.get("/dashboard", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const period = (req.query.period as string) || "weekly";
+
+    const [currUser] = await db.select().from(user).where(eq(user.id, userId));
+
+    if (!currUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get today's date in the user's timezone using the same format as quest creation
+    const currentUTC = new Date();
+    const userLocalTime = new Date(
+      currentUTC.toLocaleString("en-US", {
+        timeZone: currUser.timezone || "UTC",
+      })
+    );
+
+    // Use toDbDate to ensure consistent date format with quest creation
+    const todayString = toDbDate(userLocalTime);
+
+    console.log(
+      `Dashboard: Getting data for user ${userId} on ${todayString} (timezone: ${currUser.timezone})`
+    );
+
+    // Batch all database queries
+    const [todaysQuests, allQuests] = await Promise.all([
+      // Today's quests for user stats
+      db
+        .select({
+          basePoints: questInstance.basePoints,
+          completed: questInstance.completed,
+          title: questInstance.title,
+          xpReward: questInstance.xpReward,
+          type: questInstance.type,
+          description: questInstance.description,
+          instanceId: questInstance.id,
+          date: questInstance.date,
+        })
+        .from(questInstance)
+        .where(
+          and(
+            eq(questInstance.userId, userId),
+            eq(questInstance.date, todayString)
+          )
+        ),
+
+      // All quests for today's quests card (same as above but with more fields)
+      db
+        .select({
+          instanceId: questInstance.id,
+          title: questInstance.title,
+          description: questInstance.description,
+          basePoints: questInstance.basePoints,
+          xpReward: questInstance.xpReward,
+          completed: questInstance.completed,
+          type: questInstance.type,
+          date: questInstance.date,
+          templateId: questInstance.templateId,
+        })
+        .from(questInstance)
+        .where(
+          and(
+            eq(questInstance.userId, userId),
+            eq(questInstance.date, todayString)
+          )
+        ),
+    ]);
+
+    console.log(`Dashboard: Found ${todaysQuests.length} quests for today`);
+
+    // Calculate user stats
+    const levelStats = calculateLevelFromXp(currUser.xp);
+
+    // Calculate today's potential XP (what will be awarded at midnight)
+    const todaysXp = calculateXpRewards(
+      todaysQuests,
+      levelStats.level,
+      true
+    ).reduce((sum, quest) => sum + quest.xpReward, 0);
+
+    // Calculate current streak
+    const streakData = await calculateUserStreak(userId, currUser.timezone);
+
+    // Get performance data
+    const validPeriods = [
+      "weekly",
+      "monthly",
+      "quarterly",
+      "yearly",
+      "overall",
+    ] as const;
+    type ValidPeriod = (typeof validPeriods)[number];
+
+    const validPeriod: ValidPeriod = validPeriods.includes(
+      period as ValidPeriod
+    )
+      ? (period as ValidPeriod)
+      : "weekly";
+
+    const performanceData = await performanceService.getPerformance(
+      userId,
+      validPeriod
+    );
+
+    // Separate quests by type for today's quests
+    const dailyQuests = allQuests.filter((q) => q.type === "daily");
+    const sideQuests = allQuests.filter((q) => q.type === "side");
+
+    const userStats = {
+      levelStats,
+      todaysXp,
+      streak: streakData.streak,
+      isActiveToday: streakData.isActiveToday,
+      timezone: currUser.timezone,
+      timezoneSetExplicitly: currUser.timezoneSetExplicitly,
+    };
+
+    console.log(
+      `Dashboard: Calculated today's XP: ${todaysXp} for user ${userId}`
+    );
+    console.log(
+      `Dashboard: Current streak: ${streakData.streak} days for user ${userId}`
+    );
+
+    res.status(200).json({
+      message: "Dashboard data retrieved successfully",
+      userStats,
+      todaysQuests: {
+        dailyQuests,
+        sideQuests,
+      },
+      performance: performanceData,
+    });
+  } catch (err) {
+    console.log("Error fetching dashboard data:", err);
+    res.status(500).json({ message: "Failed to fetch dashboard data" });
+  }
+});
+
 router.get("/userStats", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
@@ -32,11 +174,13 @@ router.get("/userStats", requireAuth, async (req, res) => {
         timeZone: currUser.timezone || "UTC",
       })
     );
-    
+
     // Use toDbDate to ensure consistent date format with quest creation
     const todayString = toDbDate(userLocalTime);
 
-    console.log(`UserStats: Getting quests for user ${userId} on ${todayString} (timezone: ${currUser.timezone})`);
+    console.log(
+      `UserStats: Getting quests for user ${userId} on ${todayString} (timezone: ${currUser.timezone})`
+    );
 
     const quests = await db
       .select({
@@ -53,13 +197,8 @@ router.get("/userStats", requireAuth, async (req, res) => {
         )
       );
 
-    console.log(`UserStats: Found ${quests.length} quests for today`);
-    quests.forEach(quest => {
-      console.log(`  - ${quest.title}: completed=${quest.completed}, basePoints=${quest.basePoints}, xpReward=${quest.xpReward}`);
-    });
-
     const levelStats = calculateLevelFromXp(currUser.xp);
-    
+
     // Calculate today's potential XP (what will be awarded at midnight)
     const todaysXp = calculateXpRewards(quests, levelStats.level, true).reduce(
       (sum, quest) => sum + quest.xpReward,
@@ -69,16 +208,20 @@ router.get("/userStats", requireAuth, async (req, res) => {
     // Calculate current streak
     const streakData = await calculateUserStreak(userId, currUser.timezone);
 
-    console.log(`UserStats: Calculated today's XP: ${todaysXp} for user ${userId}`);
-    console.log(`UserStats: Current streak: ${streakData.streak} days for user ${userId}`);
+    console.log(
+      `UserStats: Calculated today's XP: ${todaysXp} for user ${userId}`
+    );
+    console.log(
+      `UserStats: Current streak: ${streakData.streak} days for user ${userId}`
+    );
 
-    const userStats = { 
-      levelStats, 
-      todaysXp, 
+    const userStats = {
+      levelStats,
+      todaysXp,
       streak: streakData.streak,
       isActiveToday: streakData.isActiveToday,
       timezone: currUser.timezone,
-      timezoneSetExplicitly: currUser.timezoneSetExplicitly 
+      timezoneSetExplicitly: currUser.timezoneSetExplicitly,
     };
 
     res.status(200).json({
@@ -286,10 +429,7 @@ router.patch("/updateProfile", requireAuth, async (req, res) => {
       updateData.timezoneSetExplicitly = true;
     }
 
-    await db
-      .update(user)
-      .set(updateData)
-      .where(eq(user.id, userId));
+    await db.update(user).set(updateData).where(eq(user.id, userId));
 
     res.status(200).json({
       message: "Profile updated successfully",
@@ -306,7 +446,7 @@ router.patch("/updateProfile", requireAuth, async (req, res) => {
 router.post("/updateStreak", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
-    
+
     const [currUser] = await db.select().from(user).where(eq(user.id, userId));
     if (!currUser) {
       return res.status(404).json({ message: "User not found" });

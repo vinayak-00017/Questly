@@ -10,18 +10,18 @@ import { eq, and, isNull, ne, not } from "drizzle-orm";
 // Helper function to get yesterday's date in user's timezone using the same format as quest creation
 function getUserYesterdayDate(userTimezone: string): string {
   const currentUTC = new Date();
-  
+
   // Get current time in user's timezone
   const userLocalTime = new Date(
     currentUTC.toLocaleString("en-US", {
       timeZone: userTimezone || "UTC",
     })
   );
-  
+
   // Get yesterday in user's timezone
   const yesterday = new Date(userLocalTime);
   yesterday.setDate(yesterday.getDate() - 1);
-  
+
   // Use the same toDbDate function that quest creation uses
   return toDbDate(yesterday);
 }
@@ -33,7 +33,9 @@ async function calculateXpForUsers(
   if (users.length === 0) return;
 
   try {
-    console.log(`🎯 Calculating XP and updating streaks for ${users.length} users at their local midnight...`);
+    console.log(
+      `🎯 Calculating XP and updating streaks for ${users.length} users at their local midnight...`
+    );
 
     let processedUsers = 0;
     let totalXpAwarded = 0;
@@ -43,8 +45,10 @@ async function calculateXpForUsers(
       try {
         // Get yesterday's date in the user's timezone using the same format as quest creation
         const yesterdayString = getUserYesterdayDate(userRecord.timezone);
-        
-        console.log(`Processing user ${userRecord.id} for date: ${yesterdayString} (timezone: ${userRecord.timezone})`);
+
+        console.log(
+          `Processing user ${userRecord.id} for date: ${yesterdayString} (timezone: ${userRecord.timezone})`
+        );
 
         // Check if XP has already been calculated
         const existingXpInstances = await db
@@ -61,27 +65,37 @@ async function calculateXpForUsers(
           .limit(1);
 
         if (existingXpInstances.length > 0) {
-          console.log(`XP already calculated for user ${userRecord.id} for ${yesterdayString}`);
+          console.log(
+            `XP already calculated for user ${userRecord.id} for ${yesterdayString}`
+          );
           // Still update streak even if XP was already calculated
           try {
-            const streakResult = await updateUserStreak(userRecord.id, userRecord.timezone);
+            const streakResult = await updateUserStreak(
+              userRecord.id,
+              userRecord.timezone
+            );
             if (streakResult.success) {
               streaksUpdated++;
-              console.log(`🔥 Streak updated for user ${userRecord.id}: ${streakResult.streak} days`);
+              console.log(
+                `🔥 Streak updated for user ${userRecord.id}: ${streakResult.streak} days`
+              );
             }
           } catch (error) {
-            console.error(`Error updating streak for user ${userRecord.id}:`, error);
+            console.error(
+              `Error updating streak for user ${userRecord.id}:`,
+              error
+            );
           }
           continue;
         }
 
         // Check if there are quest instances that need XP calculation
         const instancesNeedingXp = await db
-          .select({ 
+          .select({
             id: questInstance.id,
             title: questInstance.title,
             completed: questInstance.completed,
-            basePoints: questInstance.basePoints
+            basePoints: questInstance.basePoints,
           })
           .from(questInstance)
           .where(
@@ -93,53 +107,71 @@ async function calculateXpForUsers(
           );
 
         if (instancesNeedingXp.length === 0) {
-          console.log(`No quest instances found for user ${userRecord.id} on ${yesterdayString}`);
+          console.log(
+            `No quest instances found for user ${userRecord.id} on ${yesterdayString}`
+          );
           // Still update streak
           try {
-            const streakResult = await updateUserStreak(userRecord.id, userRecord.timezone);
+            const streakResult = await updateUserStreak(
+              userRecord.id,
+              userRecord.timezone
+            );
             if (streakResult.success) {
               streaksUpdated++;
-              console.log(`🔥 Streak updated for user ${userRecord.id}: ${streakResult.streak} days`);
+              console.log(
+                `🔥 Streak updated for user ${userRecord.id}: ${streakResult.streak} days`
+              );
             }
           } catch (error) {
-            console.error(`Error updating streak for user ${userRecord.id}:`, error);
+            console.error(
+              `Error updating streak for user ${userRecord.id}:`,
+              error
+            );
           }
           continue;
         }
 
-        console.log(`Found ${instancesNeedingXp.length} quest instances needing XP calculation for user ${userRecord.id}`);
-        instancesNeedingXp.forEach(instance => {
-          console.log(`  - ${instance.title}: completed=${instance.completed}, basePoints=${instance.basePoints}`);
-        });
-
         // Process XP for this user
         const result = await processUserDailyXp(userRecord.id, yesterdayString);
-        
+
         if (result.success && result.xpEarned && result.xpEarned > 0) {
           processedUsers++;
           totalXpAwarded += result.xpEarned;
-          console.log(`✅ XP processed for user ${userRecord.id}: ${result.xpEarned} XP (Level ${result.previousLevel} → ${result.newLevel})`);
+          console.log(
+            `✅ XP processed for user ${userRecord.id}: ${result.xpEarned} XP (Level ${result.previousLevel} → ${result.newLevel})`
+          );
         } else {
-          console.log(`⚠️ No XP to award for user ${userRecord.id}: ${result.message || 'No quests to process'}`);
+          console.log(
+            `⚠️ No XP to award for user ${userRecord.id}: ${result.message || "No quests to process"}`
+          );
         }
 
         // Update user's streak after XP calculation
         try {
-          const streakResult = await updateUserStreak(userRecord.id, userRecord.timezone);
+          const streakResult = await updateUserStreak(
+            userRecord.id,
+            userRecord.timezone
+          );
           if (streakResult.success) {
             streaksUpdated++;
-            console.log(`🔥 Streak updated for user ${userRecord.id}: ${streakResult.streak} days (Active today: ${streakResult.isActiveToday})`);
+            console.log(
+              `🔥 Streak updated for user ${userRecord.id}: ${streakResult.streak} days (Active today: ${streakResult.isActiveToday})`
+            );
           }
         } catch (error) {
-          console.error(`Error updating streak for user ${userRecord.id}:`, error);
+          console.error(
+            `Error updating streak for user ${userRecord.id}:`,
+            error
+          );
         }
-
       } catch (error) {
         console.error(`❌ Error processing user ${userRecord.id}:`, error);
       }
     }
 
-    console.log(`🎯 Processing complete: ${processedUsers} users got XP (${totalXpAwarded} total XP), ${streaksUpdated} streaks updated`);
+    console.log(
+      `🎯 Processing complete: ${processedUsers} users got XP (${totalXpAwarded} total XP), ${streaksUpdated} streaks updated`
+    );
   } catch (error) {
     console.error("Error in XP and streak calculation:", error);
   }
@@ -148,7 +180,9 @@ async function calculateXpForUsers(
 // Function to calculate XP for all users who need it (used on server restart)
 async function calculateXpForAllUsersWhoNeedIt() {
   try {
-    console.log("Checking all users for missing XP calculations on server restart...");
+    console.log(
+      "Checking all users for missing XP calculations on server restart..."
+    );
 
     // Get all users
     const allUsers = await db
@@ -197,7 +231,10 @@ async function calculateXpForAllUsersWhoNeedIt() {
           usersNeedingXp.push(userRecord);
         }
       } catch (error) {
-        console.error(`Error checking XP status for user ${userRecord.id}:`, error);
+        console.error(
+          `Error checking XP status for user ${userRecord.id}:`,
+          error
+        );
       }
     }
 
@@ -208,27 +245,32 @@ async function calculateXpForAllUsersWhoNeedIt() {
       await calculateXpForUsers(usersNeedingXp);
     } else {
       console.log("All users already have XP calculated for yesterday");
-      
+
       // Still update streaks for all users on server restart
       console.log("Updating streaks for all users on server restart...");
       let streaksUpdated = 0;
       for (const userRecord of allUsers) {
         try {
-          const streakResult = await updateUserStreak(userRecord.id, userRecord.timezone);
+          const streakResult = await updateUserStreak(
+            userRecord.id,
+            userRecord.timezone
+          );
           if (streakResult.success) {
             streaksUpdated++;
           }
         } catch (error) {
-          console.error(`Error updating streak for user ${userRecord.id}:`, error);
+          console.error(
+            `Error updating streak for user ${userRecord.id}:`,
+            error
+          );
         }
       }
-      console.log(`🔥 Updated streaks for ${streaksUpdated} users on server restart`);
+      console.log(
+        `🔥 Updated streaks for ${streaksUpdated} users on server restart`
+      );
     }
   } catch (error) {
-    console.error(
-      "Error calculating XP for all users who need it:",
-      error
-    );
+    console.error("Error calculating XP for all users who need it:", error);
   }
 }
 
@@ -265,7 +307,10 @@ async function shouldRunXpCalculationImmediately() {
           return true; // At least one user needs XP calculation
         }
       } catch (error) {
-        console.error(`Error checking XP status for user ${userRecord.id}:`, error);
+        console.error(
+          `Error checking XP status for user ${userRecord.id}:`,
+          error
+        );
       }
     }
 
@@ -321,7 +366,7 @@ export function initXpScheduler() {
         await calculateXpForAllUsersWhoNeedIt();
       } else {
         console.log("✅ All users already have XP calculated for yesterday");
-        
+
         // Still update streaks for all users on server restart
         console.log("🔥 Updating streaks for all users on server restart...");
         const allUsers = await db
@@ -330,19 +375,27 @@ export function initXpScheduler() {
             timezone: user.timezone,
           })
           .from(user);
-          
+
         let streaksUpdated = 0;
         for (const userRecord of allUsers) {
           try {
-            const streakResult = await updateUserStreak(userRecord.id, userRecord.timezone);
+            const streakResult = await updateUserStreak(
+              userRecord.id,
+              userRecord.timezone
+            );
             if (streakResult.success) {
               streaksUpdated++;
             }
           } catch (error) {
-            console.error(`Error updating streak for user ${userRecord.id}:`, error);
+            console.error(
+              `Error updating streak for user ${userRecord.id}:`,
+              error
+            );
           }
         }
-        console.log(`🔥 Updated streaks for ${streaksUpdated} users on server restart`);
+        console.log(
+          `🔥 Updated streaks for ${streaksUpdated} users on server restart`
+        );
       }
     } catch (error) {
       console.error("Error in XP scheduler initialization check:", error);

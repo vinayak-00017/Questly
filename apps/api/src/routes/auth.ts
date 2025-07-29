@@ -70,6 +70,66 @@ authRouter.post("/check-email", async (req, res) => {
   }
 });
 
+// Check if OAuth account is already registered to a non-anonymous user (for upgrade callback)
+const checkOAuthAccountCallbackSchema = z.object({
+  provider: z.string(),
+  oauthUserId: z.string(),
+  oauthEmail: z.string().email().optional(),
+  anonymousUserId: z.string().optional(),
+});
+
+authRouter.post("/check-oauth-account-callback", async (req, res) => {
+  try {
+    const validatedData = checkOAuthAccountCallbackSchema.safeParse(req.body);
+
+    if (!validatedData.success) {
+      return res.status(400).json({ error: "Invalid request data" });
+    }
+
+    const { provider, oauthUserId } = validatedData.data;
+
+    // Get the OAuth account ID from the session or request body
+    const oauthAccountId = await db
+      .select({ accountId: account.accountId })
+      .from(account)
+      .where(
+        and(eq(account.providerId, provider), eq(account.userId, oauthUserId))
+      )
+      .limit(1);
+
+    console.log("OAuth Account ID:", oauthAccountId);
+
+    if (oauthAccountId.length) {
+      // Check if this OAuth account is already registered to a non-anonymous user
+      const existingAccount = await db
+        .select({
+          userId: account.userId,
+          accountId: account.accountId,
+        })
+        .from(account)
+        .where(
+          and(
+            eq(account.providerId, provider),
+            eq(account.accountId, oauthAccountId[0].accountId)
+          )
+        )
+        .limit(1);
+
+      if (existingAccount.length > 0) {
+        return res.json({
+          accountExists: true,
+        });
+      }
+    }
+    return res.json({ accountExists: false });
+  } catch (error) {
+    console.error("Error checking OAuth account (callback):", error);
+    return res
+      .status(500)
+      .json({ error: "Failed to check OAuth account (callback)" });
+  }
+});
+
 // Check if OAuth account is already registered
 authRouter.post("/check-oauth-account", async (req, res) => {
   try {
@@ -155,12 +215,7 @@ authRouter.post("/upgrade-account", async (req, res) => {
     const emailExists = await db
       .select()
       .from(user)
-      .where(
-        and(
-          eq(user.email, email),
-          eq(user.isAnonymous, false)
-        )
-      )
+      .where(and(eq(user.email, email), eq(user.isAnonymous, false)))
       .limit(1);
 
     if (emailExists.length > 0) {
@@ -227,12 +282,7 @@ authRouter.post("/complete-oauth-upgrade", async (req, res) => {
     const anonymousUser = await db
       .select()
       .from(user)
-      .where(
-        and(
-          eq(user.id, anonymousUserId),
-          eq(user.isAnonymous, true)
-        )
-      )
+      .where(and(eq(user.id, anonymousUserId), eq(user.isAnonymous, true)))
       .limit(1);
 
     if (anonymousUser.length === 0) {
@@ -324,7 +374,7 @@ authRouter.post("/check-oauth-user", async (req, res) => {
 
     return res.json({
       exists: false, // We'll handle the real check in the OAuth callback
-      message: "OAuth check will be performed during authentication flow"
+      message: "OAuth check will be performed during authentication flow",
     });
   } catch (error) {
     console.error("Error checking OAuth user:", error);
