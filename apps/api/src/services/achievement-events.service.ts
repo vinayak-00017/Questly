@@ -1,4 +1,4 @@
-import { achievementService } from "./achievement.service.js";
+import { achievementService } from "./achievement.service";
 import type { Achievement } from "@questly/utils";
 
 export type AchievementEvent =

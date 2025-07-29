@@ -1,5 +1,5 @@
 import { eq, and, sql, desc } from "drizzle-orm";
-import db from "../db/index.js";
+import db from "../db/index";
 import {
   user,
   userAchievement,
@@ -7,7 +7,7 @@ import {
   mainQuest,
   taskInstance,
   xpTransaction,
-} from "../db/schema.js";
+} from "../db/schema";
 import { ACHIEVEMENTS, type Achievement } from "@questly/utils";
 import { nanoid } from "nanoid";
 

@@ -11,6 +11,9 @@ const config = {
     "<rootDir>/dist",
   ],
   preset: "ts-jest",
+  moduleNameMapper: {
+    "^nanoid$": "<rootDir>/src/test-utils/nanoid-mock.js"
+  }
 };
 
 export default config;

@@ -1,6 +1,6 @@
 import express from "express";
-import { achievementService } from "../services/achievement.service.js";
-import { requireAuth, AuthenticatedRequest } from "../middleware/auth.js";
+import { achievementService } from "../services/achievement.service";
+import { requireAuth, AuthenticatedRequest } from "../middleware/auth";
 
 const router = express.Router();
 

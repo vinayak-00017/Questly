@@ -17,7 +17,7 @@ import {
   toLocalDbDate,
 } from "@questly/utils";
 import { getUserTimezone } from "../utils/dates";
-import { achievementEventService } from "../services/achievement-events.service.js";
+import { achievementEventService } from "../services/achievement-events.service";
 
 export class QuestInstanceController {
   /**
