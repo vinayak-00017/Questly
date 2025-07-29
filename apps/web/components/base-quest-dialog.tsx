@@ -16,6 +16,7 @@ import { QuestDialogFooter } from "./quest-dialog/footer";
 import { UnsavedChangesAlert } from "./quest-dialog/unsaved-changes-alert";
 import { QuestFormData, getQuestColorStyles } from "./quest-dialog/types";
 import { questApi } from "@/services/quest-api";
+import { useAchievements } from "@/contexts/achievement-context";
 
 export interface BaseQuestDialogProps {
   open: boolean;
@@ -65,6 +66,7 @@ export function BaseQuestDialog({
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const queryClient = useQueryClient();
+  const { checkForNewAchievements } = useAchievements();
   const colorStyles = getQuestColorStyles(themeColor);
 
   // Handle form field updates
@@ -133,13 +135,21 @@ export function BaseQuestDialog({
   // Add quest mutation
   const addQuestMutation = useMutation({
     mutationFn: questApi.addQuest,
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate the specific quest type cache
       queryClient.invalidateQueries({ queryKey });
       // Also invalidate the combined todaysQuests cache so Today's Quests card updates
       queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
       queryClient.invalidateQueries({ queryKey: ["questTemplates"] });
       toast.success(`${type === "daily" ? "Daily" : "Side"} quest added!`);
+      
+      // Check for new achievements when quest is created
+      try {
+        await checkForNewAchievements();
+      } catch (error) {
+        console.error("Error checking for achievements:", error);
+      }
+      
       onSuccess?.();
       onOpenChange(false);
       // Form reset is handled by the useEffect above

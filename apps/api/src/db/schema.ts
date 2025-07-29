@@ -27,21 +27,54 @@ export const user = pgTable("user", {
     .notNull(),
 });
 
-export const xpTransaction = pgTable("xp_transaction", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  xp: integer("xp").notNull(),
-  date: date("date").notNull(),
-  source: text("source").notNull(), // "quest", "task", "streak", etc.
-  sourceId: text("source_id"), // ID of the related entity
-  note: text("note"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => ({
-  // Index for user XP history queries
-  userDateIdx: index("xp_transaction_user_date_idx").on(table.userId, table.date),
-}));
+// User Achievement table: tracks which achievements a user has unlocked
+export const userAchievement = pgTable(
+  "user_achievement",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    achievementId: text("achievement_id").notNull(), // should match id from achievements constant
+    unlockedAt: timestamp("unlocked_at"),
+    progress: integer("progress"), // for incremental achievements
+    importance: text("importance").$type<
+      "common" | "rare" | "epic" | "legendary"
+    >(),
+    lastProgressUpdate: timestamp("last_progress_update"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    userAchievementUserIdx: index("user_achievement_user_idx").on(table.userId),
+    userAchievementAchievementIdx: index("user_achievement_achievement_idx").on(
+      table.achievementId
+    ),
+  })
+);
+
+export const xpTransaction = pgTable(
+  "xp_transaction",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    xp: integer("xp").notNull(),
+    date: date("date").notNull(),
+    source: text("source").notNull(), // "quest", "task", "streak", etc.
+    sourceId: text("source_id"), // ID of the related entity
+    note: text("note"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    // Index for user XP history queries
+    userDateIdx: index("xp_transaction_user_date_idx").on(
+      table.userId,
+      table.date
+    ),
+  })
+);
 
 export const xpTransactionRelations = relations(xpTransaction, ({ one }) => ({
   user: one(user, {
@@ -50,91 +83,132 @@ export const xpTransactionRelations = relations(xpTransaction, ({ one }) => ({
   }),
 }));
 
-export const mainQuest = pgTable("main_quest", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description"),
-  importance: text("importance")
-    .$type<"common" | "rare" | "heroic" | "legendary">()
-    .notNull(),
-  category: text("category").$type<
-    "challenge" | "combat" | "creation" | "exploration" | "knowledge" | "social"
-  >(),
-  difficulty: text("difficulty").$type<
-    "novice" | "adventurer" | "veteran" | "master"
-  >(),
-  duration: text("duration").$type<"sprint" | "journey" | "odyssey" | "epic">(),
-  dueDate: timestamp("due_date").notNull(),
-  xpReward: integer("xp_reward"),
-  completed: boolean("completed").default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-}, (table) => ({
-  // Index for user's main quests
-  userIdx: index("main_quest_user_idx").on(table.userId),
-  // Index for completed status queries
-  userCompletedIdx: index("main_quest_user_completed_idx").on(table.userId, table.completed),
-}));
+export const mainQuest = pgTable(
+  "main_quest",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description"),
+    importance: text("importance")
+      .$type<"common" | "rare" | "heroic" | "legendary">()
+      .notNull(),
+    category: text("category").$type<
+      | "challenge"
+      | "combat"
+      | "creation"
+      | "exploration"
+      | "knowledge"
+      | "social"
+    >(),
+    difficulty: text("difficulty").$type<
+      "novice" | "adventurer" | "veteran" | "master"
+    >(),
+    duration: text("duration").$type<
+      "sprint" | "journey" | "odyssey" | "epic"
+    >(),
+    dueDate: timestamp("due_date").notNull(),
+    xpReward: integer("xp_reward"),
+    completed: boolean("completed").default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    // Index for user's main quests
+    userIdx: index("main_quest_user_idx").on(table.userId),
+    // Index for completed status queries
+    userCompletedIdx: index("main_quest_user_completed_idx").on(
+      table.userId,
+      table.completed
+    ),
+  })
+);
 
 // Template for both daily and side quests
-export const questTemplate = pgTable("quest_template", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description"),
-  type: text("type").$type<"daily" | "side">().notNull(),
-  parentQuestId: text("parent_quest_id").references(() => mainQuest.id),
-  recurrenceRule: text("recurrence_rule"),
-  dueDate: timestamp("due_date"),
-  isActive: boolean("is_active").default(true),
-  basePoints: integer("base_points").notNull().default(1),
-  plannedStartTime: text("planned_start_time"), // "HH:mm" format
-  plannedEndTime: text("planned_end_time"), // "HH:mm" format
-  xpReward: integer("xp_reward"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-}, (table) => ({
-  // Index for fetching user's active quest templates
-  userActiveIdx: index("quest_template_user_active_idx").on(table.userId, table.isActive),
-  // Index for fetching templates by type
-  userTypeIdx: index("quest_template_user_type_idx").on(table.userId, table.type),
-}));
+export const questTemplate = pgTable(
+  "quest_template",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description"),
+    type: text("type").$type<"daily" | "side">().notNull(),
+    parentQuestId: text("parent_quest_id").references(() => mainQuest.id),
+    recurrenceRule: text("recurrence_rule"),
+    dueDate: timestamp("due_date"),
+    isActive: boolean("is_active").default(true),
+    basePoints: integer("base_points").notNull().default(1),
+    plannedStartTime: text("planned_start_time"), // "HH:mm" format
+    plannedEndTime: text("planned_end_time"), // "HH:mm" format
+    xpReward: integer("xp_reward"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    // Index for fetching user's active quest templates
+    userActiveIdx: index("quest_template_user_active_idx").on(
+      table.userId,
+      table.isActive
+    ),
+    // Index for fetching templates by type
+    userTypeIdx: index("quest_template_user_type_idx").on(
+      table.userId,
+      table.type
+    ),
+  })
+);
 
 // Instances of quests (both daily and side)
-export const questInstance = pgTable("quest_instance", {
-  id: text("id").primaryKey(),
-  templateId: text("template_id").references(() => questTemplate.id),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+export const questInstance = pgTable(
+  "quest_instance",
+  {
+    id: text("id").primaryKey(),
+    templateId: text("template_id").references(() => questTemplate.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
 
-  date: date("date").notNull(),
-  completed: boolean("completed").default(false).notNull(),
-  title: text("title").notNull(),
-  description: text("description"),
-  basePoints: integer("base_points").notNull(),
-  xpReward: integer("xp_reward"),
-  updatedAt: timestamp("completed_at"),
-  timeTracked: integer("time_tracked"),
-  plannedStartTime: text("planned_start_time"),
-  plannedEndTime: text("planned_end_time"),
-  streakCount: integer("streak_count").default(0),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => ({
-  // Critical index for daily/today's quests queries (user_id + date)
-  userDateIdx: index("quest_instance_user_date_idx").on(table.userId, table.date),
-  // Index for quest activity queries (template_id + date range)
-  templateDateIdx: index("quest_instance_template_date_idx").on(table.templateId, table.date),
-  // Index for user's quest instances with template info
-  userTemplateIdx: index("quest_instance_user_template_idx").on(table.userId, table.templateId),
-  // Index for performance queries (user + date range)
-  userDateRangeIdx: index("quest_instance_user_date_range_idx").on(table.userId, table.date, table.completed),
-}));
+    date: date("date").notNull(),
+    completed: boolean("completed").default(false).notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    basePoints: integer("base_points").notNull(),
+    xpReward: integer("xp_reward"),
+    updatedAt: timestamp("completed_at"),
+    timeTracked: integer("time_tracked"),
+    plannedStartTime: text("planned_start_time"),
+    plannedEndTime: text("planned_end_time"),
+    streakCount: integer("streak_count").default(0),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    // Critical index for daily/today's quests queries (user_id + date)
+    userDateIdx: index("quest_instance_user_date_idx").on(
+      table.userId,
+      table.date
+    ),
+    // Index for quest activity queries (template_id + date range)
+    templateDateIdx: index("quest_instance_template_date_idx").on(
+      table.templateId,
+      table.date
+    ),
+    // Index for user's quest instances with template info
+    userTemplateIdx: index("quest_instance_user_template_idx").on(
+      table.userId,
+      table.templateId
+    ),
+    // Index for performance queries (user + date range)
+    userDateRangeIdx: index("quest_instance_user_date_range_idx").on(
+      table.userId,
+      table.date,
+      table.completed
+    ),
+  })
+);
 
 // Tasks that belong to quest templates
 export const taskTemplate = pgTable("task_template", {
@@ -152,24 +226,30 @@ export const taskTemplate = pgTable("task_template", {
 });
 
 // Task instances
-export const taskInstance = pgTable("task_instance", {
-  id: text("id").primaryKey(),
-  questInstanceId: text("quest_instance_id")
-    .notNull()
-    .references(() => questInstance.id, { onDelete: "cascade" }),
-  templateId: text("template_id").references(() => taskTemplate.id),
-  title: text("title").notNull(),
-  completed: boolean("completed").default(false),
-  basePoints: integer("base_points").notNull(),
-  timeTracked: integer("time_tracked"),
-  plannedStartTime: text("planned_start_time"), // "HH:mm" format
-  plannedEndTime: text("planned_end_time"),
-  updatedAt: timestamp("completed_at"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => ({
-  // Index for fetching tasks by quest instance
-  questInstanceIdx: index("task_instance_quest_instance_idx").on(table.questInstanceId),
-}));
+export const taskInstance = pgTable(
+  "task_instance",
+  {
+    id: text("id").primaryKey(),
+    questInstanceId: text("quest_instance_id")
+      .notNull()
+      .references(() => questInstance.id, { onDelete: "cascade" }),
+    templateId: text("template_id").references(() => taskTemplate.id),
+    title: text("title").notNull(),
+    completed: boolean("completed").default(false),
+    basePoints: integer("base_points").notNull(),
+    timeTracked: integer("time_tracked"),
+    plannedStartTime: text("planned_start_time"), // "HH:mm" format
+    plannedEndTime: text("planned_end_time"),
+    updatedAt: timestamp("completed_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    // Index for fetching tasks by quest instance
+    questInstanceIdx: index("task_instance_quest_instance_idx").on(
+      table.questInstanceId
+    ),
+  })
+);
 
 // Relations
 export const mainQuestRelations = relations(mainQuest, ({ many }) => ({

@@ -51,8 +51,9 @@ export const CurrentRankSection: React.FC<CurrentRankSectionProps> = ({
         />
 
         <div
-          className="relative bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-sm rounded-2xl border-2 p-8"
+          className="relative backdrop-blur-sm rounded-2xl border-2 p-8"
           style={{
+            background: `linear-gradient(135deg, ${currentRankColor}08, ${currentRankColor}03)`,
             borderColor: currentRankColor + "60",
             boxShadow: `0 0 ${10 + auraIntensity * 20}px ${currentRankColor}30`,
           }}
@@ -111,7 +112,12 @@ export const CurrentRankSection: React.FC<CurrentRankSectionProps> = ({
             <div className="flex-1 text-center lg:text-left">
               <motion.h2
                 className="text-4xl font-bold font-medieval mb-2"
-                style={{ color: currentRankColor }}
+                style={{
+                  backgroundImage: `linear-gradient(135deg, ${currentRankColor}, #fbbf24)`,
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
@@ -125,20 +131,49 @@ export const CurrentRankSection: React.FC<CurrentRankSectionProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <div className="flex items-center gap-2 bg-slate-700/60 px-4 py-2 rounded-lg">
-                  <Zap className="w-5 h-5 text-amber-400" />
-                  <span className="text-lg font-semibold">
+                <div
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg"
+                  style={{
+                    background: `linear-gradient(135deg, ${currentRankColor}15, #fbbf2415)`,
+                    border: `1px solid ${currentRankColor}30`,
+                  }}
+                >
+                  <Zap className="w-5 h-5" style={{ color: "#fbbf24" }} />
+                  <span
+                    className="text-lg font-semibold"
+                    style={{
+                      backgroundImage: `linear-gradient(135deg, ${currentRankColor}, #fbbf24)`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                    }}
+                  >
                     Level {currentLevel}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-700/60 px-4 py-2 rounded-lg">
-                  <Crown className="w-5 h-5 text-yellow-400" />
-                  <span className="text-lg">{userStats.characterClass}</span>
+                <div
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg"
+                  style={{
+                    backgroundColor: currentRankColor + "10",
+                    border: `1px solid ${currentRankColor}25`,
+                  }}
+                >
+                  <Crown
+                    className="w-5 h-5"
+                    style={{ color: currentRankColor + "AA" }}
+                  />
+                  <span
+                    className="text-lg"
+                    style={{ color: currentRankColor + "CC" }}
+                  >
+                    {userStats.characterClass}
+                  </span>
                 </div>
               </motion.div>
 
               <motion.p
-                className="text-lg text-zinc-300 mb-6 leading-relaxed"
+                className="text-lg mb-6 leading-relaxed"
+                style={{ color: currentRankColor + "BB" }}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6 }}
@@ -154,18 +189,29 @@ export const CurrentRankSection: React.FC<CurrentRankSectionProps> = ({
                   transition={{ delay: 0.7 }}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-zinc-400">
+                    <span
+                      className="text-sm"
+                      style={{ color: currentRankColor + "99" }}
+                    >
                       Progress to {nextRankData.name}
                     </span>
-                    <span className="text-sm text-zinc-400">
+                    <span
+                      className="text-sm"
+                      style={{ color: currentRankColor + "99" }}
+                    >
                       {currentLevel}/{nextRankData.minLevel} levels
                     </span>
                   </div>
-                  <div className="w-full bg-slate-700/80 h-3 rounded-full overflow-hidden">
+                  <div
+                    className="w-full h-3 rounded-full overflow-hidden"
+                    style={{ backgroundColor: currentRankColor + "20" }}
+                  >
                     <motion.div
-                      className="h-full bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full"
+                      className="h-full rounded-full"
                       style={{
+                        background: `linear-gradient(90deg, ${currentRankColor}, #fbbf24, ${currentRankColor}CC)`,
                         width: `${Math.min(100, (currentLevel / nextRankData.minLevel) * 100)}%`,
+                        boxShadow: `0 0 8px ${currentRankColor}60`,
                       }}
                       initial={{ width: 0 }}
                       animate={{
@@ -174,7 +220,10 @@ export const CurrentRankSection: React.FC<CurrentRankSectionProps> = ({
                       transition={{ duration: 1, delay: 0.8 }}
                     />
                   </div>
-                  <p className="text-sm text-zinc-400 mt-2">
+                  <p
+                    className="text-sm mt-2"
+                    style={{ color: currentRankColor + "77" }}
+                  >
                     {nextRankData.minLevel - currentLevel > 0
                       ? `${nextRankData.minLevel - currentLevel} levels until ${nextRankData.name}`
                       : `You've achieved ${nextRankData.name}!`}

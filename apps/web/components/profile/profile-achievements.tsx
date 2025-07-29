@@ -2,9 +2,34 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Award, Target, Star, Flame } from "lucide-react";
+import { Award, Trophy, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AchievementCard } from "@/components/achievements/achievement-card";
+import { useQuery } from "@tanstack/react-query";
+import { achievementsApi } from "@/services/achievements-api";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+
+interface AchievementProgress {
+  achievementId: string;
+  progress: number;
+  isUnlocked: boolean;
+  unlockedAt?: Date;
+  achievement: {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+    category: string;
+    importance: "common" | "rare" | "epic" | "legendary";
+    criteria: {
+      type: string;
+      value: number;
+    };
+    hidden?: boolean;
+  };
+}
 
 interface ProfileAchievementsProps {
   userStats: any;
@@ -13,39 +38,17 @@ interface ProfileAchievementsProps {
 export const ProfileAchievements: React.FC<ProfileAchievementsProps> = ({
   userStats,
 }) => {
-  const level = userStats?.levelStats?.level || 1;
-  const streak = userStats?.streak || 0;
+  // Fetch recent achievements using React Query
+  const {
+    data: recentAchievementsData,
+    isLoading: loading,
+    error,
+  } = useQuery({
+    queryKey: ["recentAchievements", 4],
+    queryFn: () => achievementsApi.getRecentAchievements(4),
+  });
 
-  const achievements = [
-    {
-      title: "First Quest Complete",
-      desc: "Completed your very first quest",
-      icon: Target,
-      color: "text-green-400",
-      unlocked: level >= 1,
-    },
-    {
-      title: "Level Up!",
-      desc: `Reached level ${level}`,
-      icon: Star,
-      color: "text-amber-400",
-      unlocked: level >= 2,
-    },
-    {
-      title: "Daily Streak",
-      desc: `Maintained a ${streak} day streak`,
-      icon: Flame,
-      color: "text-orange-400",
-      unlocked: streak >= 3,
-    },
-    {
-      title: "Dedicated Adventurer",
-      desc: "Reached level 10",
-      icon: Award,
-      color: "text-purple-400",
-      unlocked: level >= 10,
-    },
-  ];
+  const recentAchievements = recentAchievementsData?.data || [];
 
   return (
     <motion.div
@@ -55,63 +58,78 @@ export const ProfileAchievements: React.FC<ProfileAchievementsProps> = ({
     >
       <Card className="bg-black/50 border border-zinc-800/50 h-full">
         <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-600 to-orange-600 flex items-center justify-center">
-              <Award className="h-5 w-5 text-white" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-600 to-orange-600 flex items-center justify-center">
+                <Award className="h-5 w-5 text-white" />
+              </div>
+              <h2 className="text-xl font-medieval text-white">
+                Recent Achievements
+              </h2>
             </div>
-            <h2 className="text-xl font-medieval text-white">
-              Recent Achievements
-            </h2>
+            <Link href="/achievements">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-zinc-400 hover:text-white"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
 
-          <div className="space-y-4">
-            {achievements.map((achievement, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 * index }}
-                className={cn(
-                  "flex items-center gap-4 p-3 rounded-lg border transition-all duration-300",
-                  achievement.unlocked
-                    ? "bg-zinc-900/50 border-zinc-800/30 hover:border-purple-500/30"
-                    : "bg-zinc-950/30 border-zinc-900/50 opacity-50"
-                )}
-              >
-                <div
-                  className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center",
-                    achievement.unlocked
-                      ? cn("bg-black/50", achievement.color)
-                      : "bg-zinc-800/50 text-zinc-600"
-                  )}
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <Trophy className="h-8 w-8 text-zinc-600 mx-auto mb-2" />
+              <p className="text-zinc-400 text-sm">
+                Failed to load achievements
+              </p>
+              <p className="text-zinc-500 text-xs mt-1">
+                Please try again later
+              </p>
+            </div>
+          ) : recentAchievements.length > 0 ? (
+            <div className="space-y-3">
+              {recentAchievements.map((achievement, index) => (
+                <motion.div
+                  key={achievement.achievementId}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.1 * index }}
                 >
-                  <achievement.icon className="w-4 h-4" />
-                </div>
-                <div className="flex-1">
-                  <h4
-                    className={cn(
-                      "font-semibold text-sm",
-                      achievement.unlocked ? "text-white" : "text-zinc-500"
-                    )}
-                  >
-                    {achievement.title}
-                  </h4>
-                  <p
-                    className={cn(
-                      "text-xs",
-                      achievement.unlocked ? "text-zinc-400" : "text-zinc-600"
-                    )}
-                  >
-                    {achievement.desc}
-                  </p>
-                </div>
-                {achievement.unlocked && (
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                )}
-              </motion.div>
-            ))}
-          </div>
+                  <AchievementCard
+                    achievementProgress={achievement}
+                    size="sm"
+                    showProgress={false}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Trophy className="h-8 w-8 text-zinc-600 mx-auto mb-2" />
+              <p className="text-zinc-400 text-sm">
+                No achievements unlocked yet
+              </p>
+              <p className="text-zinc-500 text-xs mt-1">
+                Complete quests to earn achievements!
+              </p>
+            </div>
+          )}
+
+          {recentAchievements.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-zinc-800/50">
+              <Link href="/achievements">
+                <Button variant="outline" size="sm" className="w-full">
+                  View All Achievements
+                </Button>
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>

@@ -16,6 +16,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { QuestCacheData } from "./quest-instance-item";
 import { QuestInstance } from "@questly/types";
+import { useAchievements } from "@/contexts/achievement-context";
 
 // Confetti component for celebration animation
 const Confetti = ({ visible }: { visible: boolean }) => {
@@ -124,6 +125,7 @@ const QuestCardActionButtons = ({
   onEditClick?: () => void;
 }) => {
   const queryClient = useQueryClient();
+  const { checkForNewAchievements, showAchievement } = useAchievements();
   const [showConfetti, setShowConfetti] = useState(false);
   const [celebrationVisible, setCelebrationVisible] = useState(false);
   const [xpAnimationActive, setXpAnimationActive] = useState(false);
@@ -237,13 +239,31 @@ const QuestCardActionButtons = ({
       queryClient.invalidateQueries({ queryKey: ["userStats"] });
       queryClient.invalidateQueries({ queryKey: ["questActivity"] });
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (data, variables) => {
       if (variables.completed) {
         toast.success("Quest completed! You earned XP!", {
           icon: <Trophy className="h-5 w-5 text-yellow-400" />,
           className:
             "bg-gradient-to-r from-green-900 to-emerald-800 border-green-600",
         });
+        
+        // Check if the backend returned achievements directly
+        if (data?.newAchievements && Array.isArray(data.newAchievements) && data.newAchievements.length > 0) {
+          // Show achievements from backend response
+          data.newAchievements.forEach((achievement: any, index: number) => {
+            // Add a small delay between achievements to avoid conflicts
+            setTimeout(() => {
+              showAchievement(achievement);
+            }, index * 100);
+          });
+        } else {
+          // Fallback: Check for new achievements via API call
+          try {
+            await checkForNewAchievements();
+          } catch (error) {
+            console.error("Error checking for achievements:", error);
+          }
+        }
       } else {
         toast.success("Quest marked as incomplete");
       }

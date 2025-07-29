@@ -25,6 +25,7 @@ import { Scroll, Sparkles } from "lucide-react";
 import { QuestFormFields } from "./quest-form-fields";
 import { DailyQuestForm } from "./daily-quest-form";
 import { AttachedQuestItem } from "./attached-quest-item";
+import { useAchievements } from "@/contexts/achievement-context";
 
 interface AddQuestDialogProps {
   open: boolean;
@@ -77,6 +78,7 @@ export function AddQuestDialog({
   }, []);
 
   const queryClient = useQueryClient();
+  const { checkForNewAchievements } = useAchievements();
 
   const handleAddDailyQuest = (quest: CreateQuestTemplate) => {
     setDailyQuests([...dailyQuests, quest]);
@@ -88,7 +90,7 @@ export function AddQuestDialog({
 
   const addMainQuestMutation = useMutation({
     mutationFn: mainQuestApi.addMainQuest,
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate main quests cache
       queryClient.invalidateQueries({ queryKey: ["mainQuests"] });
       // If there are attached quests associated with this main quest, invalidate related caches
@@ -97,6 +99,14 @@ export function AddQuestDialog({
         queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
       }
       toast.success("Main quest created successfully!");
+      
+      // Check for new achievements when main quest is created
+      try {
+        await checkForNewAchievements();
+      } catch (error) {
+        console.error("Error checking for achievements:", error);
+      }
+      
       onSuccess?.();
       onOpenChange(false);
       // Reset form

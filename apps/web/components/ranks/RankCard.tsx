@@ -42,16 +42,19 @@ export const RankCard: React.FC<RankCardProps> = ({
     )}
 
     <div
-      className={`relative bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-sm rounded-xl border-2 p-6 transition-all duration-300 ${
+      className={`relative backdrop-blur-sm rounded-xl border-2 p-6 transition-all duration-300 ${
         isUnlocked ? "hover:scale-105 hover:shadow-lg" : "opacity-60 grayscale"
       }`}
       style={{
+        background: isUnlocked 
+          ? `linear-gradient(135deg, ${rank.color}08, ${rank.color}03)`
+          : "linear-gradient(135deg, #64748b08, #64748b03)",
         borderColor: isCurrentRank
-          ? rank.color + "80"
+          ? rank.color + "60"
           : isUnlocked
-          ? rank.color + "30"
-          : "#64748b30",
-        boxShadow: isCurrentRank ? `0 0 25px ${rank.color}40` : undefined,
+          ? rank.color + "25"
+          : "#64748b25",
+        boxShadow: isCurrentRank ? `0 0 20px ${rank.color}30` : undefined,
       }}
     >
       {/* Rank Badge */}
@@ -60,9 +63,9 @@ export const RankCard: React.FC<RankCardProps> = ({
           className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
           style={{
             background: isUnlocked
-              ? `linear-gradient(135deg, ${rank.color}25, ${rank.color}08)`
-              : "linear-gradient(135deg, #64748b25, #64748b08)",
-            border: `2px solid ${isUnlocked ? rank.color + "50" : "#64748b50"}`,
+              ? `linear-gradient(135deg, ${rank.color}15, ${rank.color}05)`
+              : "linear-gradient(135deg, #64748b15, #64748b05)",
+            border: `2px solid ${isUnlocked ? rank.color + "30" : "#64748b30"}`,
           }}
         >
           {isUnlocked ? rank.icon : "🔒"}
@@ -72,8 +75,9 @@ export const RankCard: React.FC<RankCardProps> = ({
           <motion.div
             className="px-3 py-1 rounded-full text-sm font-bold"
             style={{
-              backgroundColor: rank.color,
-              color: "#000000",
+              backgroundColor: rank.color + "20",
+              color: rank.color,
+              border: `1px solid ${rank.color}40`,
             }}
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -97,9 +101,12 @@ export const RankCard: React.FC<RankCardProps> = ({
         {rank.name}
       </h3>
 
-      <div className="flex items-center gap-2 mb-3 text-sm text-zinc-400">
-        <Star className="w-4 h-4" />
-        <span>
+      <div className="flex items-center gap-2 mb-3 text-sm">
+        <Star 
+          className="w-4 h-4" 
+          style={{ color: isUnlocked ? rank.color + "80" : "#64748b" }}
+        />
+        <span style={{ color: isUnlocked ? rank.color + "CC" : "#94a3b8" }}>
           Level {rank.minLevel}
           {rank.maxLevel !== rank.minLevel && rank.maxLevel !== 999
             ? ` - ${rank.maxLevel}`
@@ -109,7 +116,12 @@ export const RankCard: React.FC<RankCardProps> = ({
         </span>
       </div>
 
-      <p className="text-sm text-zinc-300 leading-relaxed">{rank.description}</p>
+      <p 
+        className="text-sm leading-relaxed"
+        style={{ color: isUnlocked ? rank.color + "99" : "#a1a1aa" }}
+      >
+        {rank.description}
+      </p>
 
       {/* Unlock Status */}
       {!isUnlocked && (

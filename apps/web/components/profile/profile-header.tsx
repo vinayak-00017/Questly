@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { EditProfileDialog } from "./edit-profile-dialog";
+import { getPlayerRank } from "@questly/utils";
 
 interface ProfileHeaderProps {
   session: any;
@@ -27,16 +28,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const currentLevelXp = levelStats.currentLevelXp || 0;
   const xpForThisLevel = levelStats.xpForThisLevel || 100;
   const progressPercent = levelStats.progressPercent || 0;
-
-  // Character class based on level
-  const getCharacterClass = (level: number) => {
-    if (level >= 50) return "Legendary Hero";
-    if (level >= 30) return "Master Adventurer";
-    if (level >= 20) return "Veteran Explorer";
-    if (level >= 10) return "Skilled Wanderer";
-    if (level >= 5) return "Brave Novice";
-    return "New Adventurer";
-  };
 
   // Level color based on level range
   const getLevelColor = (level: number) => {
@@ -92,7 +83,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                       getLevelColor(level)
                     )}
                   >
-                    {getCharacterClass(level)}
+                    {getPlayerRank(level)}
                   </p>
                   <p className="text-zinc-400 text-sm mt-1">
                     Joined the realm on{" "}

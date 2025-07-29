@@ -11,6 +11,7 @@ import QueryProvider from "@/components/query-provider";
 import PullToRefresh from "@/components/pull-to-refresh";
 import { SidebarProvider } from "@/contexts/sidebar-context";
 import { AnonymousLoginProvider } from "@/components/anonymous-login-provider";
+import { AchievementProvider } from "@/contexts/achievement-context";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
@@ -27,6 +28,7 @@ const ebGaramond = EB_Garamond({
   variable: "--font-eb-garamond",
   subsets: ["latin"],
 });
+
 const medievalSharp = MedievalSharp({
   variable: "--font-medieval",
   subsets: ["latin"],
@@ -83,11 +85,13 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AnonymousLoginProvider>
-              <SidebarProvider>
-                <PullToRefresh />
-                {children}
-                <Toaster />
-              </SidebarProvider>
+              <AchievementProvider>
+                <SidebarProvider>
+                  <PullToRefresh />
+                  {children}
+                  <Toaster />
+                </SidebarProvider>
+              </AchievementProvider>
             </AnonymousLoginProvider>
           </QueryProvider>
         </ThemeProvider>

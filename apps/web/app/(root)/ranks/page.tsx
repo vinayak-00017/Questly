@@ -53,28 +53,28 @@ export default function RanksPage() {
   const nextRankData = allRanks[currentRankIndex + 1];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white">
       {/* Background Effects */}
       <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center opacity-5 [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] pointer-events-none" />
-      <div className="fixed inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/50 pointer-events-none" />
-      <div className="fixed inset-0 bg-gradient-to-br from-transparent via-slate-900/20 to-transparent pointer-events-none" />
+      <div className="fixed inset-0 bg-gradient-to-t from-zinc-900/90 via-transparent to-zinc-900/60 pointer-events-none" />
+      <div className="fixed inset-0 bg-gradient-to-br from-transparent via-zinc-800/20 to-transparent pointer-events-none" />
 
       <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Header */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h1 className="text-5xl font-bold font-medieval bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold font-medieval bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent mb-4">
             ⚔️ Adventurer Ranks ⚔️
           </h1>
-          <p className="text-xl text-zinc-300 max-w-2xl mx-auto">
+          <p className="text-lg text-zinc-300 max-w-4xl mx-auto">
             Ascend through the ranks of legend. Each rank represents your
             mastery and dedication to the quest.
           </p>
-        </motion.div>
+        </motion.div> */}
 
         {/* Current Rank Section */}
         <CurrentRankSection

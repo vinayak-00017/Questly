@@ -6,6 +6,7 @@ import { ListChecks, Check, X } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 import { Progress } from "../ui/progress";
+import { useAchievements } from "@/contexts/achievement-context";
 
 const QuestTasks = ({
   questInstanceId,
@@ -15,6 +16,7 @@ const QuestTasks = ({
   colorStyles: any;
 }) => {
   const queryClient = useQueryClient();
+  const { checkForNewAchievements } = useAchievements();
   const { data: taskData = { taskInstances: [] }, isLoading: isLoadingTasks } =
     useQuery({
       queryKey: ["taskInstances", questInstanceId],
@@ -66,12 +68,21 @@ const QuestTasks = ({
       }
       toast.error("Failed to update task");
     },
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
       // queryClient.invalidateQueries({
       //   queryKey: ["taskInstances", questInstanceId],
       // });
       // queryClient.invalidateQueries({ queryKey: ["questInstance"] });
       toast.success("Task updated");
+      
+      // Check for new achievements when task is completed
+      if (variables.completed) {
+        try {
+          await checkForNewAchievements();
+        } catch (error) {
+          console.error("Error checking for achievements:", error);
+        }
+      }
     },
   });
 

@@ -12,6 +12,7 @@ import questRouter from "./routes/quest";
 import mainQuestRouter from "./routes/main-quest";
 import instanceRouter from "./routes/instance";
 import userRouter from "./routes/user";
+import achievementsRouter from "./routes/achievements";
 import { initializeScheduler } from "../services/quest-scheduler";
 import { initXpScheduler } from "../services/xp-scheduler";
 import authRouter from "./routes/auth";
@@ -41,6 +42,7 @@ export const createServer = async (
     .use("/v1/instance", instanceRouter)
     .use("/v1/main-quest", mainQuestRouter)
     .use("/v1/user", userRouter)
+    .use("/v1/achievements", achievementsRouter)
     .use("/v1/auth", authRouter)
     .get("/v1/message/:name", (req, res) => {
       return res.json({ message: `hello ${req.params.name}` });
