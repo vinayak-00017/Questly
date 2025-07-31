@@ -74,26 +74,24 @@ const QuestProgressRing = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border border-zinc-800/50 rounded-lg p-4 relative overflow-hidden">
-      {/* Epic gradient background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 via-purple-600/5 to-amber-500/10 pointer-events-none" />
-
-      {/* Glowing border effect */}
-      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-amber-500/20 p-[1px]">
-        <div className="h-full w-full rounded-lg bg-gradient-to-br from-zinc-900 via-zinc-950 to-black" />
-      </div>
+    <div className="bg-gradient-to-br from-black via-zinc-900 to-zinc-950 border border-zinc-700/50 rounded-lg p-4 relative overflow-hidden">
+      {/* Subtle accent gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-600/5 via-transparent to-red-600/5 pointer-events-none" />
+      
+      {/* Top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-orange-500/40 via-red-500/40 to-orange-500/40"></div>
 
       <div className="relative z-10">
         {/* Header */}
         <div className="flex items-center gap-2 mb-4">
-          <div className="bg-gradient-to-br from-black/70 to-black/90 rounded-full flex items-center justify-center shadow-xl ring-2 ring-amber-500/30 w-8 h-8">
-            <Target className="text-amber-500 h-4 w-4" />
+          <div className="bg-gradient-to-br from-orange-500/20 to-red-600/20 rounded-full flex items-center justify-center shadow-lg border border-orange-400/30 w-8 h-8">
+            <Target className="text-orange-300 h-4 w-4" />
           </div>
           <div>
-            <h3 className="font-medieval font-bold text-white text-sm">
+            <h3 className="font-bold text-white text-sm">
               Today's Progress
             </h3>
-            <p className="text-amber-300/80 text-xs">
+            <p className="text-orange-200/70 text-xs">
               Quest completion by points
             </p>
           </div>
@@ -143,9 +141,9 @@ const QuestProgressRing = () => {
                   x2="100%"
                   y2="100%"
                 >
-                  <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.8" />
-                  <stop offset="50%" stopColor="#a855f7" stopOpacity="0.9" />
-                  <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.8" />
+                  <stop offset="0%" stopColor="#f97316" stopOpacity="0.8" />
+                  <stop offset="50%" stopColor="#dc2626" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#f97316" stopOpacity="0.8" />
                 </linearGradient>
               </defs>
             </svg>
@@ -171,20 +169,20 @@ const QuestProgressRing = () => {
         <div className="mt-4 space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="text-zinc-400 flex items-center gap-1">
-              <Trophy className="h-3 w-3 text-amber-500" />
+              <Trophy className="h-3 w-3 text-orange-400" />
               Completed
             </span>
-            <span className="text-amber-300 font-medium">
+            <span className="text-orange-300 font-medium">
               {progress.completedPoints || 0} pts
             </span>
           </div>
 
           <div className="flex items-center justify-between text-xs">
             <span className="text-zinc-400 flex items-center gap-1">
-              <Flame className="h-3 w-3 text-purple-500" />
+              <Flame className="h-3 w-3 text-red-400" />
               Total
             </span>
-            <span className="text-purple-300 font-medium">
+            <span className="text-red-300 font-medium">
               {progress.totalPoints || 0} pts
             </span>
           </div>
@@ -193,7 +191,7 @@ const QuestProgressRing = () => {
         {/* Progress indicator */}
         <div className="mt-3 h-1.5 bg-zinc-800/50 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-amber-500 to-purple-500"
+            className="h-full bg-gradient-to-r from-orange-500 to-red-500"
             style={{ width: `${progress.percentage}%` }}
             initial={{ width: 0 }}
             animate={{ width: `${progress.percentage}%` }}
@@ -213,13 +211,13 @@ const QuestProgressRing = () => {
               🎉 All quests completed!
             </motion.p>
           ) : progress.percentage >= 75 ? (
-            <p className="text-xs text-amber-300">
+            <p className="text-xs text-orange-300">
               Almost there! Keep going! 💪
             </p>
           ) : progress.percentage >= 50 ? (
-            <p className="text-xs text-purple-300">Great progress! 🚀</p>
+            <p className="text-xs text-red-300">Great progress! 🚀</p>
           ) : progress.percentage > 0 ? (
-            <p className="text-xs text-blue-300">Good start! ⚡</p>
+            <p className="text-xs text-orange-300">Good start! ⚡</p>
           ) : (
             <p className="text-xs text-zinc-400">
               Ready to begin your journey? 🌟
@@ -227,18 +225,6 @@ const QuestProgressRing = () => {
           )}
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes glow-pulse {
-          0%,
-          100% {
-            box-shadow: 0 0 5px rgba(251, 191, 36, 0.3);
-          }
-          50% {
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
-          }
-        }
-      `}</style>
     </div>
   );
 };

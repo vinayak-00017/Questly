@@ -9,6 +9,7 @@ import {
   Target,
   ChevronDown,
   ChevronUp,
+  SwordsIcon,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
@@ -109,31 +110,25 @@ const MainQuestCard = () => {
 
   return (
     <>
-      <Card className="w-full overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border-0 shadow-lg relative">
-        {/* Enhanced epic gradient background with better colors and animation */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-600/15 via-purple-600/10 to-amber-500/15 pointer-events-none" />
+      <Card className="w-full overflow-hidden bg-gradient-to-br from-black via-zinc-900 to-zinc-950 border border-blue-500/40 shadow-lg relative">
+        {/* Subtle accent gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-purple-600/5 pointer-events-none" />
 
-        {/* Animated light effect at the top */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500/50 via-purple-500/50 to-amber-500/50 glow-animation"></div>
-
-        {/* Corner decorations */}
-        <div className="absolute top-0 left-0 border-t-2 border-l-2 border-amber-500/30 rounded-tl-lg w-4 h-4"></div>
-        <div className="absolute top-0 right-0 border-t-2 border-r-2 border-amber-500/30 rounded-tr-lg w-4 h-4"></div>
-        <div className="absolute bottom-0 left-0 border-b-2 border-l-2 border-amber-500/30 rounded-bl-lg w-4 h-4"></div>
-        <div className="absolute bottom-0 right-0 border-b-2 border-r-2 border-amber-500/30 rounded-br-lg w-4 h-4"></div>
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500/60 via-purple-500/60 to-blue-500/60"></div>
 
         <div className="relative">
           <div className="flex w-full items-center justify-between px-3 pt-3 pb-2">
             <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-black/70 to-black/90 rounded-full flex items-center justify-center shadow-xl ring-2 ring-amber-500/30 pulse-glow w-10 h-10">
-                <Target className="text-amber-500 h-5 w-5" />
+              <div className="bg-gradient-to-br from-blue-500/30 to-purple-600/30 rounded-full flex items-center justify-center shadow-lg border border-blue-400/40 w-10 h-10">
+                <SwordsIcon className="text-blue-200 h-5 w-5" />
               </div>
               <div className="flex-1">
-                <CardTitle className="font-medieval font-bold text-white flex items-center gap-2 text-base">
+                <CardTitle className="font-bold text-white flex items-center gap-2 text-base">
                   Main Quests
-                  <Crown className="text-amber-400 h-4 w-4" />
+                  <Crown className="text-yellow-400 h-4 w-4" />
                 </CardTitle>
-                <CardDescription className="text-amber-300/80 mt-1 text-xs">
+                <CardDescription className="text-blue-200/80 mt-1 text-xs">
                   Epic long-term adventures
                 </CardDescription>
               </div>
@@ -141,7 +136,7 @@ const MainQuestCard = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="p-1 rounded-md hover:bg-amber-500/20 transition-colors text-amber-400"
+                className="p-1 rounded-md hover:bg-blue-500/20 transition-colors text-blue-300 hover:text-white border border-blue-500/30 hover:border-blue-400/50"
                 aria-label={isExpanded ? "Collapse" : "Expand"}
               >
                 {isExpanded ? (
@@ -175,27 +170,30 @@ const MainQuestCard = () => {
                       transition={{ duration: 0.3 }}
                       whileHover={{ scale: 1.01 }}
                     >
-                      <Card className="bg-gradient-to-br from-black/60 to-black/40 border border-amber-900/30 hover:border-amber-700/50 transition-all duration-300 cursor-pointer group shadow-lg overflow-hidden">
-                        <CardContent className="p-3">
+                      <Card className="bg-gradient-to-br from-black via-zinc-900 to-black-800 border border-blue-500/40 hover:border-purple-400/50 hover:shadow-lg transition-all duration-200 cursor-pointer group overflow-hidden relative">
+                        {/* Side accent line */}
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-500 group-hover:w-1.5 transition-all duration-200"></div>
+
+                        <CardContent className="p-3 relative">
                           <div className="flex items-start flex-col gap-2">
                             <div className="space-y-2 flex-1 w-full">
                               <div className="flex items-center gap-2">
-                                <div className="bg-black/40 rounded-full flex items-center justify-center shadow-md ring-1 ring-amber-500/30 w-5 h-5">
-                                  <Star className="text-amber-500 h-3 w-3" />
+                                <div className="bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full flex items-center justify-center border border-blue-400/30 w-5 h-5">
+                                  <Star className="text-blue-200 h-3 w-3" />
                                 </div>
-                                {/* Importance tag with dynamic styling */}
+                                {/* Importance tag with simplified styling */}
                                 {quest.importance && (
                                   <span
                                     className={cn(
-                                      "bg-gradient-to-r font-medieval uppercase rounded-md border shadow-inner tracking-wide text-xs px-2 py-0.5",
+                                      "bg-gradient-to-r border rounded-md tracking-wide text-xs px-2 py-0.5 font-medium uppercase",
                                       quest.importance === Legendary &&
-                                        "from-red-900/80 to-red-800/80 text-red-300 border-red-700/50 shadow-red-900/30",
+                                        "from-red-600/70 to-red-500/70 text-red-200 border-red-400/50",
                                       quest.importance === Heroic &&
-                                        "from-amber-900/80 to-amber-800/80 text-amber-300 border-amber-700/50 shadow-amber-900/30",
+                                        "from-orange-600/70 to-yellow-500/70 text-orange-200 border-orange-400/50",
                                       quest.importance === Rare &&
-                                        "from-blue-900/80 to-blue-800/80 text-blue-300 border-blue-700/50 shadow-blue-900/30",
+                                        "from-blue-600/70 to-cyan-500/70 text-blue-200 border-blue-400/50",
                                       quest.importance === Common &&
-                                        "from-green-900/80 to-green-800/80 text-green-300 border-green-700/50 shadow-green-900/30"
+                                        "from-green-600/70 to-emerald-500/70 text-green-200 border-green-400/50"
                                     )}
                                   >
                                     {quest.importance}
@@ -207,17 +205,17 @@ const MainQuestCard = () => {
                                 {quest.title}
                               </h3>
 
-                              {/* Timer section */}
+                              {/* Timer section - Enhanced contrast and visibility */}
                               {quest.dueDate && (
-                                <div className="bg-gradient-to-r from-black/80 to-zinc-900/80 rounded-lg border border-amber-900/30 p-2">
-                                  <div className="text-amber-300/90 mb-1 flex items-center gap-1.5 text-xs">
-                                    <Clock className="h-3 w-3" />
+                                <div className="bg-black rounded-lg border-2 border-blue-400/60 p-3 shadow-lg shadow-blue-500/10">
+                                  <div className="text-blue-300 mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+                                    <Clock className="h-4 w-4 text-blue-400" />
                                     <span>TIME LEFT</span>
                                   </div>
-                                  <div className="font-bold text-white text-sm">
+                                  <div className="font-bold text-white text-lg leading-tight">
                                     <CountdownTimer
                                       targetDate={new Date(quest.dueDate)}
-                                      className="text-white font-medieval"
+                                      className="text-white drop-shadow-lg"
                                     />
                                   </div>
                                 </div>
@@ -234,7 +232,7 @@ const MainQuestCard = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full bg-black/40 border-amber-800/50 hover:bg-black/60 hover:border-amber-600/50 text-white gap-2 text-sm transition-all py-2"
+                      className="w-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-400/40 hover:bg-gradient-to-r hover:from-blue-500/30 hover:to-purple-500/30 hover:border-blue-400/60 text-white gap-2 text-sm transition-all py-2"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push("/main-quests");
@@ -257,13 +255,13 @@ const MainQuestCard = () => {
 
           @keyframes pulse-glow {
             0% {
-              box-shadow: 0 0 5px rgba(251, 191, 36, 0.2);
+              box-shadow: 0 0 5px rgba(59, 130, 246, 0.2);
             }
             50% {
-              box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+              box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
             }
             100% {
-              box-shadow: 0 0 5px rgba(251, 191, 36, 0.2);
+              box-shadow: 0 0 5px rgba(59, 130, 246, 0.2);
             }
           }
 

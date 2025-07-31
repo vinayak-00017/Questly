@@ -6,7 +6,7 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { QuestInstance } from "@questly/types";
-import { Compass, Flame, LucideIcon, Plus } from "lucide-react";
+import { Compass, Flame, LucideIcon, Plus, ChevronUp, ChevronDown } from "lucide-react";
 
 import QuestInstanceItem from "./quest-instance-item";
 import { useQuestTheme } from "@/hooks/useQuestTheme";
@@ -79,6 +79,10 @@ const QuestCard: React.FC<QuestCardProps> = ({
       animationDelay: string;
     }>
   >([]);
+  
+  // Collapse/Expand all state
+  const [globalCollapseState, setGlobalCollapseState] = useState<'collapsed' | 'expanded' | null>(null);
+  const [areAllCollapsed, setAreAllCollapsed] = useState(true);
 
   // Generate particles on the client side only
   useEffect(() => {
@@ -138,8 +142,21 @@ const QuestCard: React.FC<QuestCardProps> = ({
   const CurrentAddDialog =
     selectedQuestType === "daily" ? AddDailyQuestDialog : AddSideQuestDialog;
 
+  // Handle toggle collapse/expand all
+  const handleToggleAll = () => {
+    if (areAllCollapsed) {
+      setGlobalCollapseState('expanded');
+      setAreAllCollapsed(false);
+    } else {
+      setGlobalCollapseState('collapsed');
+      setAreAllCollapsed(true);
+    }
+    // Reset after a brief moment to allow individual control again
+    setTimeout(() => setGlobalCollapseState(null), 100);
+  };
+
   return (
-    <Card className="w-full overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border-0 shadow-lg relative">
+    <Card className="w-full overflow-hidden bg-gradient-to-br from-zinc-800 via-zinc-850 to-zinc-900 border border-zinc-700/50 shadow-xl shadow-black/20 relative">
       {/* Enhanced background with animated effect */}
       <div
         className={`absolute inset-0 bg-gradient-to-br ${colorStyles.gradient} pointer-events-none`}
@@ -191,6 +208,34 @@ const QuestCard: React.FC<QuestCardProps> = ({
           </Button>
           }
         </div>
+        
+        {/* Collapse/Expand All Toggle */}
+        {sortedQuests.length > 0 && (
+          <div className="px-6 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-400">View:</span>
+              <Button
+                variant="ghost"
+                size="default"
+                onClick={handleToggleAll}
+                className="h-9 px-3 text-sm text-zinc-400 hover:text-white hover:bg-black/30 transition-colors"
+              >
+                {areAllCollapsed ? (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-2" />
+                    Expand All
+                  </>
+                ) : (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-2" />
+                    Collapse All
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+        
         <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           {sortedQuests.length > 0 ? (
             sortedQuests.map((quest: QuestInstance) => (
@@ -207,10 +252,11 @@ const QuestCard: React.FC<QuestCardProps> = ({
                 }
                 Icon={quest.type == "daily" ? Flame : Compass}
                 queryKey={queryKey}
+                globalCollapseState={globalCollapseState}
               />
             ))
           ) : (
-            <div className="col-span-2 p-8 text-center bg-black/20 rounded-lg border border-zinc-800/40">
+            <div className="col-span-2 p-8 text-center bg-zinc-800/30 rounded-lg border border-zinc-700/50 shadow-lg shadow-black/10">
               <EmptyIcon
                 className={`h-12 w-12 ${colorStyles.iconColor}/30 mx-auto mb-3`}
               />

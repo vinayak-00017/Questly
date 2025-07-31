@@ -11,9 +11,11 @@ import { useAchievements } from "@/contexts/achievement-context";
 const QuestTasks = ({
   questInstanceId,
   colorStyles,
+  isCollapsed = false,
 }: {
   questInstanceId: string;
   colorStyles: any;
+  isCollapsed?: boolean;
 }) => {
   const queryClient = useQueryClient();
   const { checkForNewAchievements } = useAchievements();
@@ -190,7 +192,7 @@ const QuestTasks = ({
 
           {/* Task list preview */}
           <ul className="space-y-1 list-none pl-1 mt-1">
-            {sortedTasks.map((task: TaskInstance) => (
+            {(isCollapsed ? sortedTasks.slice(0, 3) : sortedTasks).map((task: TaskInstance) => (
               <li
                 key={task.id}
                 className="group/task flex items-center gap-1.5 text-xs text-zinc-300 py-0.5 px-0.5 hover:bg-black/30 rounded cursor-pointer transition-colors w-full"
@@ -203,9 +205,11 @@ const QuestTasks = ({
                   });
                 }}
               >
-                {/* Task priority tag with fixed width */}
+                {/* Task priority tag with fixed width - smaller in collapsed view */}
                 <div
-                  className={`text-[10px] font-medium px-1.5 py-0.5 rounded-sm min-w-[52px] text-center ${
+                  className={`text-[10px] font-medium px-1.5 py-0.5 rounded-sm ${
+                    isCollapsed ? "min-w-[40px]" : "min-w-[52px]"
+                  } text-center ${
                     numberToTaskTag(Number(task.basePoints)) === "low"
                       ? "bg-slate-700/50 text-slate-300"
                       : numberToTaskTag(Number(task.basePoints)) === "medium"
@@ -215,12 +219,15 @@ const QuestTasks = ({
                           : "bg-rose-700/50 text-rose-300" // urgent
                   } flex-shrink-0`}
                 >
-                  {numberToTaskTag(Number(task.basePoints))
-                    ? numberToTaskTag(Number(task.basePoints))
-                        .charAt(0)
-                        .toUpperCase() +
-                      numberToTaskTag(Number(task.basePoints)).slice(1)
-                    : "Medium"}
+                  {isCollapsed 
+                    ? numberToTaskTag(Number(task.basePoints))?.charAt(0).toUpperCase() || "M"
+                    : (numberToTaskTag(Number(task.basePoints))
+                        ? numberToTaskTag(Number(task.basePoints))
+                            .charAt(0)
+                            .toUpperCase() +
+                          numberToTaskTag(Number(task.basePoints)).slice(1)
+                        : "Medium")
+                  }
                 </div>
 
                 {/* Custom checkbox with improved appearance */}
@@ -239,22 +246,30 @@ const QuestTasks = ({
                   {task.title}
                 </span>
 
-                {/* Delete button - appears on hover */}
-                <button
-                  className="ml-auto opacity-0 group-hover/task:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-500/20 rounded-sm flex-shrink-0"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent task completion toggle
-                    deleteTaskMutation.mutate({
-                      taskId: task.id,
-                      questInstanceId,
-                    });
-                  }}
-                  title="Delete task"
-                >
-                  <X className="h-3 w-3 text-red-400 hover:text-red-300" />
-                </button>
+                {/* Delete button - appears on hover, hidden in collapsed view */}
+                {!isCollapsed && (
+                  <button
+                    className="ml-auto opacity-0 group-hover/task:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-500/20 rounded-sm flex-shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent task completion toggle
+                      deleteTaskMutation.mutate({
+                        taskId: task.id,
+                        questInstanceId,
+                      });
+                    }}
+                    title="Delete task"
+                  >
+                    <X className="h-3 w-3 text-red-400 hover:text-red-300" />
+                  </button>
+                )}
               </li>
             ))}
+            {/* Show "and X more" indicator in collapsed view if there are more tasks */}
+            {isCollapsed && sortedTasks.length > 3 && (
+              <li className="text-xs text-zinc-500 italic px-0.5 py-0.5">
+                ... and {sortedTasks.length - 3} more task{sortedTasks.length - 3 !== 1 ? 's' : ''}
+              </li>
+            )}
           </ul>
         </div>
       )}

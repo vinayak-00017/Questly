@@ -114,6 +114,7 @@ const QuestCardActionButtons = ({
   expandedQuestId,
   toggleExpand,
   onEditClick,
+  isCollapsed = false,
 }: {
   displayCompleted: boolean;
   queryKey: string[];
@@ -123,6 +124,7 @@ const QuestCardActionButtons = ({
   expandedQuestId: string | null;
   toggleExpand: (questId: string) => void;
   onEditClick?: () => void;
+  isCollapsed?: boolean;
 }) => {
   const queryClient = useQueryClient();
   const { checkForNewAchievements, showAchievement } = useAchievements();
@@ -308,6 +310,71 @@ const QuestCardActionButtons = ({
     );
   };
 
+  // If in collapsed mode, show only the complete button
+  if (isCollapsed) {
+    return (
+      <div className="flex items-center gap-2 flex-shrink-0 relative">
+        {/* Celebration animations */}
+        <Confetti visible={showConfetti} />
+        <XpAnimation />
+
+        {celebrationVisible && (
+          <div className="absolute -top-1 -right-1 celebration-star">
+            <div className="relative">
+              <Sparkles className="h-5 w-5 text-yellow-300 animate-pulse" />
+            </div>
+            <style jsx>{`
+              .celebration-star {
+                animation: scale-in-out 1.5s ease forwards;
+              }
+              @keyframes scale-in-out {
+                0% {
+                  transform: scale(0) rotate(0deg);
+                  opacity: 0;
+                }
+                50% {
+                  transform: scale(1.2) rotate(180deg);
+                  opacity: 1;
+                }
+                100% {
+                  transform: scale(1) rotate(360deg);
+                  opacity: 0;
+                }
+              }
+            `}</style>
+          </div>
+        )}
+
+        {/* Complete quest button - smaller for collapsed view */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const nextCompletedStatus = !displayCompleted;
+            completeQuestMutation.mutate({
+              questInstanceId: quest.instanceId,
+              completed: nextCompletedStatus,
+            });
+          }}
+          className={cn(
+            "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg transform hover:scale-110 active:scale-95",
+            !displayCompleted
+              ? `bg-gradient-to-br from-black/60 to-black/80 ring-2 ${colorStyles.cornerBorder} hover:bg-zinc-800/60 hover:ring-2 hover:ring-white/20`
+              : "bg-gradient-to-br from-green-500/80 to-emerald-600/80 ring-2 ring-green-400/30 hover:from-green-400/80 hover:to-emerald-500/80"
+          )}
+          title={displayCompleted ? "Mark as incomplete" : "Mark as completed"}
+          aria-label={
+            displayCompleted ? "Mark as incomplete" : "Mark as completed"
+          }
+        >
+          <Check
+            className={`h-4 w-4 ${displayCompleted ? "text-white" : `text-zinc-400 ${colorStyles.iconHoverText}`}`}
+          />
+        </button>
+      </div>
+    );
+  }
+
+  // Full expanded view with all buttons
   return (
     <div className="flex flex-col items-center gap-3 flex-shrink-0 relative">
       {/* Celebration animations */}

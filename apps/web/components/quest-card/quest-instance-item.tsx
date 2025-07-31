@@ -1,9 +1,18 @@
 import { QuestInstance } from "@questly/types";
 
-import { LucideIcon, CalendarDays, Trophy, CheckCircle } from "lucide-react";
+import {
+  LucideIcon,
+  CalendarDays,
+  Trophy,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { numberToQuestTag } from "@questly/utils";
 
 import React, { useState, useEffect, memo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { taskApi } from "@/services/task-api";
 import { Card, CardContent } from "../ui/card";
 
 import QuestInstanceTaskArea from "./quest-instance-task-area";
@@ -24,19 +33,32 @@ const QuestInstanceItem = ({
   questTypeLabel,
   Icon,
   queryKey,
+  globalCollapseState,
 }: {
   quest: QuestInstance;
   colorStyles: any;
   questTypeLabel: string;
   Icon: LucideIcon;
   queryKey: string[];
+  globalCollapseState?: "collapsed" | "expanded" | null;
 }) => {
   const [expandedQuestId, setExpandedQuestId] = useState<string | null>(null);
   const [isQuestCompleted, setIsQuestCompleted] = useState(quest.completed);
   const [completionAnimation, setCompletionAnimation] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const displayCompleted = isQuestCompleted;
+
+  // Check if quest has tasks to determine if it should be collapsed by default
+  const { data: taskData } = useQuery({
+    queryKey: ["taskInstances", quest.instanceId],
+    queryFn: () => taskApi.fetchTasks({ questInstanceId: quest.instanceId }),
+    enabled: !!quest.instanceId,
+  });
+
+  const hasTasks = taskData?.taskInstances?.length > 0;
+  const shouldShowCollapsed = isCollapsed;
 
   // Track completion state changes for animations
   useEffect(() => {
@@ -49,6 +71,15 @@ const QuestInstanceItem = ({
     }
   }, [quest.completed]);
 
+  // Handle global collapse/expand state
+  useEffect(() => {
+    if (globalCollapseState === "collapsed") {
+      setIsCollapsed(true);
+    } else if (globalCollapseState === "expanded") {
+      setIsCollapsed(false);
+    }
+  }, [globalCollapseState]);
+
   // Toggle quest expansion
   const toggleExpand = (questId: string) => {
     setExpandedQuestId(expandedQuestId === questId ? null : questId);
@@ -59,6 +90,220 @@ const QuestInstanceItem = ({
     setIsEditDialogOpen(true);
   };
 
+  // Toggle collapsed state
+  const toggleCollapsed = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  // Collapsed stub view
+  if (shouldShowCollapsed) {
+    return (
+      <>
+        <div key={quest.instanceId} className="flex flex-col group relative">
+          {/* Success overlay animation */}
+          {completionAnimation && (
+            <div className="absolute inset-0 bg-green-500/10 z-10 rounded-lg success-pulse" />
+          )}
+
+          <Card
+            className={cn(
+              "bg-gradient-to-br border shadow-lg shadow-black/10 transition-all duration-200 cursor-pointer relative overflow-hidden",
+              displayCompleted
+                ? "from-black/30 to-black/50 border-green-500/40"
+                : "from-black/40 to-black/60 border-zinc-700/60",
+              colorStyles.cardHoverBorder,
+              displayCompleted && "completed-quest"
+            )}
+            onClick={toggleCollapsed}
+          >
+            {/* Status indicator - enhanced */}
+            {displayCompleted && (
+              <div className="absolute top-0 right-0 w-full h-1.5 bg-green-500/50 completion-indicator">
+                <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-green-400/80 to-emerald-500/80 shimmer"></div>
+              </div>
+            )}
+
+            {/* Status badge */}
+            {displayCompleted && (
+              <div
+                className={`
+                absolute top-2 right-2 px-2 py-0.5 rounded-full 
+                text-xs font-medium border shadow-glow z-10
+                bg-gradient-to-r from-green-600/50 to-emerald-500/50
+                text-white border-green-400/50 flex items-center gap-1
+                animate-pulse-subtle
+              `}
+              >
+                <CheckCircle className="h-3 w-3" />
+                <span>Completed</span>
+              </div>
+            )}
+
+            <CardContent className="p-4">
+              {/* Single row layout */}
+              <div className="flex items-center gap-3">
+                {/* Left side - Icon and quest info */}
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div
+                    className={`h-8 w-8 rounded-full flex items-center justify-center ring-1 ${
+                      displayCompleted
+                        ? "bg-green-900/40 ring-green-500/50"
+                        : `bg-black/40 ${colorStyles.iconBg}`
+                    }`}
+                  >
+                    <Icon
+                      className={`h-4 w-4 ${
+                        displayCompleted
+                          ? "text-green-400"
+                          : colorStyles.iconColor
+                      }`}
+                    />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {/* Quest priority tag - balanced visibility */}
+                      <span
+                        className={`px-1.5 py-0.5 rounded-md text-xs font-medium uppercase tracking-wide flex items-center gap-1 bg-zinc-800/50 ${
+                          numberToQuestTag(Number(quest.basePoints)) ===
+                          "optional"
+                            ? "text-slate-200"
+                            : numberToQuestTag(Number(quest.basePoints)) ===
+                                "minor"
+                              ? "text-blue-200"
+                              : numberToQuestTag(Number(quest.basePoints)) ===
+                                  "standard"
+                                ? "text-emerald-200"
+                                : numberToQuestTag(Number(quest.basePoints)) ===
+                                    "important"
+                                  ? "text-amber-200"
+                                  : "text-rose-200"
+                        } ${displayCompleted ? "opacity-70" : ""}`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            numberToQuestTag(Number(quest.basePoints)) ===
+                            "optional"
+                              ? "bg-slate-400"
+                              : numberToQuestTag(Number(quest.basePoints)) ===
+                                  "minor"
+                                ? "bg-blue-400"
+                                : numberToQuestTag(Number(quest.basePoints)) ===
+                                    "standard"
+                                  ? "bg-emerald-400"
+                                  : numberToQuestTag(
+                                        Number(quest.basePoints)
+                                      ) === "important"
+                                    ? "bg-amber-400"
+                                    : "bg-rose-400"
+                          }`}
+                        ></span>
+                        {numberToQuestTag(Number(quest.basePoints))}
+                      </span>
+
+                      {/* Task count indicator */}
+                      {hasTasks && (
+                        <span className="text-xs text-zinc-400 bg-zinc-800/50 px-1.5 py-0.5 rounded">
+                          {taskData?.taskInstances?.length} task
+                          {taskData?.taskInstances?.length !== 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3
+                      className={`${
+                        displayCompleted ? "text-green-300/80" : "text-white"
+                      } font-bold text-xl truncate leading-tight`}
+                    >
+                      {quest.title}
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Center - XP display */}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <div
+                    className={`${
+                      displayCompleted ? "text-green-400" : colorStyles.xpColor
+                    } text-sm font-medium flex items-center gap-1.5`}
+                  >
+                    <Trophy className="h-4 w-4" />
+                    <span>+{quest.xpReward}</span>
+                  </div>
+
+                  <ChevronDown className="h-4 w-4 text-zinc-400 hover:text-white transition-colors" />
+                </div>
+
+                {/* Far right - Complete quest button */}
+                <div className="flex-shrink-0">
+                  <QuestCardActionButtons
+                    displayCompleted={displayCompleted}
+                    queryKey={queryKey}
+                    setIsQuestCompleted={setIsQuestCompleted}
+                    colorStyles={colorStyles}
+                    quest={quest}
+                    expandedQuestId={expandedQuestId}
+                    toggleExpand={toggleExpand}
+                    onEditClick={handleEditClick}
+                    isCollapsed={true}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Animation styles */}
+          <style jsx>{`
+            .completed-quest {
+              transform: scale(0.98);
+            }
+            .success-pulse {
+              animation: pulse-success 2s ease-in-out;
+            }
+            .completion-indicator {
+              position: relative;
+              overflow: hidden;
+            }
+            .progress-animation {
+              animation: slide-in 1.5s ease-out;
+            }
+            .shadow-glow {
+              box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+            }
+            @keyframes pulse-success {
+              0% {
+                opacity: 0;
+              }
+              10% {
+                opacity: 0.7;
+              }
+              100% {
+                opacity: 0;
+              }
+            }
+            @keyframes slide-in {
+              0% {
+                transform: translateX(-100%);
+              }
+              100% {
+                transform: translateX(0);
+              }
+            }
+          `}</style>
+        </div>
+
+        {/* Edit Quest Instance Dialog */}
+        <EditQuestInstanceDialog
+          questInstance={quest}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          queryKey={queryKey}
+        />
+      </>
+    );
+  }
+
+  // Full expanded view (original layout)
   return (
     <>
       <div key={quest.instanceId} className="flex flex-col group relative">
@@ -69,7 +314,7 @@ const QuestInstanceItem = ({
 
         <Card
           className={cn(
-            "bg-gradient-to-br border transition-all duration-500 cursor-pointer relative overflow-hidden hover-glow",
+            "bg-gradient-to-br border transition-all duration-500 cursor-pointer relative overflow-hidden hover-glow shadow-lg shadow-black/10",
             displayCompleted
               ? "from-black/30 to-black/50 border-green-500/40"
               : "from-black/40 to-black/60 border-zinc-700/60",
@@ -77,6 +322,20 @@ const QuestInstanceItem = ({
             displayCompleted && "completed-quest"
           )}
         >
+          {/* Collapse button for all quests */}
+          {!displayCompleted && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleCollapsed();
+              }}
+              className="absolute top-2 left-2 z-20 p-1 rounded-md hover:bg-black/30 transition-colors text-zinc-400 hover:text-white"
+              title="Collapse quest"
+            >
+              <ChevronUp className="h-6 w-6" />
+            </button>
+          )}
+
           {/* Status indicator - enhanced */}
           {displayCompleted && (
             <div className="absolute top-0 right-0 w-full h-1.5 bg-green-500/50 completion-indicator">
@@ -141,7 +400,12 @@ const QuestInstanceItem = ({
             }`}
           ></div>
 
-          <CardContent className="p-5 flex items-start gap-4 relative">
+          <CardContent
+            className={cn(
+              "flex items-start gap-4 relative",
+              !hasTasks ? "p-3" : "p-5"
+            )}
+          >
             {/* Left content area */}
             <div className="space-y-3 flex-1">
               {/* Header with type and title */}
@@ -211,9 +475,9 @@ const QuestInstanceItem = ({
                   </span>
                 </div>
                 <h3
-                  className={`${
+                  className={`$
                     displayCompleted ? "text-green-300/80" : "text-white/90"
-                  } font-medium text-base leading-tight transition-colors`}
+                  } font-medium text-base leading-tight transition-colors max-w-xs break-words`}
                 >
                   {quest.title}
                 </h3>
