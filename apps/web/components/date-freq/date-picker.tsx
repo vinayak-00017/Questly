@@ -54,6 +54,7 @@ export function DatePicker({ date, onSelect, className }: DatePickerProps) {
                 onSelect(date);
                 setIsOpen(false);
               }}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
               initialFocus
               className="rounded-md"
             />

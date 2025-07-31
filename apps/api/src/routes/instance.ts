@@ -24,7 +24,7 @@ router.post(
       const today = getTodayMidnight(userTimezone);
 
       // Get all active templates for this user
-      const activeTemplates = await db
+      const allActiveTemplates = await db
         .select()
         .from(questTemplate)
         .where(
@@ -33,6 +33,12 @@ router.post(
             eq(questTemplate.isActive, true)
           )
         );
+
+      // Filter out templates whose dueDate (in user's timezone) is before today
+      const activeTemplates = allActiveTemplates.filter((template) => {
+        if (!template.dueDate) return true;
+        return template.dueDate > today;
+      });
 
       // Filter templates based on recurrence rules
       const templatesForToday = activeTemplates.filter((template) => {
@@ -78,6 +84,8 @@ router.post(
         templateId: template.id,
         title: template.title,
         description: template.description,
+        type: template.type,
+        parenQuestId: template.parentQuestId || null,
         userId,
         date: localDateString,
         completed: false,

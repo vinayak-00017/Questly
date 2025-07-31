@@ -245,6 +245,9 @@ export function RecurrencePicker({
                 onSelect={onDateSelect}
                 initialFocus
                 className="rounded-md bg-zinc-800"
+                disabled={(date) =>
+                  date < new Date(new Date().setHours(0, 0, 0, 0))
+                }
               />
             </TabsContent>
           </Tabs>

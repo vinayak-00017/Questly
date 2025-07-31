@@ -1,5 +1,5 @@
 {
-  "id": "2ac3d31d-7a6a-44e7-af86-28d3e239c1f1",
+  "id": "145a5e8a-6e2a-4a14-9fe7-0d791f18ec26",
   "prevId": "d8215257-9e7f-4616-b49d-1bcee38bb4ad",
   "version": "7",
   "dialect": "postgresql",
@@ -282,6 +282,19 @@
           "primaryKey": false,
           "notNull": true
         },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'daily'"
+        },
+        "parent_quest_id": {
+          "name": "parent_quest_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "completed": {
           "name": "completed",
           "type": "boolean",
@@ -455,7 +468,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         },
         "quest_instance_user_id_user_id_fk": {
@@ -468,7 +481,20 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "quest_instance_parent_quest_id_main_quest_id_fk": {
+          "name": "quest_instance_parent_quest_id_main_quest_id_fk",
+          "tableFrom": "quest_instance",
+          "tableTo": "main_quest",
+          "columnsFrom": [
+            "parent_quest_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },

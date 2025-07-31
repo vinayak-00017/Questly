@@ -265,9 +265,6 @@ async function calculateXpForAllUsersWhoNeedIt() {
           );
         }
       }
-      console.log(
-        `🔥 Updated streaks for ${streaksUpdated} users on server restart`
-      );
     }
   } catch (error) {
     console.error("Error calculating XP for all users who need it:", error);
@@ -393,9 +390,6 @@ export function initXpScheduler() {
             );
           }
         }
-        console.log(
-          `🔥 Updated streaks for ${streaksUpdated} users on server restart`
-        );
       }
     } catch (error) {
       console.error("Error in XP scheduler initialization check:", error);

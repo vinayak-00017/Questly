@@ -150,7 +150,7 @@ export class QuestInstanceController {
           templateId: questInstance.templateId,
           title: questInstance.title,
           description: questInstance.description,
-          type: questTemplate.type,
+          type: questInstance.type,
           basePoints: questInstance.basePoints,
           updatedAt: questInstance.updatedAt,
           completed: questInstance.completed,
@@ -158,10 +158,6 @@ export class QuestInstanceController {
           date: questInstance.date,
         })
         .from(questInstance)
-        .innerJoin(
-          questTemplate,
-          eq(questInstance.templateId, questTemplate.id)
-        )
         .where(
           and(
             eq(questInstance.userId, userId),

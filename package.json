@@ -16,6 +16,8 @@
     "check-types": "turbo run check-types",
     "db:migrate": "cd apps/api && pnpm db:migrate",
     "db:seed": "cd apps/api && pnpm db:seed",
+    "db:drop": "cd apps/api && pnpm db:drop",
+    "db:check": "cd apps/api && pnpm db:check",
     "db:push": "cd apps/api && pnpm db:push",
     "db:generate": "cd apps/api && pnpm db:generate",
     "pm2:start": "pm2 start ecosystem.config.js",

@@ -167,12 +167,16 @@ export const questInstance = pgTable(
   "quest_instance",
   {
     id: text("id").primaryKey(),
-    templateId: text("template_id").references(() => questTemplate.id),
+    templateId: text("template_id").references(() => questTemplate.id, {
+      onDelete: "set null",
+    }),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => user.id, { onDelete: "set null" }),
 
     date: date("date").notNull(),
+    type: text("type").$type<"daily" | "side">().default("daily").notNull(),
+    parentQuestId: text("parent_quest_id").references(() => mainQuest.id),
     completed: boolean("completed").default(false).notNull(),
     title: text("title").notNull(),
     description: text("description"),

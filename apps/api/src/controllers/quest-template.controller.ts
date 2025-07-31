@@ -79,7 +79,10 @@ export class QuestTemplateController {
         .update(questTemplate)
         .set(updatedFields)
         .where(
-          and(eq(questTemplate.id, templateId), eq(questTemplate.userId, userId))
+          and(
+            eq(questTemplate.id, templateId),
+            eq(questTemplate.userId, userId)
+          )
         );
 
       res.status(200).json({ message: "Quest template updated successfully" });
@@ -100,7 +103,10 @@ export class QuestTemplateController {
       await db
         .delete(questTemplate)
         .where(
-          and(eq(questTemplate.id, templateId), eq(questTemplate.userId, userId))
+          and(
+            eq(questTemplate.id, templateId),
+            eq(questTemplate.userId, userId)
+          )
         );
 
       res.status(200).json({ message: "Quest template deleted successfully" });
@@ -168,6 +174,11 @@ export class QuestTemplateController {
         // or if no recurrence rule (one-time quest)
         const today = getTodayMidnight(userTimezone);
 
+        // Do not create instance if due date is before today
+        if (dueDateObj && dueDateObj < today) {
+          return;
+        }
+
         // If no recurrence rule or rule matches today, create an instance
         if (
           doesRRuleMatchDate(recurrenceRule, today) ||
@@ -179,6 +190,8 @@ export class QuestTemplateController {
             id: questInstanceId,
             templateId: newQuest.id,
             userId,
+            type,
+            parentQuestId: parentQuestId || null,
             date: toLocalDbDate(today, userTimezone),
             completed: false,
             title,
@@ -190,7 +203,9 @@ export class QuestTemplateController {
         }
       });
 
-      res.status(200).json({ message: "Quest added successfully with instance" });
+      res
+        .status(200)
+        .json({ message: "Quest added successfully with instance" });
     } catch (err) {
       console.error("Error adding quest", err);
       res.status(500).json({ message: "failed adding Quest" });
