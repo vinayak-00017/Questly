@@ -195,46 +195,46 @@ const QuestCard: React.FC<QuestCardProps> = ({
               </CardDescription>
             </div>
           </div>
-          {type === "today" &&
-
-          <Button
-            variant="outline"
-            size="sm"
-            className={`bg-black/30 ${colorStyles.buttonBorder} hover:bg-black/50 text-white gap-1.5 text-sm ${colorStyles.hoverBorder} transition-all duration-300`}
-            onClick={handleAddQuest}
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Quest</span>
-          </Button>
-          }
-        </div>
-        
-        {/* Collapse/Expand All Toggle */}
-        {sortedQuests.length > 0 && (
-          <div className="px-6 pb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-400">View:</span>
+          
+          <div className="flex items-center gap-3">
+            {/* Collapse/Expand All Toggle */}
+            {sortedQuests.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-400">View:</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleToggleAll}
+                  className="h-8 px-2 text-xs text-zinc-400 hover:text-white hover:bg-black/30 transition-colors"
+                >
+                  {areAllCollapsed ? (
+                    <>
+                      <ChevronDown className="h-3 w-3 mr-1" />
+                      Expand All
+                    </>
+                  ) : (
+                    <>
+                      <ChevronUp className="h-3 w-3 mr-1" />
+                      Collapse All
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+            
+            {type === "today" && (
               <Button
-                variant="ghost"
-                size="default"
-                onClick={handleToggleAll}
-                className="h-9 px-3 text-sm text-zinc-400 hover:text-white hover:bg-black/30 transition-colors"
+                variant="outline"
+                size="sm"
+                className={`bg-black/30 ${colorStyles.buttonBorder} hover:bg-black/50 text-white gap-1.5 text-sm ${colorStyles.hoverBorder} transition-all duration-300`}
+                onClick={handleAddQuest}
               >
-                {areAllCollapsed ? (
-                  <>
-                    <ChevronDown className="h-4 w-4 mr-2" />
-                    Expand All
-                  </>
-                ) : (
-                  <>
-                    <ChevronUp className="h-4 w-4 mr-2" />
-                    Collapse All
-                  </>
-                )}
+                <Plus className="h-4 w-4" />
+                <span>Add Quest</span>
               </Button>
-            </div>
+            )}
           </div>
-        )}
+        </div>
         
         <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           {sortedQuests.length > 0 ? (
