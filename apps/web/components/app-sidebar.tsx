@@ -4,15 +4,9 @@ import { Sidebar, SidebarBody, SidebarLink, useSidebar } from "./ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
   IconArrowLeft,
-  IconBrandTabler,
-  IconSettings,
   IconUserBolt,
-  IconNews,
-  IconSword,
   IconScript,
   IconSwords,
-  IconFlame,
-  IconCompass,
   IconAdjustmentsAlt,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
@@ -88,10 +82,7 @@ export function AppSidebar() {
     <Sidebar open={open} setOpen={setOpen} animate={true}>
       <SidebarBody className="justify-between gap-10">
         <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-          <>
-            <Logo />
-          </>
-          <div className="mt-6 flex flex-col gap-1">
+          <div className="flex flex-col gap-1">
             {links.map((link, idx) => (
               <SidebarLink key={idx} link={link} />
             ))}
@@ -157,6 +148,11 @@ export function AppSidebar() {
               </span>
             )}
           </button>
+
+          {/* Logo moved to bottom */}
+          <div className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700">
+            <Logo />
+          </div>
         </div>
       </SidebarBody>
     </Sidebar>
@@ -173,7 +169,7 @@ export const Logo = () => {
       )}
     >
       <Image
-        className={cn(open ? "h-12 w-12" : "h-8 w-8")}
+        className={cn(open ? "h-10 w-10" : "h-8 w-8")}
         width={50}
         height={50}
         src={"/q_tp.png"}

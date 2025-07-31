@@ -10,6 +10,7 @@ import { StreakCounter } from "./topbar/streak-counter";
 import { RankDisplay } from "./topbar/rank-display";
 import { TimezoneIndicator } from "./topbar/timezone-indicator";
 import { useTopbarData } from "./topbar/hooks/use-topbar-data";
+import Image from "next/image";
 
 export default function AppTopbar({ className }: { className?: string }) {
   const router = useRouter();
@@ -31,25 +32,38 @@ export default function AppTopbar({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "top-0 inset-x-0 z-50 backdrop-blur-sm border-b border-zinc-800/50",
+        "fixed top-0 inset-x-0 z-50 backdrop-blur-sm border-b border-zinc-800/50 bg-white/80 dark:bg-neutral-900/80",
         className
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-        {/* Left Section: Logo and Navigation */}
+      <div className="flex items-center justify-between h-16 px-4">
+        {/* Left Section: Logo and User Info */}
         <div className="flex items-center gap-6">
+          <a href="/" className="flex items-center">
+            <Image
+              className="h-8 w-8"
+              width={50}
+              height={50}
+              src={"/q_tp.png"}
+              alt="questly"
+            />
+          </a>
+
           <UserAvatar
             session={session}
             userStats={userStats}
             onClick={() => router.push("/profile")}
           />
-          
+
           {/* XP Progress - Only visible on medium screens and up */}
           {session && (
             <div className="hidden md:flex items-center gap-3">
               <XpProgress userStats={userStats} />
               <TodaysXpCounter userStats={userStats} />
-              <StreakCounter userStats={userStats} streakDisplay={streakDisplay} />
+              <StreakCounter
+                userStats={userStats}
+                streakDisplay={streakDisplay}
+              />
               <RankDisplay
                 rank={rank}
                 rankIcon={rankIcon}
@@ -65,7 +79,7 @@ export default function AppTopbar({ className }: { className?: string }) {
         {/* Right Section: User Info and Profile */}
         <div className="flex items-center gap-3">
           {session && <TimezoneIndicator userStats={userStats} />}
-          
+
           {!session && (
             <Button
               onClick={handleSignUp}

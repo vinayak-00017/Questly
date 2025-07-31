@@ -83,11 +83,11 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "quest_grandmaster",
     name: "Eternal Champion",
-    description: "Complete 250 quests.",
+    description: "Complete 1000 quests.",
     icon: "crown",
     category: "Quest Completion",
     importance: "legendary",
-    criteria: { type: "quest_completed", value: 250 },
+    criteria: { type: "quest_completed", value: 1000 },
   },
 
   // XP Achievements
@@ -335,26 +335,26 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
 
   // Special/Hidden Achievements
-  {
-    id: "early_bird",
-    name: "Early Bird",
-    description: "Complete a quest before 6 AM.",
-    icon: "star",
-    category: "Special",
-    importance: "rare",
-    criteria: { type: "early_completion", value: 1 },
-    hidden: true,
-  },
-  {
-    id: "night_owl",
-    name: "Night Owl",
-    description: "Complete a quest after 11 PM.",
-    icon: "star",
-    category: "Special",
-    importance: "rare",
-    criteria: { type: "late_completion", value: 1 },
-    hidden: true,
-  },
+  // {
+  //   id: "early_bird",
+  //   name: "Early Bird",
+  //   description: "Complete a quest before 6 AM.",
+  //   icon: "star",
+  //   category: "Special",
+  //   importance: "rare",
+  //   criteria: { type: "early_completion", value: 1 },
+  //   hidden: true,
+  // },
+  // {
+  //   id: "night_owl",
+  //   name: "Night Owl",
+  //   description: "Complete a quest after 11 PM.",
+  //   icon: "star",
+  //   category: "Special",
+  //   importance: "rare",
+  //   criteria: { type: "late_completion", value: 1 },
+  //   hidden: true,
+  // },
   {
     id: "perfectionist",
     name: "Perfectionist",
