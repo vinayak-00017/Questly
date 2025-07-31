@@ -37,7 +37,7 @@ router.post(
       // Filter out templates whose dueDate (in user's timezone) is before today
       const activeTemplates = allActiveTemplates.filter((template) => {
         if (!template.dueDate) return true;
-        return template.dueDate > today;
+        return template.dueDate >= today;
       });
 
       // Filter templates based on recurrence rules
@@ -85,7 +85,7 @@ router.post(
         title: template.title,
         description: template.description,
         type: template.type,
-        parenQuestId: template.parentQuestId || null,
+        parentQuestId: template.parentQuestId || null,
         userId,
         date: localDateString,
         completed: false,
