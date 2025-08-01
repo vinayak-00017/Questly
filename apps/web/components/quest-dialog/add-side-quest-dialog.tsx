@@ -3,6 +3,8 @@
 import { Compass, Map, CalendarDays } from "lucide-react";
 import { BaseQuestDialog } from "../base-quest-dialog";
 import { RecurrencePicker } from "../date-freq/recurrence-picker";
+import { useTopbarData } from "../topbar/hooks/use-topbar-data";
+import { getTodayMidnight } from "@questly/utils";
 
 interface AddSideQuestDialogProps {
   open: boolean;
@@ -15,6 +17,8 @@ export function AddSideQuestDialog({
   onOpenChange,
   onSuccess,
 }: AddSideQuestDialogProps) {
+  const { userStats } = useTopbarData();
+  const userTimezone = userStats.timezone;
   return (
     <BaseQuestDialog
       open={open}
@@ -34,25 +38,16 @@ export function AddSideQuestDialog({
         // Since RecurrencePicker requires separate handlers for date and recurrence rule,
         // we use a composite state object for value
         const currentRecurrence = value?.recurrenceRule || undefined;
-        const currentDate =
-          value?.date ||
-          (!currentRecurrence || currentRecurrence === "once"
-            ? new Date()
-            : null);
+        const currentDate = value?.date || undefined;
+        const { userStats } = useTopbarData();
+        const userTimezone = userStats.timezone;
 
         if (!value) {
-          // Set initial default value on component mount
+          // Set initial default value on component mount - once with today's date
           setTimeout(() => {
             onChange({
-              date:
-                !currentRecurrence || currentRecurrence === "once"
-                  ? (() => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      return today;
-                    })()
-                  : null,
-              recurrenceRule: currentRecurrence,
+              date: getTodayMidnight(userTimezone),
+              recurrenceRule: undefined,
             });
           }, 0);
         }

@@ -148,6 +148,13 @@
       "when": 1753926489554,
       "tag": "0020_romantic_leo",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1754018763645,
+      "tag": "0021_special_swordsman",
+      "breakpoints": true
     }
   ]
 }

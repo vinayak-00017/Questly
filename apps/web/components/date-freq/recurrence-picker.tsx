@@ -3,15 +3,25 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, RefreshCwIcon } from "lucide-react";
-import { format } from "date-fns";
+import {
+  CalendarIcon,
+  ClockIcon,
+  RepeatIcon,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { format, addMonths, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import {
   Tooltip,
@@ -53,7 +63,7 @@ export function RecurrencePicker({
   const [selectedDatesOfMonth, setSelectedDatesOfMonth] = useState<number[]>(
     []
   );
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [calendarMonth, setCalendarMonth] = useState<Date>(date || new Date());
 
   // When recurrenceRule changes externally, update the local state
   useEffect(() => {
@@ -93,6 +103,13 @@ export function RecurrencePicker({
       }
     }
   }, [recurrenceRule]);
+
+  // Update calendar month when date changes
+  useEffect(() => {
+    if (date) {
+      setCalendarMonth(date);
+    }
+  }, [date]);
 
   // Update the recurrence rule when settings change
   const updateRecurrenceRule = () => {
@@ -142,117 +159,240 @@ export function RecurrencePicker({
     updateRecurrenceRule();
   }, [frequency, selectedDays, selectedDatesOfMonth]);
 
+  // Month navigation handlers
+  const goToPreviousMonth = () => {
+    setCalendarMonth((prev) => subMonths(prev, 1));
+  };
+
+  const goToNextMonth = () => {
+    setCalendarMonth((prev) => addMonths(prev, 1));
+  };
+
   return (
     <TooltipProvider delayDuration={200}>
-      <Popover
-        open={isOpen}
-        onOpenChange={(value) => {
-          if (isOpen !== value) {
-            setIsOpen(value);
-          }
-        }}
-      >
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <Tooltip>
-          <PopoverTrigger asChild>
+          <DialogTrigger asChild>
             <TooltipTrigger asChild>
               <Button
-                ref={buttonRef}
                 variant="outline"
                 className={cn(
-                  "w-[220px] justify-start text-left font-normal",
-                  "bg-zinc-800/50 border-zinc-700 text-white hover:bg-zinc-700/50",
-                  "transition-colors duration-200",
+                  "w-[320px] justify-start text-left font-normal group relative overflow-hidden",
+                  "bg-gradient-to-r from-zinc-900/90 to-zinc-800/90 border-zinc-600/80 text-white",
+                  "hover:from-zinc-800/90 hover:to-zinc-700/90 hover:border-purple-500/50",
+                  "transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-purple-500/10",
+                  "backdrop-blur-sm border-2",
+                  recurrenceRule &&
+                    "border-purple-500/30 bg-gradient-to-r from-purple-900/20 to-zinc-900/90",
                   className
                 )}
               >
-                <div className="flex items-center w-full overflow-hidden">
-                  {recurrenceRule ? (
-                    <RefreshCwIcon className="mr-2 h-4 w-4 flex-shrink-0 text-purple-400" />
-                  ) : (
-                    <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-purple-400" />
-                  )}
-                  <span className="flex-1 truncate">
-                    {recurrenceRule
-                      ? getHumanReadableRRule(recurrenceRule, true) +
-                        (date ? ` till ${format(date, "MMM d, yyyy")}` : "")
-                      : `Once ${
-                          +date! ? `on ${format(date!, "MMM d, yyyy")}` : ""
-                        }`}
-                  </span>
+                {/* Background gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/0 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                <div className="flex items-center w-full overflow-hidden relative z-10">
+                  <div className="flex items-center mr-3">
+                    {recurrenceRule ? (
+                      <div className="relative">
+                        <RepeatIcon className="h-4 w-4 text-purple-400 animate-pulse" />
+                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-purple-500 rounded-full animate-ping opacity-75" />
+                      </div>
+                    ) : (
+                      <ClockIcon className="h-4 w-4 text-zinc-400 group-hover:text-purple-400 transition-colors duration-200" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col">
+                      <span
+                        className={cn(
+                          "text-sm font-medium truncate",
+                          recurrenceRule ? "text-white" : "text-zinc-300"
+                        )}
+                      >
+                        {recurrenceRule
+                          ? getHumanReadableRRule(recurrenceRule, true)
+                          : "One-time task"}
+                      </span>
+                      {date && (
+                        <span className="text-xs text-zinc-400 truncate">
+                          {recurrenceRule ? "Until" : "Due"}{" "}
+                          {format(date, "MMM d, yyyy")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Status indicator */}
+                  <div className="ml-2 flex-shrink-0">
+                    <div
+                      className={cn(
+                        "w-2 h-2 rounded-full transition-all duration-200",
+                        recurrenceRule
+                          ? "bg-purple-500 shadow-lg shadow-purple-500/50"
+                          : "bg-zinc-500 group-hover:bg-purple-400"
+                      )}
+                    />
+                  </div>
                 </div>
               </Button>
             </TooltipTrigger>
-          </PopoverTrigger>
+          </DialogTrigger>
 
           <TooltipContent
             side="left"
-            className="bg-zinc-800 border-zinc-700 text-white"
+            className="bg-zinc-900/95 border-zinc-600 text-white shadow-xl rounded-lg backdrop-blur-sm"
           >
             {recurrenceRule
               ? getHumanReadableRRule(recurrenceRule, true) +
                 (date ? ` till ${format(date, "MMM d, yyyy")}` : "")
-              : "Once"}
+              : "One-time task"}
           </TooltipContent>
         </Tooltip>
 
-        <PopoverContent
-          className="w-auto p-0 bg-zinc-800 border-zinc-700 text-white shadow-xl rounded-lg"
-          align="start"
-          onInteractOutside={() => setIsOpen(false)}
-          onEscapeKeyDown={() => setIsOpen(false)}
-        >
-          <Tabs defaultValue="frequency" className="w-[340px]">
-            <div className="flex items-center justify-between bg-zinc-700 rounded-t-lg">
-              <TabsList className="bg-zinc-700 flex-1 rounded-none">
-                <TabsTrigger
-                  value="frequency"
-                  className="data-[state=active]:bg-zinc-600 data-[state=active]:text-white"
+        <DialogContent className="sm:max-w-[580px] p-0 bg-gradient-to-b from-zinc-900/98 to-zinc-800/98 border-zinc-600/50 text-white shadow-2xl backdrop-blur-md border-2">
+          <div className="relative overflow-hidden">
+            {/* Animated background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-transparent to-blue-600/5 animate-pulse" />
+
+            {/* Custom Header */}
+            <DialogHeader className="relative z-10 bg-gradient-to-r from-zinc-800/90 via-zinc-700/90 to-zinc-800/90 p-5 border-b border-zinc-600/30">
+              <div className="flex items-center justify-between">
+                <DialogTitle className="flex items-center space-x-3 text-lg font-semibold text-zinc-200">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                  <span>Schedule Settings</span>
+                </DialogTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-zinc-700/50 rounded-lg"
+                  onClick={() => setIsOpen(false)}
                 >
-                  Frequency
-                </TabsTrigger>
-                <TabsTrigger
-                  value="date"
-                  className="data-[state=active]:bg-zinc-600 data-[state=active]:text-white"
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </DialogHeader>
+
+            <ScrollArea className="max-h-[75vh] relative z-10">
+              <Tabs defaultValue="frequency" className="w-full">
+                {/* Tab Navigation */}
+                <div className="p-5 pb-0">
+                  <TabsList className="grid w-full grid-cols-2 bg-zinc-700/50 backdrop-blur-sm border border-zinc-600/30 rounded-lg p-1 h-12">
+                    <TabsTrigger
+                      value="frequency"
+                      className={cn(
+                        "data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700",
+                        "data-[state=active]:text-white data-[state=active]:shadow-lg",
+                        "rounded-md transition-all duration-300 text-sm font-medium py-2.5",
+                        "hover:bg-zinc-600/50"
+                      )}
+                    >
+                      <RepeatIcon className="w-4 h-4 mr-2" />
+                      Frequency
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="date"
+                      className={cn(
+                        "data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-700",
+                        "data-[state=active]:text-white data-[state=active]:shadow-lg",
+                        "rounded-md transition-all duration-300 text-sm font-medium py-2.5",
+                        "hover:bg-zinc-600/50"
+                      )}
+                    >
+                      <CalendarIcon className="w-4 h-4 mr-2" />
+                      Due Date
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="frequency" className="m-0 mt-4">
+                  <FrequencyTab
+                    frequency={frequency}
+                    setFrequency={setFrequency}
+                    selectedDays={selectedDays}
+                    setSelectedDays={setSelectedDays}
+                    selectedDatesOfMonth={selectedDatesOfMonth}
+                    setSelectedDatesOfMonth={setSelectedDatesOfMonth}
+                    recurrenceRule={recurrenceRule}
+                    date={date}
+                  />
+                </TabsContent>
+
+                <TabsContent value="date" className="p-0 m-0">
+                  <div className="p-4">
+                    {/* Calendar with side chevrons */}
+                    <div className="flex items-center justify-center space-x-4">
+                      {/* Left Chevron */}
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        className={cn(
+                          "h-12 w-12 p-0 rounded-xl transition-all duration-200",
+                          "bg-zinc-800/50 hover:bg-zinc-700/70 border-2 border-zinc-600/30",
+                          "hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10",
+                          "backdrop-blur-sm group"
+                        )}
+                        onClick={goToPreviousMonth}
+                      >
+                        <ChevronLeft className="h-6 w-6 text-zinc-400 group-hover:text-purple-300 transition-colors duration-200" />
+                      </Button>
+
+                      {/* Calendar Container */}
+                      <div className="flex flex-col items-center space-y-2">
+                        <Calendar
+                          mode="single"
+                          selected={date}
+                          onSelect={onDateSelect}
+                          month={calendarMonth}
+                          onMonthChange={setCalendarMonth}
+                          initialFocus
+                          className="rounded-xl bg-zinc-800/50 border border-zinc-600/30 backdrop-blur-sm shadow-lg"
+                          disabled={(date) =>
+                            date < new Date(new Date().setHours(0, 0, 0, 0))
+                          }
+                        />
+                      </div>
+
+                      {/* Right Chevron */}
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        className={cn(
+                          "h-12 w-12 p-0 rounded-xl transition-all duration-200",
+                          "bg-zinc-800/50 hover:bg-zinc-700/70 border-2 border-zinc-600/30",
+                          "hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10",
+                          "backdrop-blur-sm group"
+                        )}
+                        onClick={goToNextMonth}
+                      >
+                        <ChevronRight className="h-6 w-6 text-zinc-400 group-hover:text-purple-300 transition-colors duration-200" />
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </ScrollArea>
+
+            {/* Footer */}
+            <div className="relative z-10 p-5 bg-gradient-to-r from-zinc-800/90 to-zinc-700/90 border-t border-zinc-600/30">
+              <div className="flex justify-end">
+                <Button
+                  className={cn(
+                    "bg-gradient-to-r from-purple-600 to-purple-700",
+                    "hover:from-purple-700 hover:to-purple-800",
+                    "shadow-lg hover:shadow-xl transition-all duration-300",
+                    "rounded-lg font-medium px-8 py-2.5 h-10",
+                    "border border-purple-500/30 hover:border-purple-400/50"
+                  )}
+                  onClick={() => setIsOpen(false)}
                 >
-                  Due Date
-                </TabsTrigger>
-              </TabsList>
-              <Button
-                size="sm"
-                className="mr-2 bg-purple-600 hover:bg-purple-700"
-                onClick={() => setIsOpen(false)}
-              >
-                Done
-              </Button>
+                  Done
+                </Button>
+              </div>
             </div>
-
-            <TabsContent value="frequency">
-              <FrequencyTab
-                frequency={frequency}
-                setFrequency={setFrequency}
-                selectedDays={selectedDays}
-                setSelectedDays={setSelectedDays}
-                selectedDatesOfMonth={selectedDatesOfMonth}
-                setSelectedDatesOfMonth={setSelectedDatesOfMonth}
-                recurrenceRule={recurrenceRule}
-              />
-            </TabsContent>
-
-            <TabsContent value="date" className="p-0">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={onDateSelect}
-                initialFocus
-                className="rounded-md bg-zinc-800"
-                disabled={(date) =>
-                  date < new Date(new Date().setHours(0, 0, 0, 0))
-                }
-              />
-            </TabsContent>
-          </Tabs>
-        </PopoverContent>
-      </Popover>
+          </div>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }

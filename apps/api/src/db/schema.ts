@@ -172,7 +172,7 @@ export const questInstance = pgTable(
     }),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "set null" }),
+      .references(() => user.id, { onDelete: "cascade" }),
 
     date: date("date").notNull(),
     type: text("type").$type<"daily" | "side">().default("daily").notNull(),

@@ -1,9 +1,9 @@
 "use client";
 
-import { Flame } from "lucide-react";
+import { CalendarDays, Flame } from "lucide-react";
 import { BaseQuestDialog } from "../base-quest-dialog";
 import { createDailyRRule } from "@/lib/rrule-utils";
-import { DatePicker } from "../date-freq/date-picker";
+import { RecurrencePicker } from "../date-freq/recurrence-picker";
 
 interface AddDailyQuestDialogProps {
   open: boolean;
@@ -30,12 +30,13 @@ export function AddDailyQuestDialog({
       InfoIcon={Flame}
       infoTitle="Daily quests"
       infoText="refresh each day and help you build consistent habits to achieve your main quests."
-      createRecurrenceRule={() => createDailyRRule()}
+      createRecurrenceRule={(data) => data?.recurrenceRule}
       renderDateField={({ onChange, value, className }) => {
-        // Get the current date from the value or use default
-        const currentDate = value?.date || null;
+        // Since RecurrencePicker requires separate handlers for date and recurrence rule,
+        // we use a composite state object for value
+        const currentRecurrence = value?.recurrenceRule || createDailyRRule();
+        const currentDate = value?.date || undefined;
 
-        // Set initial default value if needed
         if (!value) {
           // Set initial default value on component mount
           setTimeout(() => {
@@ -49,15 +50,22 @@ export function AddDailyQuestDialog({
         return (
           <>
             <label className="text-sm font-medium text-orange-400 flex items-center gap-2">
-              <Flame className="h-3.5 w-3.5" />
-              Due Date (Optional)
+              <CalendarDays className="h-3.5 w-3.5" />
+              Schedule
             </label>
-            <DatePicker
+            <RecurrencePicker
               date={currentDate}
-              onSelect={(newDate) =>
+              onDateSelect={(newDate) =>
                 onChange({
                   date: newDate,
-                  recurrenceRule: createDailyRRule(),
+                  recurrenceRule: currentRecurrence,
+                })
+              }
+              recurrenceRule={currentRecurrence}
+              onRecurrenceSelect={(newRecurrence) =>
+                onChange({
+                  date: currentDate,
+                  recurrenceRule: newRecurrence,
                 })
               }
               className={className}
