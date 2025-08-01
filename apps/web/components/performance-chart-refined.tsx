@@ -61,9 +61,10 @@ const RefinedBarChart = memo(({ data, onDataPointClick }: {
     );
   }
 
-  const maxValue = Math.max(...data.map(d => d.percentage));
-  const minValue = Math.min(...data.map(d => d.percentage));
-  const range = maxValue - minValue || 1;
+  // Always use 0-100 range for completion percentage to ensure proper scaling
+  const maxValue = 100;
+  const minValue = 0;
+  const range = 100;
 
   // Calculate bar dimensions
   const barSpacing = innerWidth / data.length;
@@ -73,7 +74,7 @@ const RefinedBarChart = memo(({ data, onDataPointClick }: {
   const chartData = data.map((item, index) => {
     const centerX = padding + (index * barSpacing) + (barSpacing / 2);
     const lineY = padding + ((maxValue - item.percentage) / range) * innerHeight;
-    const barHeight = Math.max(3, ((item.percentage - minValue) / range) * innerHeight);
+    const barHeight = Math.max(3, (item.percentage / range) * innerHeight);
     const barY = chartHeight - padding - barHeight;
     
     return { 
