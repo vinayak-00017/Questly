@@ -9,6 +9,7 @@ import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
 import { useAnonymousUser } from "@/components/anonymous-login-provider";
 import { AnonymousUserBanner } from "@/components/anonymous-user-banner";
 import { useSession } from "@/lib/auth-client";
+import { queryConfigs } from "@/lib/query-config";
 
 // Lazy load heavy components to reduce initial bundle size
 const QuestTracker = lazy(
@@ -17,7 +18,7 @@ const QuestTracker = lazy(
 const TodaysQuestsCard = lazy(
   () => import("@/components/quest-card/todays-quests-card")
 );
-const PerformanceChart = lazy(() => import("@/components/performance-chart"));
+const PerformanceChart = lazy(() => import("@/components/performance-chart-refined"));
 
 // Loading skeleton components
 const QuestTrackerSkeleton = () => (
@@ -53,7 +54,7 @@ const PerformanceChartSkeleton = () => (
   <div className="bg-gradient-to-br from-slate-800/80 via-slate-900/60 to-slate-800/80 border-amber-500/20 backdrop-blur-sm rounded-lg border p-6">
     <div className="animate-pulse">
       <div className="h-6 bg-slate-700 rounded w-1/3 mb-4"></div>
-      <div className="h-64 bg-slate-700 rounded"></div>
+      <div className="h-96 bg-slate-700 rounded"></div>
     </div>
   </div>
 );
@@ -67,6 +68,7 @@ export default function Home() {
         userStats: data.userStats,
       };
     },
+    ...queryConfigs.userStats,
   });
 
   const { isAnonymous } = useAnonymousUser();

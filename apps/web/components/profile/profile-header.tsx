@@ -57,16 +57,23 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-amber-500/20 rounded-full blur-xl"></div>
                 <Avatar className="w-32 h-32 border-4 border-purple-500/50 shadow-2xl relative z-10">
-                  <Image
-                    src={session.user.image}
-                    width={100}
-                    height={100}
-                    alt="Profile"
-                    className="rounded-full h-full w-full object-cover"
-                  />
-                  {/* <AvatarFallback className="bg-gradient-to-br from-purple-600 to-amber-600 text-white text-4xl font-bold">
-                    {session.user?.name?.charAt(0).toUpperCase() || "A"}
-                  </AvatarFallback> */}
+                  {session.user?.image ? (
+                    <Image
+                      src={session.user.image}
+                      width={128}
+                      height={128}
+                      alt={
+                        session.user?.name
+                          ? `${session.user.name}'s profile picture`
+                          : "Profile"
+                      }
+                      className="rounded-full h-full w-full object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback className="bg-gradient-to-br from-purple-600 to-amber-600 text-white text-4xl font-bold">
+                      {session.user?.name?.charAt(0).toUpperCase() || "A"}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
                 {/* Level badge */}
                 <div className="z-50 absolute -bottom-2 -right-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg border-2 border-amber-500/50">
