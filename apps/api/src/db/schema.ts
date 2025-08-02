@@ -25,6 +25,13 @@ export const user = pgTable("user", {
   timezoneSetExplicitly: boolean("timezone_set_explicitly")
     .default(false)
     .notNull(),
+  hasCompletedOnboarding: boolean("has_completed_onboarding")
+    .default(false)
+    .notNull(),
+  onboardingStep: integer("onboarding_step").default(0).notNull(),
+  hasCreatedFirstQuest: boolean("has_created_first_quest")
+    .default(false)
+    .notNull(),
 });
 
 // User Achievement table: tracks which achievements a user has unlocked

@@ -222,6 +222,9 @@ router.get("/userStats", requireAuth, async (req, res) => {
       isActiveToday: streakData.isActiveToday,
       timezone: currUser.timezone,
       timezoneSetExplicitly: currUser.timezoneSetExplicitly,
+      hasCompletedOnboarding: currUser.hasCompletedOnboarding,
+      onboardingStep: currUser.onboardingStep,
+      hasCreatedFirstQuest: currUser.hasCreatedFirstQuest,
     };
 
     res.status(200).json({
@@ -412,7 +415,13 @@ router.patch("/updateProfile", requireAuth, async (req, res) => {
     const userId = (req as AuthenticatedRequest).userId;
     const { name, image, timezone } = req.body;
 
-    const updateData: any = {
+    const updateData: {
+      updatedAt: Date;
+      name?: string;
+      image?: string;
+      timezone?: string;
+      timezoneSetExplicitly?: boolean;
+    } = {
       updatedAt: new Date(),
     };
 
@@ -440,6 +449,46 @@ router.patch("/updateProfile", requireAuth, async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to update profile", success: false });
+  }
+});
+
+router.patch("/updateOnboarding", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { step, completed, hasCreatedFirstQuest } = req.body;
+
+    const updateData: {
+      updatedAt: Date;
+      onboardingStep?: number;
+      hasCompletedOnboarding?: boolean;
+      hasCreatedFirstQuest?: boolean;
+    } = {
+      updatedAt: new Date(),
+    };
+
+    if (step !== undefined) {
+      updateData.onboardingStep = step;
+    }
+
+    if (completed !== undefined) {
+      updateData.hasCompletedOnboarding = completed;
+    }
+
+    if (hasCreatedFirstQuest !== undefined) {
+      updateData.hasCreatedFirstQuest = hasCreatedFirstQuest;
+    }
+
+    await db.update(user).set(updateData).where(eq(user.id, userId));
+
+    res.status(200).json({
+      message: "Onboarding updated successfully",
+      success: true,
+    });
+  } catch (err) {
+    console.error("Error updating onboarding:", err);
+    res
+      .status(500)
+      .json({ message: "Failed to update onboarding", success: false });
   }
 });
 

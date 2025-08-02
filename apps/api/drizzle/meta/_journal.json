@@ -155,6 +155,13 @@
       "when": 1754018763645,
       "tag": "0021_special_swordsman",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1754127880638,
+      "tag": "0022_striped_sheva_callister",
+      "breakpoints": true
     }
   ]
 }
