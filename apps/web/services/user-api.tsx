@@ -3,9 +3,12 @@ import { BASE_URL } from "@/config";
 export const userApi = {
   // New batched dashboard endpoint
   getDashboardData: async (period: string = "weekly") => {
-    const response = await fetch(`${BASE_URL}/user/dashboard?period=${period}`, {
-      credentials: "include",
-    });
+    const response = await fetch(
+      `${BASE_URL}/user/dashboard?period=${period}`,
+      {
+        credentials: "include",
+      }
+    );
     if (!response.ok) throw new Error("Failed to fetch dashboard data");
     return response.json();
   },
@@ -50,16 +53,16 @@ export const userApi = {
     return response.json();
   },
 
-  updateProfile: async ({ 
-    name, 
-    image, 
-    imagePublicId, 
-    timezone 
-  }: { 
-    name?: string; 
-    image?: string; 
-    imagePublicId?: string; 
-    timezone?: string; 
+  updateProfile: async ({
+    name,
+    image,
+    imagePublicId,
+    timezone,
+  }: {
+    name?: string;
+    image?: string;
+    imagePublicId?: string;
+    timezone?: string;
   }) => {
     const response = await fetch(`${BASE_URL}/user/updateProfile`, {
       method: "PATCH",
@@ -90,6 +93,27 @@ export const userApi = {
       credentials: "include",
     });
     if (!response.ok) throw new Error("Failed to fetch quest details");
+    return response.json();
+  },
+
+  updateOnboarding: async ({
+    step,
+    completed,
+    hasCreatedFirstQuest,
+  }: {
+    step?: number;
+    completed?: boolean;
+    hasCreatedFirstQuest?: boolean;
+  }) => {
+    const response = await fetch(`${BASE_URL}/user/updateOnboarding`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ step, completed, hasCreatedFirstQuest }),
+    });
+    if (!response.ok) throw new Error("Failed to update onboarding");
     return response.json();
   },
 };

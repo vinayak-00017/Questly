@@ -26,6 +26,7 @@ import { QuestFormFields } from "./quest-form-fields";
 import { DailyQuestForm } from "./daily-quest-form";
 import { AttachedQuestItem } from "./attached-quest-item";
 import { useAchievements } from "@/contexts/achievement-context";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface AddQuestDialogProps {
   open: boolean;
@@ -79,6 +80,7 @@ export function AddQuestDialog({
 
   const queryClient = useQueryClient();
   const { checkForNewAchievements } = useAchievements();
+  const { markFirstQuestCreated, hasCreatedFirstQuest } = useOnboarding();
 
   const handleAddDailyQuest = (quest: CreateQuestTemplate) => {
     setDailyQuests([...dailyQuests, quest]);
@@ -107,6 +109,11 @@ export function AddQuestDialog({
         await checkForNewAchievements();
       } catch (error) {
         console.error("Error checking for achievements:", error);
+      }
+
+      // Mark first quest as created if this is the first quest
+      if (!hasCreatedFirstQuest) {
+        markFirstQuestCreated();
       }
 
       onSuccess?.();

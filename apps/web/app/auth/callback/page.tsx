@@ -18,12 +18,12 @@ function AuthCallbackContent() {
         const shouldShowTimezone = searchParams.get("showTimezone") === "true";
 
         if (shouldShowTimezone) {
-          // Check if user already has timezone set
+          // Check if user already has timezone set explicitly
           try {
             const userData = await userApi.getUserStats();
             if (
               !userData.userStats?.timezone ||
-              userData.userStats?.timezone === "UTC"
+              !userData.userStats?.timezoneSetExplicitly
             ) {
               setShowTimezoneDialog(true);
               setIsProcessing(false);

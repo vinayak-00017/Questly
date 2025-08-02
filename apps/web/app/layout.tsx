@@ -12,6 +12,7 @@ import PullToRefresh from "@/components/pull-to-refresh";
 import { SidebarProvider } from "@/contexts/sidebar-context";
 import { AnonymousLoginProvider } from "@/components/anonymous-login-provider";
 import { AchievementProvider } from "@/contexts/achievement-context";
+import { OnboardingProvider } from "@/hooks/useOnboarding";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
@@ -85,13 +86,15 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AnonymousLoginProvider>
-              <AchievementProvider>
-                <SidebarProvider>
-                  <PullToRefresh />
-                  {children}
-                  <Toaster />
-                </SidebarProvider>
-              </AchievementProvider>
+              <OnboardingProvider>
+                <AchievementProvider>
+                  <SidebarProvider>
+                    <PullToRefresh />
+                    {children}
+                    <Toaster />
+                  </SidebarProvider>
+                </AchievementProvider>
+              </OnboardingProvider>
             </AnonymousLoginProvider>
           </QueryProvider>
         </ThemeProvider>

@@ -10,6 +10,7 @@ import { useAnonymousUser } from "@/components/anonymous-login-provider";
 import { AnonymousUserBanner } from "@/components/anonymous-user-banner";
 import { useSession } from "@/lib/auth-client";
 import { queryConfigs } from "@/lib/query-config";
+import { OnboardingWizard } from "@/components/onboarding";
 
 // Lazy load heavy components to reduce initial bundle size
 const QuestTracker = lazy(
@@ -18,7 +19,9 @@ const QuestTracker = lazy(
 const TodaysQuestsCard = lazy(
   () => import("@/components/quest-card/todays-quests-card")
 );
-const PerformanceChart = lazy(() => import("@/components/performance-chart-refined"));
+const PerformanceChart = lazy(
+  () => import("@/components/performance-chart-refined")
+);
 
 // Loading skeleton components
 const QuestTrackerSkeleton = () => (
@@ -115,6 +118,7 @@ export default function Home() {
         onOpenChange={setShowTimezoneDialog}
         onComplete={handleTimezoneComplete}
       />
+      <OnboardingWizard />
       <div>
         <div className="relative min-h-screen">
           {/* Fantasy background overlay with subtle texture */}
