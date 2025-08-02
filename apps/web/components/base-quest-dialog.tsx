@@ -140,16 +140,17 @@ export function BaseQuestDialog({
       queryClient.invalidateQueries({ queryKey });
       // Also invalidate the combined todaysQuests cache so Today's Quests card updates
       queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
+      queryClient.invalidateQueries({ queryKey: ["performance"] });
       queryClient.invalidateQueries({ queryKey: ["questTemplates"] });
       toast.success(`${type === "daily" ? "Daily" : "Side"} quest added!`);
-      
+
       // Check for new achievements when quest is created
       try {
         await checkForNewAchievements();
       } catch (error) {
         console.error("Error checking for achievements:", error);
       }
-      
+
       onSuccess?.();
       onOpenChange(false);
       // Form reset is handled by the useEffect above

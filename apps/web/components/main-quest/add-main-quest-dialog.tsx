@@ -92,21 +92,23 @@ export function AddQuestDialog({
     mutationFn: mainQuestApi.addMainQuest,
     onSuccess: async () => {
       // Invalidate main quests cache
-      queryClient.invalidateQueries({ queryKey: ["mainQuests"] });
+      queryClient.invalidateQueries({
+        queryKey: ["mainQuests", "activeMainQuests"],
+      });
       // If there are attached quests associated with this main quest, invalidate related caches
       if (dailyQuests.length > 0) {
         queryClient.invalidateQueries({ queryKey: ["dailyQuests"] });
         queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
       }
       toast.success("Main quest created successfully!");
-      
+
       // Check for new achievements when main quest is created
       try {
         await checkForNewAchievements();
       } catch (error) {
         console.error("Error checking for achievements:", error);
       }
-      
+
       onSuccess?.();
       onOpenChange(false);
       // Reset form

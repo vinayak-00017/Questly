@@ -240,6 +240,7 @@ const QuestCardActionButtons = ({
       }
       queryClient.invalidateQueries({ queryKey: ["userStats"] });
       queryClient.invalidateQueries({ queryKey: ["questActivity"] });
+      queryClient.invalidateQueries({ queryKey: ["performance"] });
     },
     onSuccess: async (data, variables) => {
       if (variables.completed) {
@@ -248,9 +249,13 @@ const QuestCardActionButtons = ({
           className:
             "bg-gradient-to-r from-green-900 to-emerald-800 border-green-600",
         });
-        
+
         // Check if the backend returned achievements directly
-        if (data?.newAchievements && Array.isArray(data.newAchievements) && data.newAchievements.length > 0) {
+        if (
+          data?.newAchievements &&
+          Array.isArray(data.newAchievements) &&
+          data.newAchievements.length > 0
+        ) {
           // Show achievements from backend response
           data.newAchievements.forEach((achievement: any, index: number) => {
             // Add a small delay between achievements to avoid conflicts

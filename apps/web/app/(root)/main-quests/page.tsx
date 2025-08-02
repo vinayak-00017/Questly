@@ -2,11 +2,14 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { Scroll, TrendingUp, Trophy, Target } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Scroll, TrendingUp, Trophy, Target, SwordsIcon } from "lucide-react";
 import { MainQuest } from "@questly/types";
 import { mainQuestApi } from "@/services/main-quest-api";
 import { AddQuestDialog } from "@/components/main-quest/add-main-quest-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAchievements } from "@/contexts/achievement-context";
+import { toast } from "sonner";
 
 // Import our new components
 import { Particles } from "@/components/main-quest/ui/Particles";
@@ -29,15 +32,120 @@ export default function MainQuestsPage() {
   });
 
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [completingQuestId, setCompletingQuestId] = useState<string | null>(
+    null
+  );
+  const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
+  const { checkForNewAchievements, showAchievement } = useAchievements();
+
+  // Utility function to check if a quest is expired
+  const isQuestExpired = (quest: MainQuest): boolean => {
+    if (!quest.dueDate) return false;
+    const now = new Date();
+    const dueDate = new Date(quest.dueDate);
+    return now > dueDate;
+  };
+
+  // Filter and sort quests by completion status
+  const activeQuests = mainQuests
+    .filter((q: MainQuest) => !q.completed)
+    .sort((a: MainQuest, b: MainQuest) => {
+      // Sort expired quests to the bottom
+      const aExpired = isQuestExpired(a);
+      const bExpired = isQuestExpired(b);
+
+      if (aExpired && !bExpired) return 1;
+      if (!aExpired && bExpired) return -1;
+
+      // If both are expired or both are not expired, sort by due date
+      if (a.dueDate && b.dueDate) {
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      }
+      if (a.dueDate && !b.dueDate) return -1;
+      if (!a.dueDate && b.dueDate) return 1;
+
+      return 0;
+    });
+
+  const completedQuests = mainQuests.filter((q: MainQuest) => q.completed);
 
   // Calculate stats
   const totalQuests = mainQuests.length;
-  const completedQuests = mainQuests.filter(
-    (q: MainQuest) => q.completed
-  ).length;
+  const completedQuestsCount = completedQuests.length;
   const progressPercentage =
-    totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0;
+    totalQuests > 0
+      ? Math.round((completedQuestsCount / totalQuests) * 100)
+      : 0;
+
+  // Main quest completion mutation
+  const completeMainQuestMutation = useMutation({
+    mutationFn: ({
+      questId,
+      completed,
+    }: {
+      questId: string;
+      completed: boolean;
+    }) => mainQuestApi.completeMainQuest(questId, completed),
+    onSuccess: async (data, variables) => {
+      // If completing a quest, trigger animation and auto-switch tabs
+      if (variables.completed) {
+        // Wait for completion animation
+        setTimeout(() => {
+          setCompletingQuestId(null);
+          // Auto-switch to completed tab after animation
+          setActiveTab("completed");
+        }, 1500);
+
+        toast.success("Main quest completed! You earned XP!", {
+          icon: <Trophy className="h-5 w-5 text-yellow-400" />,
+          className:
+            "bg-gradient-to-r from-green-900 to-emerald-800 border-green-600",
+        });
+
+        // Check if the backend returned achievements directly
+        if (
+          data?.newAchievements &&
+          Array.isArray(data.newAchievements) &&
+          data.newAchievements.length > 0
+        ) {
+          data.newAchievements.forEach((achievement: any, index: number) => {
+            setTimeout(() => {
+              showAchievement(achievement);
+            }, index * 100);
+          });
+        } else {
+          // Fallback: Check for new achievements via API call
+          try {
+            await checkForNewAchievements();
+          } catch (error) {
+            console.error("Error checking for achievements:", error);
+          }
+        }
+      } else {
+        setCompletingQuestId(null);
+        toast.success("Main quest marked as incomplete");
+      }
+
+      queryClient.invalidateQueries({
+        queryKey: ["activeMainQuests"],
+      });
+      // Invalidate and refetch main quests after animation delay
+      setTimeout(
+        () => {
+          queryClient.invalidateQueries({
+            queryKey: ["mainQuests"],
+          });
+        },
+        variables.completed ? 1600 : 100
+      );
+    },
+    onError: (error: any) => {
+      setCompletingQuestId(null);
+      toast.error(error.message || "Failed to update main quest");
+    },
+  });
 
   const handleCreateQuest = () => {
     console.log("Opening dialog");
@@ -46,6 +154,13 @@ export default function MainQuestsPage() {
 
   const handleQuestClick = (id: string) => {
     router.push(`/main-quests/${id}`);
+  };
+
+  const handleCompleteQuest = (questId: string, completed: boolean) => {
+    if (completed) {
+      setCompletingQuestId(questId);
+    }
+    completeMainQuestMutation.mutate({ questId, completed });
   };
 
   setTimeout(() => {
@@ -85,7 +200,7 @@ export default function MainQuestsPage() {
         <StatCard
           icon={Trophy}
           title="Completed"
-          value={completedQuests}
+          value={completedQuestsCount}
           className="ring-amber-500/30"
         />
         <StatCard
@@ -96,38 +211,111 @@ export default function MainQuestsPage() {
         />
       </div>
 
-      {/* Main quest list section */}
+      {/* Main quest tabs section */}
       <div className="relative z-10 space-y-6">
-        <SectionHeader
-          icon={Target}
-          title="Active Quests"
-          subtitle="Your ongoing adventures await completion"
-        />
-
-        {mainQuests.length === 0 ? (
-          <EmptyState onCreateQuest={handleCreateQuest} />
-        ) : (
-          <div className="space-y-4">
-            {mainQuests.map((quest: MainQuest, index: number) => {
-              const details = getQuestDetails(quest);
-              const CategoryIcon = getCategoryIcon(quest.category);
-
-              return (
-                <QuestCard
-                  key={quest.id}
-                  quest={quest}
-                  categoryIcon={CategoryIcon}
-                  progress={details.progress}
-                  questsCount={quest.attachedQuests.length}
-                  category={quest.category}
-                  importanceStyle={getImportanceStyle(quest.importance)}
-                  index={index}
-                  onClick={handleQuestClick}
-                />
-              );
-            })}
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) =>
+            setActiveTab(value as "active" | "completed")
+          }
+          className="w-full"
+        >
+          <div className="flex items-center justify-between mb-8">
+            <SectionHeader
+              icon={SwordsIcon}
+              title="Quest Management"
+              subtitle="Track your epic adventures and achievements"
+            />
+            <TabsList className="flex w-max min-w-[320px] h-14 bg-black/60 border border-zinc-700/50 rounded-xl p-1 backdrop-blur-sm">
+              <TabsTrigger
+                value="active"
+                className="px-6 py-3 rounded-lg font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600/30 data-[state=active]:to-purple-500/30 data-[state=active]:text-purple-200 data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/20 data-[state=inactive]:text-zinc-400 data-[state=inactive]:hover:text-zinc-200 data-[state=inactive]:hover:bg-white/5"
+              >
+                Active Quests ({activeQuests.length})
+              </TabsTrigger>
+              <TabsTrigger
+                value="completed"
+                className="px-6 py-3 rounded-lg font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600/30 data-[state=active]:to-emerald-500/30 data-[state=active]:text-emerald-200 data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/20 data-[state=inactive]:text-zinc-400 data-[state=inactive]:hover:text-zinc-200 data-[state=inactive]:hover:bg-white/5"
+              >
+                Completed Quests ({completedQuests.length})
+              </TabsTrigger>
+            </TabsList>
           </div>
-        )}
+
+          <TabsContent value="active" className="space-y-6">
+            {activeQuests.length === 0 ? (
+              <EmptyState onCreateQuest={handleCreateQuest} />
+            ) : (
+              <div className="grid gap-6 lg:gap-8">
+                {activeQuests.map((quest: MainQuest, index: number) => {
+                  const details = getQuestDetails(quest);
+                  const CategoryIcon = getCategoryIcon(quest.category);
+                  const questExpired = isQuestExpired(quest);
+
+                  return (
+                    <QuestCard
+                      key={quest.id}
+                      quest={quest}
+                      categoryIcon={CategoryIcon}
+                      progress={details.progress}
+                      questsCount={quest.attachedQuests.length}
+                      category={quest.category}
+                      importanceStyle={getImportanceStyle(quest.importance)}
+                      index={index}
+                      onClick={handleQuestClick}
+                      onComplete={handleCompleteQuest}
+                      isCompleting={completingQuestId === quest.id}
+                      isExpired={questExpired}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="completed" className="space-y-6">
+            {completedQuests.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="relative">
+                  <Trophy className="mx-auto h-20 w-20 text-amber-500/30 mb-6" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full bg-amber-500/5 animate-pulse" />
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-white/90 mb-3">
+                  No Completed Quests Yet
+                </h3>
+                <p className="text-zinc-400 text-lg">
+                  Complete your first quest to unlock achievements and track
+                  your progress!
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-6 lg:gap-8">
+                {completedQuests.map((quest: MainQuest, index: number) => {
+                  const details = getQuestDetails(quest);
+                  const CategoryIcon = getCategoryIcon(quest.category);
+
+                  return (
+                    <QuestCard
+                      key={quest.id}
+                      quest={quest}
+                      categoryIcon={CategoryIcon}
+                      progress={details.progress}
+                      questsCount={quest.attachedQuests.length}
+                      category={quest.category}
+                      importanceStyle={getImportanceStyle(quest.importance)}
+                      index={index}
+                      onClick={handleQuestClick}
+                      onComplete={handleCompleteQuest}
+                      isCompleting={completingQuestId === quest.id}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Add Quest Dialog */}

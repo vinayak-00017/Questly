@@ -1,5 +1,5 @@
 import { QuestTemplate } from "@questly/types";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, gt, gte } from "drizzle-orm";
 import db from "../db";
 import { v4 as uuidv4 } from "uuid";
 import express from "express";
@@ -10,10 +10,11 @@ import { createDailyRRule, doesRRuleMatchDate } from "../utils/rrule-utils";
 import {
   getTodayMidnight,
   isSameDay,
-  toDbDate,
   toLocalDbDate,
+  type Achievement,
 } from "@questly/utils";
 import { getUserTimezone } from "../utils/dates";
+import { achievementEventService } from "../services/achievement-events.service";
 
 const router = express.Router();
 
@@ -172,6 +173,33 @@ router.get("/", requireAuth, async (req, res) => {
     res.status(500).json({ message: "failed getting mainQuests" });
   }
 });
+
+router.get("/active", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const userTimezone = await getUserTimezone(userId);
+    const today = getTodayMidnight(userTimezone);
+    // Fetch active main quests for the user
+    const activeMainQuests = await db
+      .select()
+      .from(mainQuest)
+      .where(
+        and(
+          eq(mainQuest.userId, userId),
+          eq(mainQuest.completed, false),
+          gte(mainQuest.dueDate, today)
+        )
+      );
+    res.status(200).json({
+      message: "Active main quests retrieved successfully",
+      activeMainQuests,
+    });
+  } catch (err) {
+    console.error("Error getting active main quests:", err);
+    res.status(500).json({ message: "failed getting active mainQuests" });
+  }
+});
+
 router.get("/ids", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
@@ -193,11 +221,53 @@ router.get("/ids", requireAuth, async (req, res) => {
   }
 });
 
-// router.get("/getDetails", requireAuth, async(req,res) => {
-//   try{
-//     const userId = (req as AuthenticatedRequest).userId;
-//     const
-//   }
-// })
+// Complete or uncomplete a main quest
+router.patch("/complete", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const { questId, completed } = req.body;
+
+    if (!questId || typeof completed !== "boolean") {
+      return res.status(400).json({
+        message: "Quest ID and completed status are required",
+      });
+    }
+
+    // Update the main quest completion status
+    const updatedFields = {
+      completed,
+      updatedAt: new Date(),
+    };
+
+    await db
+      .update(mainQuest)
+      .set(updatedFields)
+      .where(and(eq(mainQuest.id, questId), eq(mainQuest.userId, userId)));
+
+    // If completed, trigger achievement check for main quest completion
+    let newAchievements: Achievement[] = [];
+    if (completed) {
+      try {
+        const achievementResult =
+          await achievementEventService.onQuestCompleted(userId, "main");
+        newAchievements = achievementResult.newAchievements;
+      } catch (error) {
+        console.error(
+          "Error checking achievements after main quest completion:",
+          error
+        );
+      }
+    }
+
+    res.status(200).json({
+      message: `Main quest ${completed ? "completed" : "marked as incomplete"} successfully`,
+      newAchievements,
+      achievementCount: newAchievements.length,
+    });
+  } catch (err) {
+    console.error("Error updating main quest:", err);
+    res.status(500).json({ message: "Failed to update main quest" });
+  }
+});
 
 export default router;

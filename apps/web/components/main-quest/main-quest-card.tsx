@@ -34,9 +34,9 @@ const MainQuestCard = () => {
     error,
     isLoading,
   } = useQuery({
-    queryKey: ["mainQuests"],
-    queryFn: mainQuestApi.fetchMainQuests,
-    select: (data) => data.mainQuests || [],
+    queryKey: ["activeMainQuests"],
+    queryFn: mainQuestApi.fetchActiveMainQuests,
+    select: (data) => data.activeMainQuests || [],
   });
 
   // Sort quests: 1. By time left (if < 10 days), 2. By priority (if >= 10 days)
@@ -110,25 +110,25 @@ const MainQuestCard = () => {
 
   return (
     <>
-      <Card className="w-full overflow-hidden bg-gradient-to-br from-black via-zinc-900 to-zinc-950 border border-blue-500/40 shadow-lg relative">
+      <Card className="w-full overflow-hidden bg-gradient-to-br from-purple-900/10 via-black/60 to-black/80 border border-zinc-700/50 shadow-lg relative ring-1 ring-purple-500/20 hover:ring-purple-500/40 transition-all duration-300">
         {/* Subtle accent gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-purple-600/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-purple-600/5 pointer-events-none" />
 
         {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500/60 via-purple-500/60 to-blue-500/60"></div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-purple-500/60 via-purple-400/60 to-purple-500/60"></div>
 
         <div className="relative">
           <div className="flex w-full items-center justify-between px-3 pt-3 pb-2">
             <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-blue-500/30 to-purple-600/30 rounded-full flex items-center justify-center shadow-lg border border-blue-400/40 w-10 h-10">
-                <SwordsIcon className="text-blue-200 h-5 w-5" />
+              <div className="bg-gradient-to-br from-purple-500/30 to-purple-600/30 rounded-full flex items-center justify-center shadow-lg border border-purple-400/40 w-10 h-10">
+                <SwordsIcon className="text-purple-200 h-5 w-5" />
               </div>
               <div className="flex-1">
                 <CardTitle className="font-bold text-white flex items-center gap-2 text-base">
                   Main Quests
                   <Crown className="text-yellow-400 h-4 w-4" />
                 </CardTitle>
-                <CardDescription className="text-blue-200/80 mt-1 text-xs">
+                <CardDescription className="text-purple-200/80 mt-1 text-xs">
                   Epic long-term adventures
                 </CardDescription>
               </div>
@@ -136,7 +136,7 @@ const MainQuestCard = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="p-1 rounded-md hover:bg-blue-500/20 transition-colors text-blue-300 hover:text-white border border-blue-500/30 hover:border-blue-400/50"
+                className="p-1 rounded-md hover:bg-purple-500/20 transition-colors text-purple-300 hover:text-white border border-purple-500/30 hover:border-purple-400/50"
                 aria-label={isExpanded ? "Collapse" : "Expand"}
               >
                 {isExpanded ? (
@@ -170,16 +170,16 @@ const MainQuestCard = () => {
                       transition={{ duration: 0.3 }}
                       whileHover={{ scale: 1.01 }}
                     >
-                      <Card className="bg-gradient-to-br from-black via-zinc-900 to-black-800 border border-blue-500/40 hover:border-purple-400/50 hover:shadow-lg transition-all duration-200 cursor-pointer group overflow-hidden relative">
+                      <Card className="bg-gradient-to-br from-purple-900/10 via-black/60 to-black/80 border border-purple-500/40 hover:border-purple-400/50 hover:shadow-lg transition-all duration-200 cursor-pointer group overflow-hidden relative ring-1 ring-zinc-700/50 hover:ring-purple-500/40">
                         {/* Side accent line */}
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-500 group-hover:w-1.5 transition-all duration-200"></div>
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 to-purple-600 group-hover:w-1.5 transition-all duration-200"></div>
 
                         <CardContent className="p-3 relative">
                           <div className="flex items-start flex-col gap-2">
                             <div className="space-y-2 flex-1 w-full">
                               <div className="flex items-center gap-2">
-                                <div className="bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full flex items-center justify-center border border-blue-400/30 w-5 h-5">
-                                  <Star className="text-blue-200 h-3 w-3" />
+                                <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-full flex items-center justify-center border border-purple-400/30 w-5 h-5">
+                                  <Star className="text-purple-200 h-3 w-3" />
                                 </div>
                                 {/* Importance tag with simplified styling */}
                                 {quest.importance && (
@@ -191,7 +191,7 @@ const MainQuestCard = () => {
                                       quest.importance === Heroic &&
                                         "from-orange-600/70 to-yellow-500/70 text-orange-200 border-orange-400/50",
                                       quest.importance === Rare &&
-                                        "from-blue-600/70 to-cyan-500/70 text-blue-200 border-blue-400/50",
+                                        "from-purple-600/70 to-purple-500/70 text-purple-200 border-purple-400/50",
                                       quest.importance === Common &&
                                         "from-green-600/70 to-emerald-500/70 text-green-200 border-green-400/50"
                                     )}
@@ -207,9 +207,9 @@ const MainQuestCard = () => {
 
                               {/* Timer section - Enhanced contrast and visibility */}
                               {quest.dueDate && (
-                                <div className="bg-black rounded-lg border-2 border-blue-400/60 p-3 shadow-lg shadow-blue-500/10">
-                                  <div className="text-blue-300 mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
-                                    <Clock className="h-4 w-4 text-blue-400" />
+                                <div className="bg-black rounded-lg border-2 border-purple-400/60 p-3 shadow-lg shadow-purple-500/10">
+                                  <div className="text-purple-300 mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+                                    <Clock className="h-4 w-4 text-purple-400" />
                                     <span>TIME LEFT</span>
                                   </div>
                                   <div className="font-bold text-white text-lg leading-tight">
@@ -232,7 +232,7 @@ const MainQuestCard = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-400/40 hover:bg-gradient-to-r hover:from-blue-500/30 hover:to-purple-500/30 hover:border-blue-400/60 text-white gap-2 text-sm transition-all py-2"
+                      className="w-full bg-gradient-to-r from-purple-600/20 to-purple-600/20 border border-purple-400/40 hover:bg-gradient-to-r hover:from-purple-500/30 hover:to-purple-500/30 hover:border-purple-400/60 text-white gap-2 text-sm transition-all py-2"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push("/main-quests");
