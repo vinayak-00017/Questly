@@ -1,6 +1,8 @@
 import db from "../src/db";
 import { questInstance, user } from "../src/db/schema";
 import { and, eq } from "drizzle-orm";
+import { getUserTimezone } from "../src/utils/dates";
+import { toLocalDbDate, getLocalDateMidnight } from "@questly/utils";
 
 interface PerformanceData {
   day: string;
@@ -102,11 +104,11 @@ export class PerformanceService {
     userId: string,
     period: PeriodType
   ): Promise<Date[]> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const userTimezone = await getUserTimezone(userId);
+    const today = getLocalDateMidnight(new Date(), userTimezone);
 
     const userCreated = await this.getUserCreationDate(userId);
-    userCreated.setHours(0, 0, 0, 0);
+    const userCreatedMidnight = getLocalDateMidnight(userCreated, userTimezone);
 
     const periodDays = {
       weekly: 7,
@@ -115,17 +117,17 @@ export class PerformanceService {
       yearly: 365,
       overall:
         Math.floor(
-          (today.getTime() - userCreated.getTime()) / (1000 * 60 * 60 * 24)
+          (today.getTime() - userCreatedMidnight.getTime()) / (1000 * 60 * 60 * 24)
         ) + 1,
     };
 
     const daysBack = periodDays[period];
     const startDate =
       period === "overall"
-        ? new Date(userCreated)
+        ? new Date(userCreatedMidnight)
         : new Date(
             Math.max(
-              userCreated.getTime(),
+              userCreatedMidnight.getTime(),
               today.getTime() - (daysBack - 1) * 24 * 60 * 60 * 1000
             )
           );
@@ -159,9 +161,8 @@ export class PerformanceService {
   /**
    * Format local date string (YYYY-MM-DD) in user's timezone
    */
-  private formatLocalDateString(date: Date): string {
-    // Returns YYYY-MM-DD in local time
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  private formatLocalDateString(date: Date, userTimezone: string): string {
+    return toLocalDbDate(date, userTimezone);
   }
 
   /**
@@ -215,11 +216,12 @@ export class PerformanceService {
     userId: string,
     period: PeriodType
   ): Promise<PerformanceData[]> {
+    const userTimezone = await getUserTimezone(userId);
     const dates = await this.generateDateRange(userId, period);
 
     const performanceData = await Promise.all(
       dates.map(async (date) => {
-        const dateStr = this.formatLocalDateString(date); // Use local date string
+        const dateStr = this.formatLocalDateString(date, userTimezone);
         const quests = await this.fetchQuestData(userId, dateStr);
         const label = this.formatDateLabel(date, period);
         return this.calculateDayMetrics(quests, label, dateStr);
@@ -309,6 +311,7 @@ export class PerformanceService {
     dateGroups: Date[][],
     labelFormatter: (startDate: Date, endDate: Date) => string
   ): Promise<PerformanceData[]> {
+    const userTimezone = await getUserTimezone(userId);
     const aggregatedData: PerformanceData[] = [];
 
     for (const group of dateGroups) {
@@ -317,7 +320,7 @@ export class PerformanceService {
       // Get daily metrics for all dates in this group
       const dailyMetrics = await Promise.all(
         group.map(async (date) => {
-          const dateStr = this.formatLocalDateString(date); // Use local date string
+          const dateStr = this.formatLocalDateString(date, userTimezone);
           const quests = await this.fetchQuestData(userId, dateStr);
           const label = "";
           return this.calculateDayMetrics(quests, label, dateStr);
@@ -355,7 +358,7 @@ export class PerformanceService {
 
       aggregatedData.push({
         day: label,
-        date: this.formatLocalDateString(startDate), // Use local date string
+        date: this.formatLocalDateString(startDate, userTimezone),
         percentage: averagePercentage,
         completedPoints: totalCompletedPoints,
         totalPossiblePoints: totalPossiblePoints,

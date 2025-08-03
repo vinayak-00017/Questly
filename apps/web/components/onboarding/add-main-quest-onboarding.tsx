@@ -325,7 +325,7 @@ export function AddMainQuestOnboarding() {
       <Button
         onClick={handleCreateQuest}
         disabled={!title.trim() || !dueDate || createQuestMutation.isPending}
-        className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-white font-semibold h-10"
+        className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-900 font-semibold h-10 border border-amber-500/30 shadow-lg shadow-amber-500/20"
       >
         {createQuestMutation.isPending ? (
           <>

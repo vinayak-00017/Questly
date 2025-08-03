@@ -1,5 +1,19 @@
 "use client";
 
+/*
+ * Homepage with priority flow:
+ * 1. TIMEZONE DIALOG FIRST (required, cannot be skipped)
+ *    - Shows when: no timezone OR UTC with timezoneSetExplicitly=false
+ *    - Blocks all other dialogs until completed
+ *    - Higher z-index (z-60) for priority
+ *
+ * 2. ONBOARDING WIZARD SECOND (after timezone completion)
+ *    - Only shows after timezone is properly set
+ *    - Can be skipped if user chooses
+ *
+ * This ensures users always set their timezone before any other setup.
+ */
+
 import { userApi } from "@/services/user-api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Star } from "lucide-react";
@@ -76,8 +90,10 @@ export default function Home() {
 
   const { isAnonymous } = useAnonymousUser();
   const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
+  const [timezoneCompleted, setTimezoneCompleted] = useState(false);
   const queryClient = useQueryClient();
   const { data: session } = useSession();
+
   useEffect(() => {
     // Check timezone for all users (both authenticated and anonymous)
     if (data?.userStats) {
@@ -89,12 +105,17 @@ export default function Home() {
       // 2. User has UTC but has never explicitly set their timezone
       if (!userTimezone || (userTimezone === "UTC" && !timezoneSetExplicitly)) {
         setShowTimezoneDialog(true);
+        setTimezoneCompleted(false);
+      } else {
+        // User has timezone properly set
+        setTimezoneCompleted(true);
       }
     }
   }, [data?.userStats]);
 
   const handleTimezoneComplete = () => {
     setShowTimezoneDialog(false);
+    setTimezoneCompleted(true);
     // Refresh user stats to get updated timezone
     queryClient.invalidateQueries({ queryKey: ["userStats"] });
   };
@@ -115,10 +136,11 @@ export default function Home() {
     <>
       <TimezoneSelectDialog
         open={showTimezoneDialog}
-        onOpenChange={setShowTimezoneDialog}
+        onOpenChange={() => {}} // Prevent closing via backdrop or escape
         onComplete={handleTimezoneComplete}
+        canClose={false} // Force user to complete timezone setup
       />
-      <OnboardingWizard />
+      {timezoneCompleted && <OnboardingWizard />}
       <div>
         <div className="relative min-h-screen">
           {/* Deep navy background with subtle texture */}

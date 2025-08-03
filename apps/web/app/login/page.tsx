@@ -3,7 +3,15 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Swords, Key, Mail, ArrowRight, Scroll, AlertTriangle, Shield } from "lucide-react";
+import {
+  Swords,
+  Key,
+  Mail,
+  ArrowRight,
+  Scroll,
+  AlertTriangle,
+  Shield,
+} from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -14,7 +22,6 @@ import {
   FormInput,
   SocialLoginButtons,
 } from "@/components/auth";
-import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
 import { useAnonymousUser } from "@/components/anonymous-login-provider";
 import { toast } from "sonner";
 
@@ -25,7 +32,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
   const { isAnonymous } = useAnonymousUser();
 
   // Sign in with email/password
@@ -40,7 +46,7 @@ export default function LoginPage() {
         password,
         callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}`,
       });
-      
+
       // Check if the result contains an error
       if (result?.error) {
         toast.error("Access to the realm denied", {
@@ -49,7 +55,7 @@ export default function LoginPage() {
         });
         return;
       }
-      
+
       // Success case
       toast.success("Welcome back, adventurer!", {
         description: "Your quest continues...",
@@ -57,7 +63,7 @@ export default function LoginPage() {
       });
     } catch (err: any) {
       console.error("Login error:", err);
-      
+
       toast.error("Access to the realm denied", {
         description: "The portal seems unstable. Try again, brave adventurer.",
         icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
@@ -65,9 +71,6 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-  const handleTimezoneComplete = () => {
-    router.push("/");
   };
 
   // Sign in with Google
@@ -78,11 +81,12 @@ export default function LoginPage() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?showTimezone=true`,
+        callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}`,
       });
     } catch (err: any) {
       toast.error("Google portal summoning failed", {
-        description: "The ancient Google spirits are not responding. Try again, adventurer.",
+        description:
+          "The ancient Google spirits are not responding. Try again, adventurer.",
         icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
       });
       console.error(err);
@@ -103,12 +107,14 @@ export default function LoginPage() {
         return;
       }
       await authClient.signIn.anonymous();
-      setShowTimezoneDialog(true);
-      
+
       toast.success("Welcome, mysterious traveler!", {
         description: "Your anonymous journey begins...",
         icon: <Scroll className="h-4 w-4 text-amber-500" />,
       });
+
+      // Redirect to home page where timezone check will be handled
+      router.push("/");
     } catch (err: any) {
       toast.error("Traveler's path blocked", {
         description: "The anonymous portal seems sealed. Try again, wanderer.",
@@ -216,11 +222,6 @@ export default function LoginPage() {
           </motion.div>
         </div>
       </div>
-      <TimezoneSelectDialog
-        open={showTimezoneDialog}
-        onOpenChange={setShowTimezoneDialog}
-        onComplete={handleTimezoneComplete}
-      />
     </>
   );
 }

@@ -3,7 +3,15 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Key, Mail, User, Sparkles, AlertTriangle, CheckCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Key,
+  Mail,
+  User,
+  Sparkles,
+  AlertTriangle,
+  CheckCircle,
+} from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -14,9 +22,11 @@ import {
   FormInput,
   SocialLoginButtons,
 } from "@/components/auth";
-import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
 import { useAnonymousUser } from "@/components/anonymous-login-provider";
-import { registerSchema, type RegisterFormData } from "@/lib/validation/auth-schemas";
+import {
+  registerSchema,
+  type RegisterFormData,
+} from "@/lib/validation/auth-schemas";
 import { toast } from "sonner";
 
 export default function RegisterPage() {
@@ -27,7 +37,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showTimezoneDialog, setShowTimezoneDialog] = useState(false);
   const { isAnonymous } = useAnonymousUser();
 
   // Form validation errors
@@ -41,10 +50,10 @@ export default function RegisterPage() {
   const validateField = (field: keyof RegisterFormData, value: string) => {
     try {
       registerSchema.shape[field].parse(value);
-      setFieldErrors(prev => ({ ...prev, [field]: undefined }));
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
     } catch (error: any) {
       const errorMessage = error.errors?.[0]?.message || "Invalid input";
-      setFieldErrors(prev => ({ ...prev, [field]: errorMessage }));
+      setFieldErrors((prev) => ({ ...prev, [field]: errorMessage }));
     }
   };
 
@@ -66,15 +75,10 @@ export default function RegisterPage() {
     }
   };
 
-  // Handle timezone selection completion
-  const handleTimezoneComplete = () => {
-    router.push("/");
-  };
-
   // Sign up with email/password
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form before submission
     if (!validateForm()) {
       toast.error("Quest creation blocked", {
@@ -98,7 +102,8 @@ export default function RegisterPage() {
       // Check if the result contains an error
       if (result?.error) {
         toast.error("Adventure creation failed", {
-          description: "This scroll address may already be claimed by another adventurer",
+          description:
+            "This scroll address may already be claimed by another adventurer",
           icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
         });
         return;
@@ -109,14 +114,15 @@ export default function RegisterPage() {
         description: "Your epic journey begins now...",
         icon: <CheckCircle className="h-4 w-4 text-purple-500" />,
       });
-      
+
       // Redirect to homepage after successful registration
       router.push("/");
     } catch (err: any) {
       console.error("Registration error:", err);
-      
+
       toast.error("Adventure creation failed", {
-        description: "The realm's scribes are overwhelmed. Try again, brave soul.",
+        description:
+          "The realm's scribes are overwhelmed. Try again, brave soul.",
         icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
       });
     } finally {
@@ -130,10 +136,10 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      // We need to keep callbackURL for social auth, but we'll check for timezone in the callback page
+      // Remove showTimezone=true since timezone check is handled on the main landing page
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?showTimezone=true`,
+        callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}`,
       });
     } catch (err) {
       setError("Failed to summon the Google portal.");
@@ -153,8 +159,9 @@ export default function RegisterPage() {
         router.push("/");
         return;
       }
+      // Remove timezone dialog since timezone check is handled on the main landing page
       await authClient.signIn.anonymous();
-      setShowTimezoneDialog(true);
+      router.push("/");
     } catch (err) {
       setError("Failed to enter as a traveler.");
       console.error(err);
@@ -187,9 +194,9 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => {
                     setName(e.target.value);
-                    if (e.target.value) validateField('name', e.target.value);
+                    if (e.target.value) validateField("name", e.target.value);
                   }}
-                  onBlur={() => name && validateField('name', name)}
+                  onBlur={() => name && validateField("name", name)}
                   placeholder="Noble Adventurer"
                   required
                   icon={<User className="h-4 w-4 text-zinc-500" />}
@@ -214,9 +221,9 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    if (e.target.value) validateField('email', e.target.value);
+                    if (e.target.value) validateField("email", e.target.value);
                   }}
-                  onBlur={() => email && validateField('email', email)}
+                  onBlur={() => email && validateField("email", email)}
                   placeholder="your-email@realm.com"
                   required
                   icon={<Mail className="h-4 w-4 text-zinc-500" />}
@@ -241,9 +248,10 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    if (e.target.value) validateField('password', e.target.value);
+                    if (e.target.value)
+                      validateField("password", e.target.value);
                   }}
-                  onBlur={() => password && validateField('password', password)}
+                  onBlur={() => password && validateField("password", password)}
                   placeholder="••••••••"
                   required
                   icon={<Key className="h-4 w-4 text-zinc-500" />}
@@ -263,7 +271,8 @@ export default function RegisterPage() {
                   </motion.p>
                 ) : (
                   <p className="text-xs text-zinc-500">
-                    At least 8 characters with at least one letter and one number
+                    At least 8 characters with at least one letter and one
+                    number
                   </p>
                 )}
               </div>
@@ -314,11 +323,6 @@ export default function RegisterPage() {
           </motion.div>
         </div>
       </div>
-      <TimezoneSelectDialog
-        open={showTimezoneDialog}
-        onOpenChange={setShowTimezoneDialog}
-        onComplete={handleTimezoneComplete}
-      />
     </>
   );
 }

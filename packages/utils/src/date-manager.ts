@@ -53,6 +53,20 @@ export function getTodayMidnight(timezone: string): Date {
   return fromZonedTime(startOfDayZoned, timezone);
 }
 
+export function getLocalDateMidnight(
+  date: Date | string | null | undefined,
+  timezone?: string
+): Date {
+  const dateObj = toDateObject(date);
+  if (!dateObj) return new Date();
+  // If timezone is provided, convert to that timezone
+  const zonedDate = timezone ? toZonedTime(dateObj, timezone) : dateObj;
+  // Get start of day in that timezone
+  const startOfDayZoned = startOfDay(zonedDate);
+  // Convert back to UTC for consistent storage/comparison
+  return fromZonedTime(startOfDayZoned, timezone || "UTC");
+}
+
 // Compare two dates ignoring time component
 export function isSameDay(date1: Date | null, date2: Date | null): boolean {
   if (!date1 || !date2) return false;

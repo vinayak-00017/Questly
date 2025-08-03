@@ -97,7 +97,7 @@ export function OnboardingWizard() {
               <span>Level Up System</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-zinc-300">
-              <Calendar className="h-4 w-4 text-blue-500" />
+              <Flame className="h-4 w-4 text-blue-500" />
               <span>Daily Quests</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-zinc-300">
@@ -201,7 +201,7 @@ export function OnboardingWizard() {
 
   return (
     <Dialog open={showOnboarding} onOpenChange={() => {}}>
-      <DialogContent className="max-w-2xl bg-gradient-to-br from-slate-900/95 to-slate-800/95 border-slate-700 text-white">
+      <DialogContent className=" [&>button]:hidden max-w-2xl bg-gradient-to-br from-slate-900/95 to-slate-800/95 border-slate-700 text-white">
         <DialogHeader>
           <DialogTitle className="sr-only">
             Onboarding Wizard - {currentStepData.title}
@@ -259,13 +259,13 @@ export function OnboardingWizard() {
             {/* Footer */}
             <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-700/50">
               <div className="flex items-center gap-3">
-                <Button
+                {/* <Button
                   variant="ghost"
                   onClick={handleSkip}
                   className="text-slate-400 hover:text-white"
                 >
                   Skip for now
-                </Button>
+                </Button> */}
 
                 {localStep > 0 && (
                   <Button
