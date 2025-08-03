@@ -131,7 +131,7 @@ export const AchievementNotification: React.FC<
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.3 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[120] pointer-events-auto"
             onClick={handleClose}
           />
 
@@ -150,7 +150,7 @@ export const AchievementNotification: React.FC<
               damping: 25,
               duration: 0.4,
             }}
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[110] w-full max-w-md mx-4"
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[130] w-full max-w-md mx-4 pointer-events-auto"
           >
             <Card
               className={cn(
