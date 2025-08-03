@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { Calendar } from "lucide-react";
+import { Target } from "lucide-react";
 import QuestCard from "./quest-card";
 import { questApi } from "@/services/quest-api";
 import { QuestTypeChooserDialog } from "./quest-type-chooser-dialog";
@@ -59,8 +59,8 @@ const TodaysQuestsCard = () => {
         <QuestCard
           title="Today's Quests"
           description="All your daily and side quests in one place"
-          Icon={Calendar}
-          EmptyIcon={Calendar}
+          Icon={Target}
+          EmptyIcon={Target}
           type="today"
           themeColor="purple"
           fetchFn={questApi.fetchTodaysQuests}

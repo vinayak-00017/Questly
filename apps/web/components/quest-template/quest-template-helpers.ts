@@ -1,5 +1,5 @@
 import { QuestPriority } from "@questly/types";
-import { Crown, Star, Shield, Target, AlertTriangle } from "lucide-react";
+import { Crown, Star, Shield, Target, AlertTriangle, Axe } from "lucide-react";
 
 // Helper function to get quest priority from basePoints
 export const getQuestPriority = (
@@ -41,7 +41,7 @@ export const getImportanceStyle = (priority: QuestPriority) => {
     case QuestPriority.Minor:
       return {
         bg: "bg-gradient-to-r from-[#2ecc71]/20 to-[#27ae60]/20 text-[#2ecc71] border-[#2ecc71]/30",
-        icon: Target,
+        icon: Axe,
         label: "Minor",
       };
     case QuestPriority.Optional:
@@ -52,8 +52,8 @@ export const getImportanceStyle = (priority: QuestPriority) => {
       };
     default:
       return {
-        bg: "bg-gradient-to-r from-[#3d3d5c]/20 to-[#3d3d5c]/20 text-[#c3c3cc] border-[#3d3d5c]/30",
-        icon: Target,
+        bg: "bg-gradient-to-r from-[#00aaff]/20 to-[#0099e6]/20 text-[#00aaff] border-[#00aaff]/30",
+        icon: Shield,
         label: "Standard",
       };
   }

@@ -136,6 +136,8 @@ export function AppSidebar() {
           ></button> */}
           <button
             onClick={handleLogout}
+            aria-label="Logout"
+            title="Logout"
             className={cn(
               "flex w-full items-center text-left rounded-lg transition-all duration-200 group",
               "hover:bg-slate-800/40",

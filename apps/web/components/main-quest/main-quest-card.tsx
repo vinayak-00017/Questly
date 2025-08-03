@@ -3,18 +3,17 @@
 import React, { useState } from "react";
 import {
   Clock,
-  Star,
-  Crown,
   ArrowUpRight,
-  Target,
   ChevronDown,
   ChevronUp,
   SwordsIcon,
   Shield,
-  Scroll,
   Sparkles,
-  CalendarDays,
-  Compass,
+  Telescope,
+  Sword,
+  Anchor,
+  Radio,
+  BookOpen,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
@@ -44,17 +43,17 @@ const MainQuestCard = () => {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case Challenge:
-        return Target;
+        return Anchor;
       case Combat:
-        return SwordsIcon;
+        return Sword;
       case Creation:
         return Sparkles;
       case Exploration:
-        return Compass;
+        return Telescope;
       case Knowledge:
-        return Scroll;
+        return BookOpen;
       case Social:
-        return CalendarDays;
+        return Radio;
       default:
         return Shield; // Default fallback icon
     }
@@ -66,33 +65,33 @@ const MainQuestCard = () => {
       case Legendary:
         return {
           cardClass:
-            "bg-gradient-to-br from-red-950/50 via-rose-950/40 to-red-900/50 border-red-800/70 ring-2 ring-red-700/40 hover:ring-red-600/60 hover:shadow-red-950/40 shadow-red-950/30",
+            "bg-gradient-to-br from-red-950/40 via-stone-950/35 to-red-950/35 border-red-900/50 ring-2 ring-red-800/25 hover:ring-red-700/35 hover:shadow-red-950/30 shadow-red-950/20",
           accentClass:
-            "bg-gradient-to-b from-red-700/70 to-red-800/80 group-hover:w-2 animate-pulse",
-          glowClass: "shadow-lg shadow-red-950/50 hover:shadow-red-900/70",
+            "bg-gradient-to-b from-red-800/50 to-red-900/60 group-hover:w-2 animate-pulse",
+          glowClass: "shadow-lg shadow-red-950/40 hover:shadow-red-950/50",
           iconBg:
-            "bg-gradient-to-br from-red-800/60 to-red-900/50 border-red-700/60",
+            "bg-gradient-to-br from-red-900/45 to-stone-950/40 border-red-800/45",
         };
       case Heroic:
         return {
           cardClass:
-            "bg-gradient-to-br from-purple-950/40 via-purple-900/30 to-blue-950/40 border-purple-500/60 ring-2 ring-purple-400/30 hover:ring-purple-300/50 hover:shadow-purple-900/30 shadow-purple-950/20",
+            "bg-gradient-to-br from-purple-950/40 via-slate-950/35 to-purple-950/35 border-purple-900/50 ring-2 ring-purple-800/25 hover:ring-purple-700/35 hover:shadow-purple-950/30 shadow-purple-950/20",
           accentClass:
-            "bg-gradient-to-b from-purple-400/80 to-purple-600/80 group-hover:w-2",
+            "bg-gradient-to-b from-purple-800/45 to-purple-900/55 group-hover:w-2",
           glowClass:
-            "shadow-lg shadow-purple-900/40 hover:shadow-purple-800/60",
+            "shadow-lg shadow-purple-950/40 hover:shadow-purple-950/50",
           iconBg:
-            "bg-gradient-to-br from-purple-700/50 to-purple-800/40 border-purple-500/50",
+            "bg-gradient-to-br from-purple-900/40 to-slate-950/35 border-purple-800/40",
         };
       case Rare:
         return {
           cardClass:
-            "bg-gradient-to-br from-blue-950/40 via-blue-900/30 to-cyan-950/40 border-blue-500/60 ring-2 ring-blue-400/30 hover:ring-blue-300/50 hover:shadow-blue-900/30 shadow-blue-950/20",
+            "bg-gradient-to-br from-blue-950/40 via-slate-950/35 to-blue-950/35 border-blue-900/50 ring-2 ring-blue-800/25 hover:ring-blue-700/35 hover:shadow-blue-950/30 shadow-blue-950/20",
           accentClass:
-            "bg-gradient-to-b from-blue-400/80 to-blue-600/80 group-hover:w-2",
-          glowClass: "shadow-lg shadow-blue-900/40 hover:shadow-blue-800/60",
+            "bg-gradient-to-b from-blue-800/45 to-blue-900/55 group-hover:w-2",
+          glowClass: "shadow-lg shadow-blue-950/40 hover:shadow-blue-950/50",
           iconBg:
-            "bg-gradient-to-br from-blue-700/50 to-blue-800/40 border-blue-500/50",
+            "bg-gradient-to-br from-blue-900/40 to-slate-950/35 border-blue-800/40",
         };
       case Common:
       default:
@@ -310,11 +309,11 @@ const MainQuestCard = () => {
                                       className={cn(
                                         "bg-gradient-to-r border rounded-2xl text-xs px-3 py-1.5 font-bold uppercase tracking-wider whitespace-nowrap shadow-lg drop-shadow-md",
                                         quest.importance === Legendary &&
-                                          "from-red-800/90 to-red-900/90 text-red-100 border-red-700/70 shadow-red-950/60 animate-pulse",
+                                          "from-red-900/80 to-stone-900/80 text-red-200/90 border-red-800/50 shadow-red-950/40 animate-pulse",
                                         quest.importance === Heroic &&
-                                          "from-purple-600/90 to-purple-700/90 text-purple-50 border-purple-400/60 shadow-purple-900/50",
+                                          "from-purple-900/80 to-slate-900/80 text-purple-200/90 border-purple-800/50 shadow-purple-950/40",
                                         quest.importance === Rare &&
-                                          "from-blue-600/90 to-blue-700/90 text-blue-50 border-blue-400/60 shadow-blue-900/50",
+                                          "from-blue-900/80 to-slate-900/80 text-blue-200/90 border-blue-800/50 shadow-blue-950/40",
                                         quest.importance === Common &&
                                           "from-slate-600/90 to-slate-700/90 text-slate-50 border-slate-400/60 shadow-slate-900/50"
                                       )}
