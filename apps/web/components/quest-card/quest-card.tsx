@@ -6,7 +6,14 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { QuestInstance } from "@questly/types";
-import { Compass, Flame, LucideIcon, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Compass,
+  Flame,
+  LucideIcon,
+  Plus,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 
 import QuestInstanceItem from "./quest-instance-item";
 import { useQuestTheme } from "@/hooks/useQuestTheme";
@@ -79,9 +86,11 @@ const QuestCard: React.FC<QuestCardProps> = ({
       animationDelay: string;
     }>
   >([]);
-  
+
   // Collapse/Expand all state
-  const [globalCollapseState, setGlobalCollapseState] = useState<'collapsed' | 'expanded' | null>(null);
+  const [globalCollapseState, setGlobalCollapseState] = useState<
+    "collapsed" | "expanded" | null
+  >(null);
   const [areAllCollapsed, setAreAllCollapsed] = useState(true);
 
   // Generate particles on the client side only
@@ -145,10 +154,10 @@ const QuestCard: React.FC<QuestCardProps> = ({
   // Handle toggle collapse/expand all
   const handleToggleAll = () => {
     if (areAllCollapsed) {
-      setGlobalCollapseState('expanded');
+      setGlobalCollapseState("expanded");
       setAreAllCollapsed(false);
     } else {
-      setGlobalCollapseState('collapsed');
+      setGlobalCollapseState("collapsed");
       setAreAllCollapsed(true);
     }
     // Reset after a brief moment to allow individual control again
@@ -156,7 +165,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
   };
 
   return (
-    <Card className="w-full overflow-hidden bg-gradient-to-br from-zinc-800 via-zinc-850 to-zinc-900 border border-zinc-700/50 shadow-xl shadow-black/20 relative">
+    <Card className="w-full overflow-hidden bg-card/80 border border-border/50 shadow-lg backdrop-blur-sm hover:border-primary/20 transition-all duration-300 relative">
       {/* Enhanced background with animated effect */}
       <div
         className={`absolute inset-0 bg-gradient-to-br ${colorStyles.gradient} pointer-events-none`}
@@ -182,30 +191,30 @@ const QuestCard: React.FC<QuestCardProps> = ({
         <div className="flex w-full px-6 pt-6 pb-4 items-center justify-between">
           <div className="flex items-center gap-4">
             <div
-              className={`bg-black/40 w-10 h-10 rounded-full flex items-center justify-center shadow-md ${colorStyles.iconBg} pulse-glow`}
+              className={`bg-muted/50 w-10 h-10 rounded-xl flex items-center justify-center shadow-md border border-primary/30 backdrop-blur-sm`}
             >
-              <Icon className={`h-5 w-5 ${colorStyles.iconColor}`} />
+              <Icon className={`h-5 w-5 text-primary`} />
             </div>
             <div>
-              <CardTitle className="text-lg font-medieval text-white/90">
+              <CardTitle className="text-lg font-bold text-foreground">
                 {title}
               </CardTitle>
-              <CardDescription className="text-zinc-400 text-xs mt-0.5">
+              <CardDescription className="text-muted-foreground text-sm mt-0.5">
                 {description}
               </CardDescription>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             {/* Collapse/Expand All Toggle */}
             {sortedQuests.length > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-400">View:</span>
+                <span className="text-xs text-muted-foreground">View:</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleToggleAll}
-                  className="h-8 px-2 text-xs text-zinc-400 hover:text-white hover:bg-black/30 transition-colors"
+                  className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                 >
                   {areAllCollapsed ? (
                     <>
@@ -221,7 +230,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
                 </Button>
               </div>
             )}
-            
+
             {type === "today" && (
               <Button
                 variant="outline"
@@ -235,7 +244,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
             )}
           </div>
         </div>
-        
+
         <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           {sortedQuests.length > 0 ? (
             sortedQuests.map((quest: QuestInstance) => (

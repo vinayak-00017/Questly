@@ -1,7 +1,8 @@
 import React from "react";
-import { CalendarDays, Trophy } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { QuestInstance } from "@questly/types";
 import { cn } from "@/lib/utils";
+import QuestXpTag from "./quest-xp-tag";
 
 interface QuestMetadataProps {
   quest: QuestInstance;
@@ -18,29 +19,29 @@ const QuestMetadata = ({
 }: QuestMetadataProps) => {
   if (variant === "compact") {
     return (
-      <div
+      <QuestXpTag
+        xpReward={quest.xpReward}
+        isCompleted={isCompleted}
+        variant="compact"
         className={cn(
-          "text-sm font-medium flex items-center gap-1.5",
+          "text-sm font-medium",
           isCompleted ? "text-green-400" : colorStyles.xpColor
         )}
-      >
-        <Trophy className="h-4 w-4" />
-        <span>+{quest.xpReward} XP</span>
-      </div>
+      />
     );
   }
 
   return (
     <div className="flex items-center gap-4 pt-1">
-      <div
+      <QuestXpTag
+        xpReward={quest.xpReward}
+        isCompleted={isCompleted}
+        variant="full"
         className={cn(
-          "text-xs font-medium flex items-center gap-1",
+          "text-xs font-medium",
           isCompleted ? "text-green-400" : colorStyles.xpColor
         )}
-      >
-        <Trophy className="h-3 w-3" />
-        <span>+{quest.xpReward} XP</span>
-      </div>
+      />
 
       {quest.date && (
         <div

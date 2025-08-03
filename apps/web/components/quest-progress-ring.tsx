@@ -77,20 +77,18 @@ const QuestProgressRing = () => {
     <div className="bg-gradient-to-br from-black via-zinc-900 to-zinc-950 border border-zinc-700/50 rounded-lg p-4 relative overflow-hidden">
       {/* Subtle accent gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-orange-600/5 via-transparent to-red-600/5 pointer-events-none" />
-      
+
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-orange-500/40 via-red-500/40 to-orange-500/40"></div>
 
-      <div className="relative z-10">
+      <div className="relative z-10 p-2">
         {/* Header */}
         <div className="flex items-center gap-2 mb-4">
           <div className="bg-gradient-to-br from-orange-500/20 to-red-600/20 rounded-full flex items-center justify-center shadow-lg border border-orange-400/30 w-8 h-8">
             <Target className="text-orange-300 h-4 w-4" />
           </div>
           <div>
-            <h3 className="font-bold text-white text-sm">
-              Today's Progress
-            </h3>
+            <h3 className="font-bold text-white text-sm">Today's Progress</h3>
             <p className="text-orange-200/70 text-xs">
               Quest completion by points
             </p>

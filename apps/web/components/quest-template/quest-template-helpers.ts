@@ -2,8 +2,10 @@ import { QuestPriority } from "@questly/types";
 import { Crown, Star, Shield, Target, AlertTriangle } from "lucide-react";
 
 // Helper function to get quest priority from basePoints
-export const getQuestPriority = (basePoints: number | string): QuestPriority => {
-  if (typeof basePoints === 'string') {
+export const getQuestPriority = (
+  basePoints: number | string
+): QuestPriority => {
+  if (typeof basePoints === "string") {
     return basePoints as QuestPriority;
   }
   // Map number values to priority levels based on points-map.ts
@@ -20,39 +22,39 @@ export const getImportanceStyle = (priority: QuestPriority) => {
   switch (priority) {
     case QuestPriority.Critical:
       return {
-        bg: "bg-gradient-to-r from-red-500/20 to-red-600/20 text-red-400 border-red-500/30",
+        bg: "bg-gradient-to-r from-[#e74c3c]/20 to-[#c0392b]/20 text-[#e74c3c] border-[#e74c3c]/30",
         icon: Crown,
-        label: "Critical"
+        label: "Critical",
       };
     case QuestPriority.Important:
       return {
-        bg: "bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-orange-400 border-orange-500/30",
+        bg: "bg-gradient-to-r from-[#f1c40f]/20 to-[#f39c12]/20 text-[#f1c40f] border-[#f1c40f]/30",
         icon: Star,
-        label: "Important"
+        label: "Important",
       };
     case QuestPriority.Standard:
       return {
-        bg: "bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-400 border-blue-500/30",
+        bg: "bg-gradient-to-r from-[#00aaff]/20 to-[#0099e6]/20 text-[#00aaff] border-[#00aaff]/30",
         icon: Shield,
-        label: "Standard"
+        label: "Standard",
       };
     case QuestPriority.Minor:
       return {
-        bg: "bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border-green-500/30",
+        bg: "bg-gradient-to-r from-[#2ecc71]/20 to-[#27ae60]/20 text-[#2ecc71] border-[#2ecc71]/30",
         icon: Target,
-        label: "Minor"
+        label: "Minor",
       };
     case QuestPriority.Optional:
       return {
-        bg: "bg-gradient-to-r from-gray-500/20 to-slate-500/20 text-gray-400 border-gray-500/30",
+        bg: "bg-gradient-to-r from-[#3d3d5c]/20 to-[#3d3d5c]/20 text-[#c3c3cc] border-[#3d3d5c]/30",
         icon: AlertTriangle,
-        label: "Optional"
+        label: "Optional",
       };
     default:
       return {
-        bg: "bg-gradient-to-r from-gray-500/20 to-slate-500/20 text-gray-400 border-gray-500/30",
+        bg: "bg-gradient-to-r from-[#3d3d5c]/20 to-[#3d3d5c]/20 text-[#c3c3cc] border-[#3d3d5c]/30",
         icon: Target,
-        label: "Standard"
+        label: "Standard",
       };
   }
 };
@@ -60,11 +62,11 @@ export const getImportanceStyle = (priority: QuestPriority) => {
 export const getTypeColor = (type: string) => {
   switch (type) {
     case "daily":
-      return "bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30";
+      return "bg-gradient-to-r from-[#f1c40f]/20 to-[#f39c12]/20 text-[#f1c40f] border-[#f1c40f]/30";
     case "side":
-      return "bg-gradient-to-r from-sky-500/20 to-indigo-500/20 text-sky-400 border-sky-500/30";
+      return "bg-gradient-to-r from-[#00aaff]/20 to-[#0099e6]/20 text-[#00aaff] border-[#00aaff]/30";
     default:
-      return "bg-gradient-to-r from-gray-500/20 to-slate-500/20 text-gray-400 border-gray-500/30";
+      return "bg-gradient-to-r from-[#3d3d5c]/20 to-[#3d3d5c]/20 text-[#c3c3cc] border-[#3d3d5c]/30";
   }
 };
 
@@ -72,23 +74,23 @@ export const getCardGradient = (type: string, isActive: boolean) => {
   const baseOpacity = isActive ? "80" : "40";
   switch (type) {
     case "daily":
-      return `bg-gradient-to-br from-slate-800/${baseOpacity} via-amber-900/10 to-slate-900/${baseOpacity}`;
+      return `bg-gradient-to-br from-[#2a2a3d]/${baseOpacity} via-[#f1c40f]/10 to-[#2a2a3d]/${baseOpacity}`;
     case "side":
-      return `bg-gradient-to-br from-slate-800/${baseOpacity} via-sky-900/10 to-slate-900/${baseOpacity}`;
+      return `bg-gradient-to-br from-[#2a2a3d]/${baseOpacity} via-[#00aaff]/10 to-[#2a2a3d]/${baseOpacity}`;
     default:
-      return `bg-gradient-to-br from-slate-800/${baseOpacity} to-slate-900/${baseOpacity}`;
+      return `bg-gradient-to-br from-[#2a2a3d]/${baseOpacity} to-[#2a2a3d]/${baseOpacity}`;
   }
 };
 
 export const getBorderColor = (type: string, isActive: boolean) => {
-  if (!isActive) return "border-slate-800/50";
+  if (!isActive) return "border-[#3d3d5c]/50";
   switch (type) {
     case "daily":
-      return "border-amber-500/20 hover:border-amber-500/40";
+      return "border-[#f1c40f]/20 hover:border-[#f1c40f]/40";
     case "side":
-      return "border-sky-500/20 hover:border-sky-500/40";
+      return "border-[#00aaff]/20 hover:border-[#00aaff]/40";
     default:
-      return "border-slate-700/50 hover:border-slate-600/50";
+      return "border-[#3d3d5c]/50 hover:border-[#3d3d5c]/70";
   }
 };
 

@@ -45,27 +45,40 @@ const TodaysQuestsCard = () => {
 
   return (
     <>
-      <QuestCard
-        title="Today's Quests"
-        description="All your daily and side quests in one place"
-        Icon={Calendar}
-        EmptyIcon={Calendar}
-        type="today"
-        themeColor="purple"
-        fetchFn={questApi.fetchTodaysQuests}
-        queryKey={["todaysQuests"]}
-        dataSelector={(data) => [...(data?.dailyQuests || []), ...(data?.sideQuests || [])]}
-        emptyStateTitle="No Quests For Today"
-        emptyStateDescription="Add daily or side quests to see them here"
-        onAddQuest={handleAddQuest}
-      />
+      <div className="relative">
+        {/* Background gradient and glow */}
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-900/10 to-transparent rounded-lg" />
+        <div
+          className="absolute inset-0 rounded-lg"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.05) 0%, transparent 70%)",
+          }}
+        />
 
+        <QuestCard
+          title="Today's Quests"
+          description="All your daily and side quests in one place"
+          Icon={Calendar}
+          EmptyIcon={Calendar}
+          type="today"
+          themeColor="purple"
+          fetchFn={questApi.fetchTodaysQuests}
+          queryKey={["todaysQuests"]}
+          dataSelector={(data) => [
+            ...(data?.dailyQuests || []),
+            ...(data?.sideQuests || []),
+          ]}
+          emptyStateTitle="No Quests For Today"
+          emptyStateDescription="Add daily or side quests to see them here"
+          onAddQuest={handleAddQuest}
+        />
+      </div>{" "}
       <QuestTypeChooserDialog
         open={isTypeChooserOpen}
         onOpenChange={setIsTypeChooserOpen}
         onChoose={handleQuestTypeSelect}
       />
-
       {isDialogOpen && selectedQuestType && (
         <CurrentAddDialog
           open={isDialogOpen}

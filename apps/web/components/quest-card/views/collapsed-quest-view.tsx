@@ -52,7 +52,7 @@ const CollapsedQuestView = ({
       className={cn(
         "bg-gradient-to-br border shadow-lg shadow-black/10 transition-all duration-200 cursor-pointer relative overflow-hidden group",
         isCompleted
-          ? "from-black/30 to-black/50 border-green-500/40"
+          ? `from-black/30 to-black/50 ${colorStyles.cornerBorder}`
           : "from-black/40 to-black/60 border-zinc-700/60",
         colorStyles.cardHoverBorder,
         isCompleted && "completed-quest"
@@ -90,7 +90,9 @@ const CollapsedQuestView = ({
                 <span
                   className={cn(
                     "text-base font-medieval tracking-wide capitalize",
-                    isCompleted ? "text-green-500" : colorStyles.typeLabel
+                    isCompleted
+                      ? `${colorStyles.iconColor}/60`
+                      : colorStyles.iconColor
                   )}
                 >
                   {quest.type} Quest
@@ -116,7 +118,7 @@ const CollapsedQuestView = ({
               <h3
                 className={cn(
                   "font-bold text-xl truncate leading-tight capitalize",
-                  isCompleted ? "text-green-300/80" : "text-white"
+                  isCompleted ? `${colorStyles.iconColor}/80` : "text-white"
                 )}
               >
                 {quest.title}
@@ -124,18 +126,9 @@ const CollapsedQuestView = ({
             </div>
           </div>
 
-          {/* Center - XP display */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <QuestMetadata
-              quest={quest}
-              isCompleted={isCompleted}
-              colorStyles={colorStyles}
-              variant="compact"
-            />
-          </div>
-
-          {/* Far right - Action buttons */}
-          <div className="flex-shrink-0" title="">
+          {/* Right side - Action buttons and XP vertically aligned */}
+          <div className="flex flex-col items-end gap-2 flex-shrink-0">
+            {/* Action buttons */}
             <QuestCardActionButtons
               displayCompleted={isCompleted}
               queryKey={queryKey}
@@ -146,6 +139,14 @@ const CollapsedQuestView = ({
               toggleExpand={toggleExpand}
               onEditClick={handleEditClick}
               isCollapsed={true}
+            />
+
+            {/* XP display */}
+            <QuestMetadata
+              quest={quest}
+              isCompleted={isCompleted}
+              colorStyles={colorStyles}
+              variant="compact"
             />
           </div>
         </div>

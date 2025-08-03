@@ -38,42 +38,42 @@ export function AppSidebar() {
       label: "Home Base",
       href: "/",
       icon: (
-        <IconScript className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+        <IconScript className="h-5 w-5 shrink-0 text-amber-600/70 hover:text-amber-500/90 transition-colors" />
       ),
     },
     {
       label: "Main Quests",
       href: "/main-quests",
       icon: (
-        <IconSwords className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+        <IconSwords className="h-5 w-5 shrink-0 text-purple-500/70 hover:text-purple-400/90 transition-colors" />
       ),
     },
     // {
     //   label: "Daily Quests",
     //   href: "#",
     //   icon: (
-    //     <IconFlame className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+    //     <IconFlame className="h-5 w-5 shrink-0 text-orange-500/70 hover:text-orange-400/90 transition-colors" />
     //   ),
     // },
     // {
     //   label: "Side Quests",
     //   href: "#",
     //   icon: (
-    //     <IconCompass className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+    //     <IconCompass className="h-5 w-5 shrink-0 text-cyan-500/70 hover:text-cyan-400/90 transition-colors" />
     //   ),
     // },
     {
       label: "Quest Manager",
       href: "/quest-manager",
       icon: (
-        <IconAdjustmentsAlt className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+        <IconAdjustmentsAlt className="h-5 w-5 shrink-0 text-blue-500/70 hover:text-blue-400/90 transition-colors" />
       ),
     },
     {
       label: "Profile",
       href: "/profile",
       icon: (
-        <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+        <IconUserBolt className="h-5 w-5 shrink-0 text-emerald-500/70 hover:text-emerald-400/90 transition-colors" />
       ),
     },
   ];
@@ -96,7 +96,7 @@ export function AppSidebar() {
                 label: "Privacy Policy",
                 href: "/privacy-policy",
                 icon: (
-                  <div className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300 flex items-center justify-center">
+                  <div className="h-5 w-5 shrink-0 text-slate-400 hover:text-slate-300 flex items-center justify-center transition-colors">
                     <span className="text-xs">🔒</span>
                   </div>
                 ),
@@ -107,7 +107,7 @@ export function AppSidebar() {
                 label: "Terms of Use",
                 href: "/terms-of-use",
                 icon: (
-                  <div className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300 flex items-center justify-center">
+                  <div className="h-5 w-5 shrink-0 text-slate-400 hover:text-slate-300 flex items-center justify-center transition-colors">
                     <span className="text-xs">📋</span>
                   </div>
                 ),
@@ -137,20 +137,21 @@ export function AppSidebar() {
           <button
             onClick={handleLogout}
             className={cn(
-              "flex w-full items-center text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none",
+              "flex w-full items-center text-left rounded-lg transition-all duration-200 group",
+              "hover:bg-slate-800/40",
               open ? "px-3 py-2" : "justify-center p-2"
             )}
           >
-            <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-600 dark:text-neutral-300" />
+            <IconArrowLeft className="h-5 w-5 shrink-0 text-slate-400 group-hover:text-red-400 transition-colors" />
             {open && (
-              <span className="ml-2 text-neutral-700 dark:text-neutral-200">
+              <span className="ml-2 text-slate-300 group-hover:text-red-300 font-medium transition-colors">
                 Logout
               </span>
             )}
           </button>
 
           {/* Logo moved to bottom */}
-          <div className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700">
+          <div className="mt-2 pt-2 border-t border-slate-700/50">
             <Logo />
           </div>
         </div>
@@ -164,28 +165,29 @@ export const Logo = () => {
     <a
       href="#"
       className={cn(
-        "relative z-20 flex items-center py-2",
+        "relative z-20 flex items-center py-2 group transition-all duration-200 rounded-lg hover:bg-slate-800/30",
         open ? "justify-start px-2" : "justify-center px-0"
       )}
     >
-      <Image
-        className={cn(open ? "h-10 w-10" : "h-8 w-8")}
-        width={50}
-        height={50}
-        src={"/q_tp.png"}
-        alt="questly"
-      ></Image>
-      {/* <div
-        className={cn(
-          "flex-shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-gradient-to-br from-orange-500 to-amber-500 shadow-sm",
-          open ? "h-6 w-6" : "h-8 w-8"
-        )}
-      /> */}
+      <div className="relative">
+        <Image
+          className={cn(
+            "transition-all duration-200 drop-shadow-md",
+            open ? "h-10 w-10" : "h-8 w-8"
+          )}
+          width={50}
+          height={50}
+          src={"/q_tp.png"}
+          alt="questly"
+        />
+        {/* Subtle glow behind logo */}
+        <div className="absolute inset-0 bg-amber-500/15 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+      </div>
       {open && (
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="ml-2.5 font-semibold text-base whitespace-pre text-neutral-700 dark:text-white"
+          className="ml-2.5 font-bold text-lg whitespace-pre bg-gradient-to-r from-amber-500/90 to-orange-500/90 bg-clip-text text-transparent drop-shadow-sm"
         >
           Questly
         </motion.span>

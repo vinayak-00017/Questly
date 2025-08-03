@@ -16,24 +16,24 @@ export const AuthFormCard: React.FC<AuthFormCardProps> = ({
   variant = "purple",
 }) => {
   const borderColor =
-    variant === "purple" ? "border-purple-900/30" : "border-amber-900/30";
+    variant === "purple" ? "border-[#8c7ae6]/30" : "border-[#f1c40f]/30";
 
   const cornerBorderColor =
-    variant === "purple" ? "border-purple-500/30" : "border-amber-500/30";
+    variant === "purple" ? "border-[#8c7ae6]/30" : "border-[#f1c40f]/30";
 
   const gradientFrom =
-    variant === "purple" ? "from-purple-500/50" : "from-amber-500/50";
+    variant === "purple" ? "from-[#8c7ae6]/50" : "from-[#f1c40f]/50";
   const gradientVia =
-    variant === "purple" ? "via-amber-500/50" : "via-purple-500/50";
+    variant === "purple" ? "via-[#f1c40f]/50" : "via-[#8c7ae6]/50";
   const gradientTo =
-    variant === "purple" ? "to-purple-500/50" : "to-amber-500/50";
+    variant === "purple" ? "to-[#8c7ae6]/50" : "to-[#f1c40f]/50";
 
   return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.4, duration: 0.6 }}
-      className={`relative bg-black/40 backdrop-blur-sm py-8 px-10 shadow-xl rounded-xl border ${borderColor} overflow-hidden`}
+      className={`relative bg-black/40 backdrop-blur-sm py-8 px-10 shadow-xl rounded-2xl border ${borderColor} overflow-hidden`}
     >
       {/* Corner decorations */}
       <div

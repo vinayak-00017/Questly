@@ -97,7 +97,7 @@ const QuestTracker: React.FC = () => {
   // Condensed view when no quests are tracked and component is collapsed
   if (trackedQuests.length === 0 && !isExpanded) {
     return (
-      <Card className="bg-gradient-to-br from-slate-800/80 via-slate-900/60 to-slate-800/80 border-amber-500/20 backdrop-blur-sm">
+      <Card className="bg-card/80 border-border/50 backdrop-blur-sm hover:border-primary/20 transition-all duration-300">
         <CardHeader>
           <CondensedHeader
             onToggleExpanded={toggleExpanded}
@@ -115,7 +115,7 @@ const QuestTracker: React.FC = () => {
 
   // Full expanded view
   return (
-    <Card className="bg-gradient-to-br from-slate-800/80 via-slate-900/60 to-slate-800/80 border-amber-500/20 backdrop-blur-sm">
+    <Card className="bg-card/80 border-border/50 backdrop-blur-sm hover:border-primary/20 transition-all duration-300">
       <CardHeader className="pb-4">
         <QuestTrackerHeader
           trackedQuestsCount={trackedQuests.length}
@@ -129,7 +129,9 @@ const QuestTracker: React.FC = () => {
           onTemplateChange={setSelectedTemplate}
           availableTemplates={availableTemplates}
           onAddQuest={handleAddQuestToTracker}
-          onToggleExpanded={trackedQuests.length === 0 ? toggleExpanded : undefined}
+          onToggleExpanded={
+            trackedQuests.length === 0 ? toggleExpanded : undefined
+          }
         />
       </CardHeader>
 

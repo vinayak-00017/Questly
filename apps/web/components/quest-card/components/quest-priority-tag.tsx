@@ -17,39 +17,39 @@ const QuestPriorityTag = ({
 
   const priorityStyles = {
     optional: {
-      bg: "bg-gradient-to-r from-slate-800/80 to-slate-700/80",
-      text: "text-slate-200",
-      border: "border-slate-600",
-      shadow: "shadow-slate-700/30",
-      dot: "bg-slate-400",
+      bg: "bg-gradient-to-r from-[#3d3d5c]/80 to-[#3d3d5c]/60",
+      text: "text-[#c3c3cc]",
+      border: "border-[#3d3d5c]",
+      shadow: "shadow-[#3d3d5c]/30",
+      dot: "bg-[#c3c3cc]",
     },
     minor: {
-      bg: "bg-gradient-to-r from-blue-800/80 to-blue-700/80",
-      text: "text-blue-200",
-      border: "border-blue-600",
-      shadow: "shadow-blue-700/30",
-      dot: "bg-blue-400",
+      bg: "bg-gradient-to-r from-[#00aaff]/80 to-[#0099e6]/80",
+      text: "text-[#ffffff]",
+      border: "border-[#00aaff]",
+      shadow: "shadow-[#00aaff]/30",
+      dot: "bg-[#ffffff]",
     },
     standard: {
-      bg: "bg-gradient-to-r from-emerald-800/80 to-emerald-700/80",
-      text: "text-emerald-200",
-      border: "border-emerald-600",
-      shadow: "shadow-emerald-700/30",
-      dot: "bg-emerald-400",
+      bg: "bg-gradient-to-r from-[#2ecc71]/80 to-[#27ae60]/80",
+      text: "text-[#ffffff]",
+      border: "border-[#2ecc71]",
+      shadow: "shadow-[#2ecc71]/30",
+      dot: "bg-[#ffffff]",
     },
     important: {
-      bg: "bg-gradient-to-r from-amber-800/80 to-amber-700/80",
-      text: "text-amber-200",
-      border: "border-amber-600",
-      shadow: "shadow-amber-700/30",
-      dot: "bg-amber-400",
+      bg: "bg-gradient-to-r from-[#f1c40f]/80 to-[#f39c12]/80",
+      text: "text-[#ffffff]",
+      border: "border-[#f1c40f]",
+      shadow: "shadow-[#f1c40f]/30",
+      dot: "bg-[#ffffff]",
     },
     critical: {
-      bg: "bg-gradient-to-r from-rose-800/80 to-rose-700/80",
-      text: "text-rose-200",
-      border: "border-rose-600",
-      shadow: "shadow-rose-700/30",
-      dot: "bg-rose-400",
+      bg: "bg-gradient-to-r from-[#e74c3c]/80 to-[#c0392b]/80",
+      text: "text-[#ffffff]",
+      border: "border-[#e74c3c]",
+      shadow: "shadow-[#e74c3c]/30",
+      dot: "bg-[#ffffff]",
     },
   };
 
@@ -61,7 +61,7 @@ const QuestPriorityTag = ({
     return (
       <span
         className={cn(
-          "px-1.5 py-0.5 rounded-md text-xs font-medium uppercase tracking-wide flex items-center gap-1 bg-zinc-800/50",
+          "px-1.5 py-0.5 rounded-xl text-xs font-medium uppercase tracking-wide flex items-center gap-1 bg-[#2a2a3d]/50",
           style.text,
           isCompleted && "opacity-70"
         )}
@@ -75,7 +75,7 @@ const QuestPriorityTag = ({
   return (
     <span
       className={cn(
-        "px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wider border flex items-center gap-1",
+        "px-2.5 py-0.5 rounded-2xl text-xs font-medium uppercase tracking-wider border flex items-center gap-1",
         "shadow-inner transition-all duration-300 hover:scale-105 transform",
         style.bg,
         style.text,

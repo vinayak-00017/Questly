@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { QuestCacheData } from "./quest-instance-item";
 import { QuestInstance } from "@questly/types";
 import { useAchievements } from "@/contexts/achievement-context";
+import QuestXpTag from "./components/quest-xp-tag";
 
 // Confetti component for celebration animation
 const Confetti = ({ visible }: { visible: boolean }) => {
@@ -284,9 +285,13 @@ const QuestCardActionButtons = ({
     return (
       <div className="absolute left-1/2 -top-8 transform -translate-x-1/2 flex items-center justify-center">
         <div className="relative">
-          <div className="text-lg text-yellow-400 font-medieval font-bold xp-float flex items-center">
-            <Trophy className="h-4 w-4 mr-1 text-yellow-400" />
-            <span>+{quest.xpReward || 50} XP</span>
+          <div className="text-lg font-medieval font-bold xp-float">
+            <QuestXpTag
+              xpReward={quest.xpReward || 50}
+              isCompleted={false}
+              variant="full"
+              className="text-zinc-100 border-zinc-500 bg-zinc-700/80 shadow-zinc-600/60 scale-110"
+            />
           </div>
           <style jsx>{`
             .xp-float {

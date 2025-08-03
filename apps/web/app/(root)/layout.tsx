@@ -27,7 +27,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
-        <main className="w-full h-full">{children}</main>
+        <main className="w-full h-full pr-6">{children}</main>
       </div>
       <AppRightSidebar />
       <Toaster />

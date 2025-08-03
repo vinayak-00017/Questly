@@ -16,7 +16,15 @@ const DaySelector = ({
   setWeekdaysOnly,
   setWeekendsOnly,
 }: DaySelectorProps) => {
-  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dayNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
   const dayAbbr = ["S", "M", "T", "W", "T", "F", "S"];
 
   return (
@@ -24,7 +32,9 @@ const DaySelector = ({
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <CalendarDaysIcon className="w-4 h-4 text-blue-400" />
-          <label className="text-sm font-semibold text-zinc-200">Repeat on days</label>
+          <label className="text-sm font-semibold text-zinc-200">
+            Repeat on days
+          </label>
         </div>
         <div className="flex space-x-2">
           <Button
@@ -60,7 +70,7 @@ const DaySelector = ({
         {dayAbbr.map((day, index) => {
           const isSelected = selectedDays.includes(index);
           const isWeekend = index === 0 || index === 6;
-          
+
           return (
             <div key={index} className="flex flex-col items-center space-y-2">
               <Button
@@ -68,12 +78,14 @@ const DaySelector = ({
                 size="sm"
                 variant={isSelected ? "default" : "outline"}
                 className={cn(
-                  "h-12 w-12 p-0 rounded-xl transition-all duration-200 relative overflow-hidden",
+                  "h-12 w-12 p-0 rounded-2xl transition-all duration-200 relative overflow-hidden",
                   "border-2 font-semibold text-sm",
                   isSelected
-                    ? "bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-purple-500 shadow-lg shadow-purple-500/25"
-                    : "bg-zinc-700/50 hover:bg-zinc-600/50 border-zinc-600/50 hover:border-zinc-500/50 text-zinc-300 hover:text-white",
-                  isWeekend && !isSelected && "border-orange-600/30 hover:border-orange-500/50"
+                    ? "bg-gradient-to-br from-[#8c7ae6] to-[#7c6ce0] hover:from-[#7c6ce0] hover:to-[#6c5ce0] text-white border-[#8c7ae6] shadow-lg shadow-[#8c7ae6]/25"
+                    : "bg-[#2a2a3d]/50 hover:bg-[#2a2a3d]/70 border-[#3d3d5c]/50 hover:border-[#3d3d5c]/70 text-[#c3c3cc] hover:text-white",
+                  isWeekend &&
+                    !isSelected &&
+                    "border-orange-600/30 hover:border-orange-500/50"
                 )}
                 onClick={() => toggleDay(index)}
               >
@@ -82,11 +94,13 @@ const DaySelector = ({
                 )}
                 <span className="relative z-10">{day}</span>
               </Button>
-              <span className={cn(
-                "text-xs transition-colors duration-200 text-center",
-                isSelected ? "text-purple-300 font-medium" : "text-zinc-500",
-                isWeekend && !isSelected && "text-orange-400/70"
-              )}>
+              <span
+                className={cn(
+                  "text-xs transition-colors duration-200 text-center",
+                  isSelected ? "text-purple-300 font-medium" : "text-zinc-500",
+                  isWeekend && !isSelected && "text-orange-400/70"
+                )}
+              >
                 {dayNames[index].slice(0, 3)}
               </span>
             </div>
@@ -97,7 +111,7 @@ const DaySelector = ({
       {selectedDays.length > 0 && (
         <div className="text-xs text-zinc-400 bg-zinc-800/50 rounded-lg p-3 border border-zinc-600/30">
           <span className="font-medium text-zinc-300">Selected days:</span>{" "}
-          {selectedDays.map(day => dayNames[day]).join(", ")}
+          {selectedDays.map((day) => dayNames[day]).join(", ")}
         </div>
       )}
     </div>

@@ -17,11 +17,11 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
   variant = "purple",
 }) => {
   const bgFrom =
-    variant === "purple" ? "from-purple-600/30" : "from-amber-600/30";
-  const bgTo = variant === "purple" ? "to-purple-700/30" : "to-amber-700/30";
+    variant === "purple" ? "from-[#8c7ae6]/30" : "from-[#f1c40f]/30";
+  const bgTo = variant === "purple" ? "to-[#8c7ae6]/30" : "to-[#f39c12]/30";
   const ringColor =
-    variant === "purple" ? "ring-purple-500/40" : "ring-amber-500/40";
-  const textColor = variant === "purple" ? "text-purple-400" : "text-amber-400";
+    variant === "purple" ? "ring-[#8c7ae6]/40" : "ring-[#f1c40f]/40";
+  const textColor = variant === "purple" ? "text-[#8c7ae6]" : "text-[#f1c40f]";
 
   return (
     <div className="text-center mb-10">
