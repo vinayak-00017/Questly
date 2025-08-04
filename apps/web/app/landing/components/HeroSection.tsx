@@ -3,257 +3,431 @@ import {
   Play,
   ArrowRight,
   Sparkles,
+  Trophy,
   Target,
+  Zap,
+  Star,
+  Crown,
+  Gamepad2,
   TrendingUp,
+  Calendar,
   CheckCircle2,
+  Flame,
+  Shield,
+  Swords,
+  SwordsIcon,
 } from "lucide-react";
-import Image from "next/image";
 import { motion } from "framer-motion";
-
-const ProgressRing = () => {
-  return (
-    <motion.div
-      className="relative w-32 h-32"
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-    >
-      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
-        {/* Background circle */}
-        <circle
-          cx="60"
-          cy="60"
-          r="50"
-          stroke="rgb(229 231 235)"
-          strokeWidth="8"
-          fill="none"
-          className="opacity-20"
-        />
-        {/* Progress circle */}
-        <motion.circle
-          cx="60"
-          cy="60"
-          r="50"
-          stroke="url(#cleanProgressGradient)"
-          strokeWidth="8"
-          fill="none"
-          strokeLinecap="round"
-          initial={{ strokeDasharray: "0 314" }}
-          animate={{ strokeDasharray: "235 314" }}
-          transition={{ duration: 1.5, delay: 0.3, ease: "easeInOut" }}
-          className="drop-shadow-sm"
-        />
-        <defs>
-          <linearGradient
-            id="cleanProgressGradient"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="0%"
-          >
-            <stop offset="0%" stopColor="#374151" />
-            <stop offset="100%" stopColor="#111827" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
-      >
-        <div className="text-center">
-          <motion.div
-            className="text-2xl font-bold text-slate-700 dark:text-slate-200"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.8, duration: 0.4, type: "spring" }}
-          >
-            75%
-          </motion.div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">
-            Progress
-          </div>
-        </div>
-      </motion.div>
-      <motion.div
-        className="absolute -top-2 -right-2"
-        animate={{
-          y: [0, -3, 0],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      >
-        <CheckCircle2 className="w-6 h-6 text-green-500" />
-      </motion.div>
-    </motion.div>
-  );
-};
+import TextPressure from "@/components/bits/TextAnimations/TextPressure/TextPressure";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import router from "next/router";
 
 export const HeroSection = () => {
+  const router = useRouter();
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-black">
-      {/* Clean Background Elements */}
-      <div className="absolute inset-0">
-        {/* Subtle geometric patterns */}
-        <div className="absolute inset-0 bg-grid-slate-100/25 dark:bg-grid-slate-700/25 bg-[size:40px_40px]" />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: "url(/questly.png)",
+        }}
+      />
+      <div className="absolute inset-0 bg-black/40" />
 
-        {/* Floating subtle elements */}
-        <div className="absolute inset-0">
-          {[...Array(8)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 bg-slate-400/20 dark:bg-slate-400/10 rounded-full"
-              style={{
-                left: `${20 + Math.random() * 60}%`,
-                top: `${20 + Math.random() * 60}%`,
-              }}
-              animate={{
-                y: [0, -15, 0],
-                opacity: [0.2, 0.6, 0.2],
-              }}
-              transition={{
-                duration: 4 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 3,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </div>
+      {/* Logo Section - Top Left */}
+      <motion.div
+        className="absolute top-8 left-8 z-20 flex items-center gap-4"
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <motion.div
+          className="rounded-2xl p-1"
+          animate={{
+            boxShadow: [
+              "0 0 0 0 rgba(255, 215, 0, 0.4)",
+              "0 0 0 15px rgba(255, 215, 0, 0)",
+              "0 0 0 0 rgba(255, 215, 0, 0)",
+            ],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          whileHover={{ scale: 1.05 }}
+        >
+          <Image src={"/q_tp.png"} width={30} height={30} alt="questly_logo" />
+        </motion.div>
+        <motion.span
+          className="text-2xl font-bold text-white"
+          animate={{
+            textShadow: [
+              "0 0 10px rgba(255, 255, 255, 0.5)",
+              "0 0 25px rgba(255, 255, 255, 0.8)",
+              "0 0 10px rgba(255, 255, 255, 0.5)",
+            ],
+          }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          Questly
+        </motion.span>
+      </motion.div>
+
+      {/* Organized Floating Background Icons */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Strategic Sparkles - Corner Clusters */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={`sparkle-${i}`}
+            className="absolute"
+            style={{
+              left: i < 3 ? `${5 + i * 8}%` : `${75 + (i - 3) * 8}%`,
+              top: i < 3 ? `${10 + i * 15}%` : `${60 + (i - 3) * 15}%`,
+            }}
+            animate={{
+              y: [0, -15, 0],
+              opacity: [0.4, 0.8, 0.4],
+              scale: [0.8, 1.1, 0.8],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 2,
+              repeat: Infinity,
+              delay: i * 0.5,
+              ease: "easeInOut",
+            }}
+          >
+            <Sparkles className="w-3 h-3 text-yellow-400 drop-shadow-lg" />
+          </motion.div>
+        ))}
+
+        {/* Left Side Icons */}
+        <motion.div
+          className="absolute top-1/4 left-8"
+          animate={{
+            y: [0, -12, 0],
+            rotate: [0, 5, -5, 0],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <div className="bg-purple-600/20 backdrop-blur-sm p-4 rounded-2xl border border-purple-400/30 shadow-lg">
+            <Gamepad2 className="w-8 h-8 text-purple-300" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="absolute top-1/2 left-12"
+          animate={{
+            y: [0, -8, 0],
+            x: [0, 3, 0],
+          }}
+          transition={{
+            duration: 3.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+        >
+          <div className="bg-orange-500/20 backdrop-blur-sm p-3 rounded-xl border border-orange-400/30 shadow-lg">
+            <Trophy className="w-6 h-6 text-orange-300" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-1/3 left-16"
+          animate={{
+            y: [0, -10, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+        >
+          <div className="bg-red-500/20 backdrop-blur-sm p-3 rounded-xl border border-red-400/30 shadow-lg">
+            <Flame className="w-6 h-6 text-red-300" />
+          </div>
+        </motion.div>
+
+        {/* Right Side Icons */}
+        <motion.div
+          className="absolute top-1/4 right-8"
+          animate={{
+            y: [0, -15, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 2.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.5,
+          }}
+        >
+          <div className="bg-green-500/20 backdrop-blur-sm p-4 rounded-2xl border border-green-400/30 shadow-lg">
+            <Target className="w-8 h-8 text-green-300" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="absolute top-1/2 right-12"
+          animate={{
+            rotate: [0, 360],
+            scale: [1, 1.15, 1],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        >
+          <div className="bg-yellow-500/20 backdrop-blur-sm p-3 rounded-xl border border-yellow-400/30 shadow-lg">
+            <Star className="w-6 h-6 text-yellow-300" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-1/3 right-16"
+          animate={{
+            y: [0, -8, 0],
+            rotate: [0, 10, -10, 0],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.5,
+          }}
+        >
+          <div className="bg-indigo-500/20 backdrop-blur-sm p-3 rounded-xl border border-indigo-400/30 shadow-lg">
+            <Crown className="w-6 h-6 text-indigo-300" />
+          </div>
+        </motion.div>
+
+        {/* Top Center Accent Icons */}
+        <motion.div
+          className="absolute top-16 left-1/2 transform -translate-x-1/2"
+          animate={{
+            y: [0, -6, 0],
+            opacity: [0.6, 1, 0.6],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+        >
+          <div className="bg-blue-500/20 backdrop-blur-sm p-2 rounded-lg border border-blue-400/30">
+            <Shield className="w-4 h-4 text-blue-300" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-20 left-1/2 transform -translate-x-1/2"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.7, 1, 0.7],
+          }}
+          transition={{
+            duration: 2.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.8,
+          }}
+        >
+          <div className="bg-pink-500/20 backdrop-blur-sm p-2 rounded-lg border border-pink-400/30">
+            <Zap className="w-4 h-4 text-pink-300" />
+          </div>
+        </motion.div>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-6 text-center">
-        <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary">
-            <Sparkles className="w-4 h-4" />
-            <span className="text-sm font-medium">Level up your real life</span>
-          </div>
-
-          {/* Clean, welcoming headline */}
-          <motion.h1
-            className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 dark:text-slate-100"
+      {/* Main Content */}
+      <div className="relative z-10 container mx-auto px-6">
+        <div className="max-w-5xl mx-auto text-center">
+          {/* Main Headline  */}
+          <motion.div
+            className="mb-8"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <span className="bg-gradient-to-r from-slate-800 to-black dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-              Climb the Ranks
-            </span>
-            <br />
-            <span>of Your Life</span>
-          </motion.h1>
+            <motion.h1 className="text-7xl md:text-9xl font-bold leading-tight mb-4">
+              <motion.div
+                className="bg-gradient-to-r from-white via-yellow-200 to-white bg-clip-text text-transparent bg-[length:200%_200%]"
+                animate={{
+                  backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                <TextPressure
+                  text="GAMIFY"
+                  flex={true}
+                  alpha={false}
+                  stroke={false}
+                  width={true}
+                  weight={false}
+                  textColor="#ffffff"
+                  minFontSize={48}
+                />
+              </motion.div>
+            </motion.h1>
+            <motion.h2 className="text-6xl md:text-8xl font-bold text-white">
+              Your Life
+            </motion.h2>
+          </motion.div>
 
-          {/* Friendly, approachable subheading */}
+          {/* Subtitle */}
           <motion.p
-            className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed"
+            className="text-2xl md:text-3xl text-white/90 max-w-3xl mx-auto leading-relaxed mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Transform your daily tasks into a{" "}
-            <span className="text-slate-900 dark:text-white font-semibold">
-              rewarding journey
-            </span>
-            . Track progress, build habits, and celebrate wins along the way.
+            <motion.span
+              animate={{ opacity: [0.8, 1, 0.8] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              Transform your goals into epic quests. Build powerful habits.
+              <br />
+              <span className="text-yellow-300 font-semibold">
+                Level up every single day.
+              </span>
+            </motion.span>
           </motion.p>
 
-          {/* Progress Ring */}
+          {/* CTA Buttons */}
           <motion.div
-            className="flex justify-center py-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            className="flex flex-col sm:flex-row gap-6 items-center justify-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
           >
-            <ProgressRing />
+            <motion.div
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{
+                scale: { duration: 0.2 },
+                y: { duration: 0.2 },
+              }}
+            >
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold text-xl px-12 py-6 rounded-2xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 relative overflow-hidden group border border-purple-400/30"
+                onClick={() => {
+                  router.push("/register");
+                }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"
+                  animate={{
+                    x: ["-100%", "100%"],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+                <span className="relative z-10 flex items-center">
+                  Start Your Quest
+                  <motion.div
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <ArrowRight className="w-6 h-6 ml-3" />
+                  </motion.div>
+                </span>
+              </Button>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-2 border-white/60 bg-black/30 backdrop-blur-md hover:bg-black/50 text-white font-bold text-xl px-12 py-6 rounded-2xl transition-all duration-300 group hover:border-white/80"
+              >
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="flex items-center"
+                >
+                  <Play className="w-6 h-6 mr-3" />
+                  Watch Demo
+                </motion.div>
+              </Button>
+            </motion.div>
           </motion.div>
 
-          {/* Clean, friendly CTA Buttons */}
+          {/* Feature Highlights */}
           <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4"
-            initial={{ opacity: 0, y: 20 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto mb-6"
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}
           >
-            <Button
-              size="lg"
-              className="bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-black font-semibold text-lg px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
-            >
-              Get Started Free
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-2 border-slate-300 dark:border-slate-600 hover:border-slate-500 dark:hover:border-slate-400 bg-white/50 dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300 font-semibold text-lg px-8 py-3 rounded-lg transition-all duration-300 backdrop-blur-sm"
-            >
-              <Play className="w-5 h-5 mr-2" />
-              Watch Demo
-            </Button>
-          </motion.div>
-
-          {/* Friendly stats */}
-          <motion.div
-            className="pt-12 grid grid-cols-3 gap-8 max-w-lg mx-auto"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.8 }}
-          >
-            <div className="text-center">
-              <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-                ...
-              </div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                Happy Users
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-                98%
-              </div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                Success Rate
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-                4.9★
-              </div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                User Rating
-              </div>
-            </div>
+            {[
+              { icon: Flame, label: "Daily Quests", color: "orange" },
+              { icon: SwordsIcon, label: "Main Quests", color: "purple" },
+              { icon: Zap, label: "XP & Buffs", color: "yellow" },
+              { icon: TrendingUp, label: "Progress Tracker", color: "green" },
+            ].map((feature, index) => (
+              <motion.div
+                key={feature.label}
+                className="group cursor-pointer"
+                whileHover={{ scale: 1.05, y: -5 }}
+                animate={{ y: [0, -3, 0] }}
+                transition={{
+                  y: {
+                    duration: 2 + index * 0.3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: index * 0.2,
+                  },
+                  scale: { duration: 0.2 },
+                }}
+              >
+                <div className="bg-black/40 backdrop-blur-sm p-4 rounded-2xl border border-white/20 group-hover:border-white/40 transition-all duration-300 group-hover:bg-black/60">
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div
+                      className={`p-3 rounded-xl bg-${feature.color}-500/20 border border-${feature.color}-400/30`}
+                    >
+                      <feature.icon
+                        className={`w-5 h-5 text-${feature.color}-400`}
+                      />
+                    </div>
+                    <div className="text-sm font-bold text-white group-hover:text-white/90 transition-colors whitespace-nowrap">
+                      {feature.label}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </div>
-
-      {/* Subtle decorative elements */}
-      <motion.div
-        className="absolute top-1/4 left-10 opacity-20"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-      >
-        <TrendingUp className="w-6 h-6 text-slate-600" />
-      </motion.div>
-      <motion.div
-        className="absolute top-1/3 right-16 opacity-20"
-        animate={{ y: [-5, 5, -5] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <Target className="w-8 h-8 text-slate-600" />
-      </motion.div>
-      <motion.div
-        className="absolute bottom-1/4 left-1/4 opacity-20"
-        animate={{ scale: [1, 1.1, 1] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <Sparkles className="w-5 h-5 text-slate-600" />
-      </motion.div>
     </section>
   );
 };

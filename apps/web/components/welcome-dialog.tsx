@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Swords, UserCheck, UserPlus, Crown, Sparkles } from "lucide-react";
@@ -13,7 +19,11 @@ interface WelcomeDialogProps {
   onSignIn: () => void;
 }
 
-export function WelcomeDialog({ open, onContinueAsGuest, onSignIn }: WelcomeDialogProps) {
+export function WelcomeDialog({
+  open,
+  onContinueAsGuest,
+  onSignIn,
+}: WelcomeDialogProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,13 +42,13 @@ export function WelcomeDialog({ open, onContinueAsGuest, onSignIn }: WelcomeDial
   };
 
   const handleCreateAccount = () => {
-    onSignIn()
+    onSignIn();
     router.push("/register");
   };
 
   return (
     <Dialog open={open} onOpenChange={() => {}} modal>
-      <DialogContent className="sm:max-w-md border-zinc-700 bg-gradient-to-br from-zinc-900/95 to-zinc-800/95 backdrop-blur-sm text-zinc-100">
+      <DialogContent className=" [&>button]:hidden sm:max-w-md border-zinc-700 bg-gradient-to-br from-zinc-900/95 to-zinc-800/95 backdrop-blur-sm text-zinc-100">
         <DialogHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 shadow-xl border border-zinc-600">
             <Swords className="h-8 w-8 text-zinc-300" />
@@ -48,7 +58,8 @@ export function WelcomeDialog({ open, onContinueAsGuest, onSignIn }: WelcomeDial
             <Sparkles className="h-5 w-5 text-zinc-400" />
           </DialogTitle>
           <DialogDescription className="text-zinc-400">
-            Begin your quest management adventure. Select how you wish to proceed on your journey.
+            Begin your quest management adventure. Select how you wish to
+            proceed on your journey.
           </DialogDescription>
         </DialogHeader>
 
@@ -63,7 +74,9 @@ export function WelcomeDialog({ open, onContinueAsGuest, onSignIn }: WelcomeDial
               title="Start exploring immediately without creating an account. Your progress will be saved temporarily in your browser."
             >
               <UserPlus className="h-6 w-6 mr-3 text-orange-400" />
-              {isLoading ? "Entering the Realm..." : "🎭 Continue as Guest Adventurer"}
+              {isLoading
+                ? "Entering the Realm..."
+                : "🎭 Continue as Guest Adventurer"}
             </Button>
           </div>
 
@@ -97,14 +110,14 @@ export function WelcomeDialog({ open, onContinueAsGuest, onSignIn }: WelcomeDial
             title="Create a new permanent account to save progress forever, sync across devices, and unlock premium features."
           >
             <Crown className="h-5 w-5 mr-3 text-orange-400" />
-              Register for free
+            Register for free
           </Button>
         </div>
 
-
         <div className="text-center mt-4">
           <p className="text-xs text-zinc-500">
-            💡 <span className="text-zinc-400">Tip:</span> Guest adventurers can upgrade to permanent accounts anytime without losing progress.
+            💡 <span className="text-zinc-400">Tip:</span> Guest adventurers can
+            upgrade to permanent accounts anytime without losing progress.
           </p>
         </div>
       </DialogContent>

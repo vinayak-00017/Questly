@@ -87,11 +87,12 @@ export function AnonymousLoginProvider({
         return false;
       }
 
-      // Don't show on auth pages
+      // Don't show on auth pages or landing page
       const pathname = window.location.pathname;
       if (
         pathname === "/login" ||
         pathname === "/register" ||
+        pathname === "/landing" ||
         pathname.startsWith("/auth/")
       ) {
         return false;
