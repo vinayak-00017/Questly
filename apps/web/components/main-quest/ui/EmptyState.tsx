@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Scroll, Sparkles } from "lucide-react";
+import { Sparkles, SwordsIcon } from "lucide-react";
 
 interface EmptyStateProps {
   onCreateQuest: () => void;
@@ -29,7 +29,7 @@ export function EmptyState({ onCreateQuest }: EmptyStateProps) {
       {/* Content with minimal animations */}
       <div className="relative z-10">
         <div className="w-16 h-16 mx-auto mb-4 bg-muted/50 rounded-full flex items-center justify-center ring-1 ring-primary/30 backdrop-blur-sm">
-          <Scroll className="w-8 h-8 text-primary" />
+          <SwordsIcon className="w-8 h-8 text-primary" />
         </div>
 
         <h3 className="text-lg font-bold text-foreground mb-2">

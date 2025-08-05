@@ -32,6 +32,7 @@ import {
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { isQuestTemplateExpired } from "@/components/quest-template/quest-template-helpers";
 
 const DailyQuests = () => {
   const queryClient = useQueryClient();
@@ -95,7 +96,12 @@ const DailyQuests = () => {
 
   // Calculate stats
   const totalTemplates = templatesData?.length || 0;
-  const activeTemplates = templatesData?.filter((t) => t.isActive).length || 0;
+
+  // Active templates exclude expired ones
+  const activeTemplates =
+    templatesData?.filter((t) => t.isActive && !isQuestTemplateExpired(t))
+      .length || 0;
+
   const dailyTemplates =
     templatesData?.filter((t) => t.type === "daily").length || 0;
   const sideTemplates =

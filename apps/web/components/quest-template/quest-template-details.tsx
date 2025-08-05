@@ -2,7 +2,13 @@ import React from "react";
 import { Calendar, Clock, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { QuestTemplate } from "@questly/types";
-import { formatRecurrenceRule, formatDueDate, getQuestPriority, getImportanceStyle } from "./quest-template-helpers";
+import {
+  formatRecurrenceRule,
+  formatDueDate,
+  getQuestPriority,
+  getImportanceStyle,
+  isQuestTemplateExpired,
+} from "./quest-template-helpers";
 
 interface QuestTemplateDetailsProps {
   questTemplate: QuestTemplate;
@@ -14,15 +20,16 @@ export const QuestTemplateDetails: React.FC<QuestTemplateDetailsProps> = ({
   const priority = getQuestPriority(questTemplate.basePoints);
   const importanceStyle = getImportanceStyle(priority);
   const ImportanceIcon = importanceStyle.icon;
+  const isExpired = isQuestTemplateExpired(questTemplate);
 
   return (
     <div className="space-y-4">
       {/* Quest Details */}
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg">
+      <div className="grid grid-cols-1 gap-4 text-sm">
+        <div className="flex items-center gap-2 p-3 bg-slate-800/50 rounded-lg border border-slate-700/30">
           <div
             className={cn(
-              "p-1 rounded",
+              "p-1.5 rounded",
               questTemplate.type === "daily"
                 ? "bg-amber-500/20"
                 : questTemplate.type === "side"
@@ -32,7 +39,7 @@ export const QuestTemplateDetails: React.FC<QuestTemplateDetailsProps> = ({
           >
             <ImportanceIcon
               className={cn(
-                "h-3 w-3",
+                "h-4 w-4",
                 questTemplate.type === "daily"
                   ? "text-amber-400"
                   : questTemplate.type === "side"
@@ -41,28 +48,50 @@ export const QuestTemplateDetails: React.FC<QuestTemplateDetailsProps> = ({
               )}
             />
           </div>
-          <span className="text-slate-300 font-medium">
-            {importanceStyle.label}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg">
-          <div className="p-1 bg-slate-500/20 rounded">
-            <Calendar className="h-3 w-3 text-slate-400" />
+          <div className="flex-1">
+            <span className="text-slate-300 font-medium">
+              Priority: {importanceStyle.label}
+            </span>
+            <div className="text-xs text-slate-400 mt-1">
+              {questTemplate.basePoints} points
+            </div>
           </div>
-          <span className="text-slate-300 font-medium">
-            {formatRecurrenceRule(questTemplate.recurrenceRule)}
-          </span>
         </div>
       </div>
 
       {questTemplate.dueDate && (
-        <div className="flex items-center gap-2 text-sm p-2 bg-slate-800/50 rounded-lg">
-          <div className="p-1 bg-slate-500/20 rounded">
-            <Clock className="h-3 w-3 text-slate-400" />
+        <div
+          className={cn(
+            "flex items-center gap-2 text-sm p-3 rounded-lg border",
+            isExpired
+              ? "bg-red-500/20 border-red-500/30"
+              : "bg-slate-800/50 border-slate-700/30"
+          )}
+        >
+          <div
+            className={cn(
+              "p-1.5 rounded",
+              isExpired ? "bg-red-500/30" : "bg-slate-500/20"
+            )}
+          >
+            <Clock
+              className={cn(
+                "h-4 w-4",
+                isExpired ? "text-red-400" : "text-slate-400"
+              )}
+            />
           </div>
-          <span className="text-slate-300 font-medium">
-            Due: {formatDueDate(questTemplate.dueDate)}
-          </span>
+          <div className="flex-1">
+            <span
+              className={cn(
+                "font-medium",
+                isExpired ? "text-red-300" : "text-slate-300"
+              )}
+            >
+              Due: {formatDueDate(questTemplate.dueDate)}
+              {isExpired && " (Expired)"}
+            </span>
+          </div>
         </div>
       )}
     </div>

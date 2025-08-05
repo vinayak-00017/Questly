@@ -29,6 +29,20 @@ export function QuestFormFields({
 
   return (
     <div className="space-y-6 py-4 px-6 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800 relative">
+      {InfoIcon && infoTitle && infoText && (
+        <div
+          className={`bg-gradient-to-r ${colorStyles.infoGradient} p-3 rounded-lg border ${colorStyles.infoBorder} flex gap-3 items-center`}
+        >
+          <InfoIcon
+            className={`h-5 w-5 ${colorStyles.infoIconColor} flex-shrink-0`}
+          />
+          <div className="text-xs text-zinc-400">
+            <span className={colorStyles.infoTextColor}>{infoTitle}</span>{" "}
+            {infoText}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-2">
         <label
           className={`text-sm font-medium ${colorStyles.labelColor} flex items-center gap-2`}
@@ -211,20 +225,6 @@ export function QuestFormFields({
           </p>
         )}
       </div>
-
-      {InfoIcon && infoTitle && infoText && (
-        <div
-          className={`bg-gradient-to-r ${colorStyles.infoGradient} p-3 rounded-lg border ${colorStyles.infoBorder} flex gap-3 items-center`}
-        >
-          <InfoIcon
-            className={`h-5 w-5 ${colorStyles.infoIconColor} flex-shrink-0`}
-          />
-          <div className="text-xs text-zinc-400">
-            <span className={colorStyles.infoTextColor}>{infoTitle}</span>{" "}
-            {infoText}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

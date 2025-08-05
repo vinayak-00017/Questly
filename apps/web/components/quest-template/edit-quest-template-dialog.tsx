@@ -1,29 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { QuestTemplate, QuestType, QuestPriority } from "@questly/types";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { QuestTemplate, QuestPriority } from "@questly/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { questTemplateApi } from "@/services/quest-template-api";
 import { toast } from "sonner";
+import { CalendarDays, Flame, Compass, Settings } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { RecurrencePicker } from "../date-freq/recurrence-picker";
+import { createDailyRRule } from "@/lib/rrule-utils";
+import { useTopbarData } from "../topbar/hooks/use-topbar-data";
+
+// Import the same components used in BaseQuestDialog for consistency
+import { QuestDialogHeader } from "../quest-dialog/header";
+import { QuestDialogDecorations } from "../quest-dialog/decorations";
+import { QuestFormFields } from "../quest-dialog/form-fields";
+import { QuestDialogFooter } from "../quest-dialog/footer";
+import { UnsavedChangesAlert } from "../quest-dialog/unsaved-changes-alert";
+import { QuestFormData, getQuestColorStyles } from "../quest-dialog/types";
 
 interface EditQuestTemplateDialogProps {
   questTemplate: QuestTemplate | null;
@@ -31,39 +25,183 @@ interface EditQuestTemplateDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Helper function to convert basePoints back to priority
+const getPriorityFromPoints = (points: number): QuestPriority => {
+  if (points === 1) return QuestPriority.Optional;
+  if (points === 2) return QuestPriority.Minor;
+  if (points === 3) return QuestPriority.Standard;
+  if (points === 5) return QuestPriority.Important;
+  if (points >= 8) return QuestPriority.Critical;
+  return QuestPriority.Standard;
+};
+
 const EditQuestTemplateDialog: React.FC<EditQuestTemplateDialogProps> = ({
   questTemplate,
   open,
   onOpenChange,
 }) => {
+  // ALL HOOKS MUST BE DECLARED AT THE TOP - NO CONDITIONAL LOGIC BEFORE HOOKS
+  const { userStats } = useTopbarData();
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
+
+  const [formData, setFormData] = useState<QuestFormData>({
     title: "",
     description: "",
-    type: "daily" as QuestType,
-    importance: QuestPriority.Standard,
-    isActive: true,
-    recurrenceRule: "",
-    dueDate: "",
+    priority: QuestPriority.Standard,
+    dateValue: undefined,
+    parentQuestId: undefined,
   });
 
-  // Helper function to get quest priority from basePoints
-  const getQuestPriority = (basePoints: number | string): QuestPriority => {
-    if (typeof basePoints === "string") {
-      return basePoints as QuestPriority;
-    }
-    // Map number values to priority levels based on points-map.ts
-    if (basePoints === 1) return QuestPriority.Optional;
-    if (basePoints === 2) return QuestPriority.Minor;
-    if (basePoints === 3) return QuestPriority.Standard;
-    if (basePoints === 5) return QuestPriority.Important;
-    if (basePoints >= 8) return QuestPriority.Critical;
-    return QuestPriority.Standard; // default
-  };
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  // Helper function to convert importance to basePoints
-  const getBasePointsFromImportance = (importance: QuestPriority): number => {
-    switch (importance) {
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: (updateData: Partial<QuestTemplate>) => {
+      if (!questTemplate) throw new Error("No quest template provided");
+      return questTemplateApi.updateQuestTemplate(questTemplate.id, updateData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["questTemplates"] });
+      toast.success("Quest template updated successfully!");
+      onOpenChange(false);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update quest template");
+    },
+  });
+
+  // Memoize the initial date value to prevent recreation
+  const initialDateValue = useMemo(() => {
+    if (!questTemplate?.recurrenceRule) return undefined;
+
+    return {
+      recurrenceRule: questTemplate.recurrenceRule,
+      date: questTemplate.dueDate ? new Date(questTemplate.dueDate) : undefined,
+    };
+  }, [questTemplate?.recurrenceRule, questTemplate?.dueDate]);
+
+  // Initialize form data when template changes or dialog opens
+  useEffect(() => {
+    if (questTemplate && open) {
+      const initialFormData = {
+        title: questTemplate.title || "",
+        description: questTemplate.description || "",
+        priority:
+          typeof questTemplate.basePoints === "number"
+            ? getPriorityFromPoints(questTemplate.basePoints)
+            : (questTemplate.basePoints as QuestPriority),
+        dateValue: initialDateValue,
+        parentQuestId: undefined,
+      };
+
+      setFormData(initialFormData);
+    }
+  }, [questTemplate?.id, open, initialDateValue]);
+
+  // Handle form field updates - memoized to prevent recreation
+  const updateFormField = useCallback(
+    (field: keyof QuestFormData, value: any) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
+
+  // Handle close - simplified without hasChanges dependency
+  const handleOpenChange = useCallback(
+    (newOpenState: boolean) => {
+      onOpenChange(newOpenState);
+    },
+    [onOpenChange]
+  );
+
+  // Handle actual close after confirmation - memoized to prevent recreation
+  const confirmClose = useCallback(() => {
+    setShowConfirmDialog(false);
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  // Stable callback functions for RecurrencePicker
+  const handleDateSelect = useCallback(
+    (newDate: Date | undefined) => {
+      setFormData((prev) => ({
+        ...prev,
+        dateValue: {
+          date: newDate,
+          recurrenceRule:
+            prev.dateValue?.recurrenceRule ||
+            (questTemplate?.type === "daily" ? createDailyRRule() : ""),
+        },
+      }));
+    },
+    [questTemplate?.type]
+  );
+
+  const handleRecurrenceSelect = useCallback(
+    (newRecurrence: string | undefined) => {
+      setFormData((prev) => ({
+        ...prev,
+        dateValue: {
+          date: prev.dateValue?.date,
+          recurrenceRule: newRecurrence || "",
+        },
+      }));
+    },
+    []
+  );
+
+  // Custom date field renderer for this template type - memoized to prevent recreation
+  const renderDateField = useCallback(
+    ({
+      onChange,
+      value,
+      className,
+    }: {
+      className?: string;
+      onChange: (value: any) => void;
+      value: any;
+    }) => {
+      if (!questTemplate) return null;
+
+      const currentRecurrence =
+        value?.recurrenceRule ||
+        (questTemplate.type === "daily" ? createDailyRRule() : undefined);
+      const currentDate = value?.date || undefined;
+
+      return (
+        <>
+          <label
+            className={`text-sm font-medium flex items-center gap-2 ${
+              questTemplate.type === "daily"
+                ? "text-orange-400"
+                : "text-blue-400"
+            }`}
+          >
+            <CalendarDays className="h-3.5 w-3.5" />
+            Schedule
+          </label>
+          <RecurrencePicker
+            date={currentDate}
+            onDateSelect={handleDateSelect}
+            recurrenceRule={currentRecurrence}
+            onRecurrenceSelect={handleRecurrenceSelect}
+            className={className}
+          />
+        </>
+      );
+    },
+    [questTemplate?.type, handleDateSelect, handleRecurrenceSelect]
+  );
+
+  // Early return AFTER all hooks are declared
+  if (!questTemplate) return null;
+
+  const themeColor = questTemplate.type === "daily" ? "orange" : "blue";
+  const icon = questTemplate.type === "daily" ? Flame : Compass;
+  const colorStyles = getQuestColorStyles(themeColor);
+
+  // Helper function to convert priority back to basePoints
+  const getBasePointsFromPriority = (priority: QuestPriority): number => {
+    switch (priority) {
       case QuestPriority.Optional:
         return 1;
       case QuestPriority.Minor:
@@ -79,217 +217,65 @@ const EditQuestTemplateDialog: React.FC<EditQuestTemplateDialogProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (questTemplate) {
-      const currentImportance = getQuestPriority(questTemplate.basePoints);
-      setFormData({
-        title: questTemplate.title || "",
-        description: questTemplate.description || "",
-        type: questTemplate.type || "daily",
-        importance: currentImportance,
-        isActive: questTemplate.isActive ?? true,
-        recurrenceRule: questTemplate.recurrenceRule || "",
-        dueDate: questTemplate.dueDate
-          ? new Date(questTemplate.dueDate).toISOString().split("T")[0]
-          : "",
-      });
-    }
-  }, [questTemplate]);
-
-  const updateMutation = useMutation({
-    mutationFn: (updateData: Partial<QuestTemplate>) =>
-      questTemplateApi.updateQuestTemplate(questTemplate!.id, updateData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["questTemplates"] });
-      toast.success("Quest template updated successfully!");
-      onOpenChange(false);
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to update quest template");
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!questTemplate) return;
-
+  // Handle form submission
+  const handleSubmit = () => {
     const updateData = {
-      ...formData,
-      basePoints: getBasePointsFromImportance(formData.importance),
-      dueDate: formData.dueDate || null,
-      recurrenceRule: formData.recurrenceRule || null,
+      title: formData.title,
+      description: formData.description,
+      basePoints: getBasePointsFromPriority(formData.priority),
+      recurrenceRule: formData.dateValue?.recurrenceRule || null,
+      dueDate:
+        formData.dateValue?.date instanceof Date
+          ? formData.dateValue.date.toISOString()
+          : null,
+      isActive: questTemplate.isActive,
     };
 
-    // Remove importance from the data sent to API since it's converted to basePoints
-    const { importance, ...apiData } = updateData;
-
-    updateMutation.mutate(apiData);
+    updateMutation.mutate(updateData);
   };
-
-  const handleClose = () => {
-    onOpenChange(false);
-  };
-
-  if (!questTemplate) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-slate-900 border-slate-700">
-        <DialogHeader>
-          <DialogTitle className="text-white">Edit Quest Template</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent
+          className={`sm:max-w-[500px] w-full bg-gradient-to-br from-zinc-900 via-zinc-950 to-black ${colorStyles.headerBorder} max-h-[85vh] overflow-hidden shadow-xl flex flex-col mt-6 sm:mt-0`}
+        >
+          <QuestDialogDecorations themeColor={themeColor} opacity={0.3} />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title" className="text-slate-200">
-              Title
-            </Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-              className="bg-slate-800 border-slate-600 text-white"
-              required
-            />
-          </div>
+          <QuestDialogHeader
+            icon={icon}
+            themeColor={themeColor}
+            title={`Edit ${questTemplate.type === "daily" ? "Daily" : "Side"} Quest Template`}
+            description={`Modify your ${questTemplate.type === "daily" ? "daily challenge" : "side quest adventure"} template`}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-slate-200">
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              className="bg-slate-800 border-slate-600 text-white"
-              rows={3}
-            />
-          </div>
+          <QuestFormFields
+            formData={formData}
+            onUpdateForm={updateFormField}
+            themeColor={themeColor}
+            renderDateField={renderDateField}
+            mainQuestsIds={[]} // Templates don't have parent quests
+            InfoIcon={Settings}
+            infoTitle={`${questTemplate.type === "daily" ? "Daily" : "Side"} quest templates`}
+            infoText={`define the structure for ${questTemplate.type === "daily" ? "recurring daily habits" : "flexible side adventures"}.`}
+          />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="type" className="text-slate-200">
-                Type
-              </Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value: QuestType) =>
-                  setFormData({ ...formData, type: value })
-                }
-              >
-                <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="side">Side</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <QuestDialogFooter
+            themeColor={themeColor}
+            isDisabled={!formData.title.trim()}
+            isPending={updateMutation.isPending}
+            icon={icon}
+            onAction={handleSubmit}
+          />
+        </DialogContent>
+      </Dialog>
 
-            <div className="space-y-2">
-              <Label htmlFor="importance" className="text-slate-200">
-                Importance
-              </Label>
-              <Select
-                value={formData.importance}
-                onValueChange={(value: QuestPriority) =>
-                  setFormData({ ...formData, importance: value })
-                }
-              >
-                <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={QuestPriority.Critical}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                      Critical (8 Points)
-                    </div>
-                  </SelectItem>
-                  <SelectItem value={QuestPriority.Important}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                      Important (5 Points)
-                    </div>
-                  </SelectItem>
-                  <SelectItem value={QuestPriority.Standard}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      Standard (3 Points)
-                    </div>
-                  </SelectItem>
-                  <SelectItem value={QuestPriority.Minor}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      Minor (2 Points)
-                    </div>
-                  </SelectItem>
-                  <SelectItem value={QuestPriority.Optional}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-gray-500"></div>
-                      Optional (1 Points)
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {formData.type === "side" && (
-            <div className="space-y-2">
-              <Label htmlFor="dueDate" className="text-slate-200">
-                Due Date (Optional)
-              </Label>
-              <Input
-                id="dueDate"
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, dueDate: e.target.value })
-                }
-                className="bg-slate-800 border-slate-600 text-white"
-              />
-            </div>
-          )}
-
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="isActive"
-              checked={formData.isActive}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, isActive: checked })
-              }
-            />
-            <Label htmlFor="isActive" className="text-slate-200">
-              Active
-            </Label>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              className="border-slate-600 text-slate-300 hover:bg-slate-700"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={updateMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <UnsavedChangesAlert
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        onConfirm={confirmClose}
+      />
+    </>
   );
 };
 

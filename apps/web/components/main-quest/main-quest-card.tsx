@@ -28,6 +28,7 @@ import {
 } from "@questly/types";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import styles from "./main-quest-card.module.css";
 import { EmptyState } from "./ui/EmptyState";
 import { AddQuestDialog } from "./add-main-quest-dialog";
 
@@ -212,7 +213,12 @@ const MainQuestCard = () => {
         <div className="relative">
           <div className="flex w-full items-center justify-between p-4 pb-3">
             <div className="flex items-center gap-3 flex-1">
-              <div className="bg-gradient-to-br from-amber-700/60 to-amber-800/50 rounded-xl flex items-center justify-center shadow-xl border border-amber-500/50 w-12 h-12 epic-glow">
+              <div
+                className={cn(
+                  "bg-gradient-to-br from-amber-700/60 to-amber-800/50 rounded-xl flex items-center justify-center shadow-xl border border-amber-500/50 w-12 h-12",
+                  styles.epicGlow
+                )}
+              >
                 <SwordsIcon className="text-amber-200 h-6 w-6 drop-shadow-lg" />
               </div>
               <div className="flex-1 min-w-0">
@@ -288,7 +294,7 @@ const MainQuestCard = () => {
                           <div className="p-4 pl-6 relative w-full">
                             <div className="flex flex-col gap-3 w-full min-h-[120px]">
                               {/* Header with title and importance */}
-                              <div className="flex items-start justify-between w-full gap-3">
+                              <div className="flex items-center justify-between w-full gap-3">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                   <div
                                     className={cn(
@@ -298,31 +304,36 @@ const MainQuestCard = () => {
                                   >
                                     <CategoryIcon className="text-white h-4 w-4 drop-shadow-sm" />
                                   </div>
-                                  <h3 className="text-foreground font-semibold leading-relaxed text-base flex-1 min-w-0 line-clamp-2 drop-shadow-sm">
-                                    {quest.title}
-                                  </h3>
+                                  {/* Enhanced importance tag */}
+                                  {quest.importance && (
+                                    <div className="flex-shrink-0">
+                                      <span
+                                        className={cn(
+                                          "bg-gradient-to-r border rounded-2xl text-xs px-3 py-1.5 font-bold uppercase tracking-wider whitespace-nowrap shadow-lg drop-shadow-md",
+                                          quest.importance === Legendary &&
+                                            "from-red-900/80 to-stone-900/80 text-red-200/90 border-red-800/50 shadow-red-950/40 animate-pulse",
+                                          quest.importance === Heroic &&
+                                            "from-purple-900/80 to-slate-900/80 text-purple-200/90 border-purple-800/50 shadow-purple-950/40",
+                                          quest.importance === Rare &&
+                                            "from-blue-900/80 to-slate-900/80 text-blue-200/90 border-blue-800/50 shadow-blue-950/40",
+                                          quest.importance === Common &&
+                                            "from-slate-600/90 to-slate-700/90 text-slate-50 border-slate-400/60 shadow-slate-900/50"
+                                        )}
+                                      >
+                                        {quest.importance}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
-                                {/* Enhanced importance tag */}
-                                {quest.importance && (
-                                  <div className="flex-shrink-0 pt-1">
-                                    <span
-                                      className={cn(
-                                        "bg-gradient-to-r border rounded-2xl text-xs px-3 py-1.5 font-bold uppercase tracking-wider whitespace-nowrap shadow-lg drop-shadow-md",
-                                        quest.importance === Legendary &&
-                                          "from-red-900/80 to-stone-900/80 text-red-200/90 border-red-800/50 shadow-red-950/40 animate-pulse",
-                                        quest.importance === Heroic &&
-                                          "from-purple-900/80 to-slate-900/80 text-purple-200/90 border-purple-800/50 shadow-purple-950/40",
-                                        quest.importance === Rare &&
-                                          "from-blue-900/80 to-slate-900/80 text-blue-200/90 border-blue-800/50 shadow-blue-950/40",
-                                        quest.importance === Common &&
-                                          "from-slate-600/90 to-slate-700/90 text-slate-50 border-slate-400/60 shadow-slate-900/50"
-                                      )}
-                                    >
-                                      {quest.importance}
-                                    </span>
-                                  </div>
-                                )}
                               </div>
+                              <h3
+                                className={cn(
+                                  "text-foreground font-bold leading-relaxed text-lg line-clamp-2 drop-shadow-lg uppercase tracking-wide hover:text-amber-100 transition-colors duration-300",
+                                  styles.textShadowGlow
+                                )}
+                              >
+                                {quest.title}
+                              </h3>
 
                               {/* Enhanced timer section with urgency indicators */}
                               {quest.dueDate && (
@@ -348,8 +359,8 @@ const MainQuestCard = () => {
                                     className={cn(
                                       "font-bold text-lg leading-tight drop-shadow-sm",
                                       urgencyStyles
-                                        ? "text-red-200 glow-timer-urgent"
-                                        : "text-foreground glow-timer-normal"
+                                        ? `text-red-200 ${styles.timerGlowUrgentText}`
+                                        : `text-foreground ${styles.timerGlowNormal}`
                                     )}
                                   >
                                     <CountdownTimer
@@ -390,150 +401,6 @@ const MainQuestCard = () => {
             </>
           )}
         </div>
-        <style jsx>{`
-          .pulse-glow {
-            animation: pulse-glow 3s infinite ease-in-out;
-          }
-
-          @keyframes pulse-glow {
-            0% {
-              box-shadow: 0 0 5px rgba(59, 130, 246, 0.2);
-            }
-            50% {
-              box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-            }
-            100% {
-              box-shadow: 0 0 5px rgba(59, 130, 246, 0.2);
-            }
-          }
-
-          .float-animation {
-            animation: float 3s ease-in-out infinite;
-            opacity: 0.6;
-          }
-
-          .glow-animation {
-            animation: glow 4s infinite linear;
-          }
-
-          @keyframes glow {
-            0% {
-              opacity: 0.5;
-            }
-            50% {
-              opacity: 1;
-            }
-            100% {
-              opacity: 0.5;
-            }
-          }
-
-          /* Epic quest card animations */
-          .epic-glow {
-            animation: epic-glow 4s infinite ease-in-out;
-          }
-
-          @keyframes epic-glow {
-            0%,
-            100% {
-              box-shadow:
-                0 0 20px rgba(251, 191, 36, 0.2),
-                0 0 40px rgba(251, 191, 36, 0.1);
-            }
-            50% {
-              box-shadow:
-                0 0 30px rgba(251, 191, 36, 0.4),
-                0 0 60px rgba(251, 191, 36, 0.2);
-            }
-          }
-
-          .legendary-pulse {
-            animation: legendary-pulse 2s infinite ease-in-out;
-          }
-
-          @keyframes legendary-pulse {
-            0%,
-            100% {
-              box-shadow:
-                0 0 15px rgba(239, 68, 68, 0.3),
-                0 0 30px rgba(239, 68, 68, 0.1);
-            }
-            50% {
-              box-shadow:
-                0 0 25px rgba(239, 68, 68, 0.6),
-                0 0 50px rgba(239, 68, 68, 0.3);
-            }
-          }
-
-          .heroic-shimmer {
-            animation: heroic-shimmer 3s infinite ease-in-out;
-          }
-
-          @keyframes heroic-shimmer {
-            0%,
-            100% {
-              box-shadow:
-                0 0 15px rgba(147, 51, 234, 0.3),
-                0 0 30px rgba(147, 51, 234, 0.1);
-            }
-            50% {
-              box-shadow:
-                0 0 25px rgba(147, 51, 234, 0.5),
-                0 0 50px rgba(147, 51, 234, 0.2);
-            }
-          }
-
-          @keyframes float {
-            0%,
-            100% {
-              transform: translateY(0px);
-            }
-            50% {
-              transform: translateY(-5px);
-            }
-          }
-
-          /* Timer glow effects */
-          .glow-timer-normal {
-            animation: timer-glow-normal 4s infinite ease-in-out;
-          }
-
-          .glow-timer-urgent {
-            animation: timer-glow-urgent 2s infinite ease-in-out;
-          }
-
-          @keyframes timer-glow-normal {
-            0%,
-            100% {
-              text-shadow:
-                0 0 5px rgba(59, 130, 246, 0.3),
-                0 0 10px rgba(59, 130, 246, 0.2),
-                0 0 15px rgba(59, 130, 246, 0.1);
-            }
-            50% {
-              text-shadow:
-                0 0 10px rgba(59, 130, 246, 0.5),
-                0 0 20px rgba(59, 130, 246, 0.3),
-                0 0 30px rgba(59, 130, 246, 0.2);
-            }
-          }
-
-          @keyframes timer-glow-urgent {
-            0%,
-            100% {
-              text-shadow:
-                0 0 8px rgba(239, 68, 68, 0.5),
-                0 0 15px rgba(239, 68, 68, 0.3),
-                0 0 25px rgba(239, 68, 68, 0.2);
-            }
-            50% {
-              text-shadow:
-                0 0 15px rgba(239, 68, 68, 0.8),
-                0 0 25px rgba(239, 68, 68, 0.5),
-                0 0 40px rgba(239, 68, 68, 0.3);
-            }
-          }
-        `}</style>
       </Card>
       <AddQuestDialog
         open={isAddDialogOpen}

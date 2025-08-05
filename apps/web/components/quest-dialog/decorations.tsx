@@ -5,10 +5,12 @@ import { getQuestColorStyles } from "./types";
 
 interface QuestDialogDecorationsProps {
   themeColor: "blue" | "orange" | "purple"; // Added "purple"
+  opacity?: number; // Optional opacity control for background elements
 }
 
 export function QuestDialogDecorations({
   themeColor,
+  opacity = 1,
 }: QuestDialogDecorationsProps) {
   const colorStyles = getQuestColorStyles(themeColor);
   const [particles, setParticles] = useState<
@@ -54,7 +56,10 @@ export function QuestDialogDecorations({
       ></div>
 
       {/* Floating particles background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div 
+        className="absolute inset-0 pointer-events-none overflow-hidden"
+        style={{ opacity }}
+      >
         {particles.map((particle, i) => (
           <div
             key={i}

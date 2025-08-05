@@ -1,5 +1,6 @@
 import { QuestPriority } from "@questly/types";
 import { Crown, Star, Shield, Target, AlertTriangle, Axe } from "lucide-react";
+import { getHumanReadableRRule } from "@/lib/rrule-utils";
 
 // Helper function to get quest priority from basePoints
 export const getQuestPriority = (
@@ -95,14 +96,18 @@ export const getBorderColor = (type: string, isActive: boolean) => {
 };
 
 export const formatRecurrenceRule = (rule: string | null) => {
-  if (!rule) return "One-time";
-  if (rule.includes("DAILY")) return "Daily";
-  if (rule.includes("WEEKLY")) return "Weekly";
-  if (rule.includes("MONTHLY")) return "Monthly";
-  return "Custom";
+  return getHumanReadableRRule(rule || undefined, true);
 };
 
 export const formatDueDate = (dueDate: string | null) => {
   if (!dueDate) return "No due date";
   return new Date(dueDate).toLocaleDateString();
+};
+
+// Helper function to check if a quest template is expired
+export const isQuestTemplateExpired = (questTemplate: any): boolean => {
+  if (!questTemplate.dueDate) return false;
+  const now = Date.now();
+  const dueDate = new Date(questTemplate.dueDate).getTime();
+  return now > dueDate;
 };

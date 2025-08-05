@@ -75,15 +75,106 @@ export class QuestTemplateController {
           : null;
       }
 
-      await db
-        .update(questTemplate)
-        .set(updatedFields)
-        .where(
-          and(
-            eq(questTemplate.id, templateId),
-            eq(questTemplate.userId, userId)
-          )
-        );
+      // Validate recurrence rule if provided
+      if (
+        updatedFields.recurrenceRule &&
+        !isValidRRule(updatedFields.recurrenceRule)
+      ) {
+        return res.status(400).json({
+          message: "Invalid recurrence rule format",
+          details:
+            "The recurrence rule must be a valid iCalendar RRULE format (RFC 5545)",
+        });
+      }
+
+      await db.transaction(async (trx) => {
+        // Update the quest template
+        await trx
+          .update(questTemplate)
+          .set(updatedFields)
+          .where(
+            and(
+              eq(questTemplate.id, templateId),
+              eq(questTemplate.userId, userId)
+            )
+          );
+
+        // Get the updated template data for instance generation
+        const [updatedTemplate] = await trx
+          .select()
+          .from(questTemplate)
+          .where(
+            and(
+              eq(questTemplate.id, templateId),
+              eq(questTemplate.userId, userId)
+            )
+          );
+
+        if (!updatedTemplate) {
+          throw new Error("Template not found after update");
+        }
+
+        // Get user timezone
+        const userTimezoneResult = await trx
+          .select({ timezone: user.timezone })
+          .from(user)
+          .where(eq(user.id, userId));
+        const userTimezone = userTimezoneResult[0]?.timezone;
+
+        const today = getTodayMidnight(userTimezone);
+        const todayDbDate = toLocalDbDate(today, userTimezone);
+
+        // Check if there's already an instance for today
+        const existingInstance = await trx
+          .select({ id: questInstance.id })
+          .from(questInstance)
+          .where(
+            and(
+              eq(questInstance.templateId, templateId),
+              eq(questInstance.userId, userId),
+              eq(questInstance.date, todayDbDate)
+            )
+          );
+
+        // Only create instance if one doesn't exist for today
+        if (existingInstance.length === 0) {
+          // Check if template is active and not expired
+          if (updatedTemplate.isActive) {
+            // Don't create instance if due date is before today
+            if (updatedTemplate.dueDate && updatedTemplate.dueDate < today) {
+              return;
+            }
+
+            // Create instance if recurrence rule matches today or it's a one-time quest due today
+            const shouldCreateInstance =
+              doesRRuleMatchDate(
+                updatedTemplate.recurrenceRule ?? undefined,
+                today
+              ) ||
+              (!updatedTemplate.recurrenceRule &&
+                updatedTemplate.dueDate &&
+                isSameDay(updatedTemplate.dueDate, today));
+
+            if (shouldCreateInstance) {
+              const questInstanceId = uuidv4();
+              await trx.insert(questInstance).values({
+                id: questInstanceId,
+                templateId: updatedTemplate.id,
+                userId,
+                type: updatedTemplate.type,
+                parentQuestId: updatedTemplate.parentQuestId || null,
+                date: todayDbDate,
+                completed: false,
+                title: updatedTemplate.title,
+                description: updatedTemplate.description,
+                basePoints: updatedTemplate.basePoints,
+                xpReward: null,
+                createdAt: new Date(),
+              });
+            }
+          }
+        }
+      });
 
       res.status(200).json({ message: "Quest template updated successfully" });
     } catch (err) {

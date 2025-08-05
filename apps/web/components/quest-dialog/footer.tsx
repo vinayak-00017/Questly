@@ -11,6 +11,8 @@ interface QuestDialogFooterProps {
   isPending: boolean;
   icon: LucideIcon;
   onAction: () => void;
+  actionText?: string;
+  loadingText?: string;
 }
 
 export function QuestDialogFooter({
@@ -19,6 +21,8 @@ export function QuestDialogFooter({
   isPending,
   icon: Icon,
   onAction,
+  actionText = "Create Quest",
+  loadingText = "Creating...",
 }: QuestDialogFooterProps) {
   const colorStyles = getQuestColorStyles(themeColor);
 
@@ -40,12 +44,12 @@ export function QuestDialogFooter({
         {isPending ? (
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 rounded-full border-2 border-t-transparent border-white animate-spin"></div>
-            <span>Creating...</span>
+            <span>{loadingText}</span>
           </div>
         ) : (
           <div className="flex items-center gap-2">
             <Icon className="h-4 w-4" />
-            <span>Create Quest</span>
+            <span>{actionText}</span>
           </div>
         )}
       </Button>

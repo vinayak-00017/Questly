@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { questTemplateApi } from "@/services/quest-template-api";
 import { TrackedQuest } from "../types";
+import { isQuestTemplateExpired } from "@/components/quest-template/quest-template-helpers";
 
 export const useQuestTemplates = (trackedQuests: TrackedQuest[]) => {
   // Fetch available quest templates
@@ -17,7 +18,9 @@ export const useQuestTemplates = (trackedQuests: TrackedQuest[]) => {
     return (templatesData || [])
       .filter(
         (template) =>
-          template.isActive && !trackedTemplateIds.includes(template.id)
+          template.isActive &&
+          !trackedTemplateIds.includes(template.id) &&
+          !isQuestTemplateExpired(template)
       )
       .sort((a, b) => {
         // Sort by priority: Critical > Important > Standard > Minor > Optional
