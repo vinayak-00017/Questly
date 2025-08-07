@@ -4,6 +4,7 @@ import {
   Geist_Mono,
   EB_Garamond,
   MedievalSharp,
+  Cinzel,
 } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -37,6 +38,13 @@ const medievalSharp = MedievalSharp({
   weight: "400",
   style: "normal",
   fallback: ["cursive"],
+});
+
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -76,7 +84,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${ebGaramond.variable} font-garamond antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${ebGaramond.variable} ${medievalSharp.variable} ${cinzel.variable} font-garamond antialiased`}
       >
         <ThemeProvider
           attribute="class"

@@ -1,16 +1,23 @@
 "use client";
 
-import { AppShowcase } from "./components/AppShowcase";
-import { FeaturesSection } from "./components/FeaturesSection";
+import DailyShowcase from "./components/daily-showcase";
+
 import { Footer } from "./components/Footer";
 import { HeroSection } from "./components/HeroSection";
-import { TestimonialsSection } from "./components/TestimonialsSection";
+import MainShowcase from "./components/main-showcase";
+import RealHero from "./components/real-hero";
+
+import TrackingSection from "./components/tracking-section";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      <HeroSection />
-      <FeaturesSection />
+      {/* <HeroSection /> */}
+      <RealHero />
+      <DailyShowcase />
+      <MainShowcase />
+      <TrackingSection />
+      {/* <FeaturesSection /> */}
       {/* <AppShowcase /> */}
       {/* <TestimonialsSection /> */}
       <Footer />

@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import {
   Play,
   ArrowRight,
-  Sparkles,
   Trophy,
   Target,
   Zap,
@@ -10,18 +9,14 @@ import {
   Crown,
   Gamepad2,
   TrendingUp,
-  Calendar,
-  CheckCircle2,
   Flame,
   Shield,
-  Swords,
   SwordsIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import TextPressure from "@/components/bits/TextAnimations/TextPressure/TextPressure";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import router from "next/router";
 
 export const HeroSection = () => {
   const router = useRouter();
@@ -78,31 +73,6 @@ export const HeroSection = () => {
 
       {/* Organized Floating Background Icons */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Strategic Sparkles - Corner Clusters */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={`sparkle-${i}`}
-            className="absolute"
-            style={{
-              left: i < 3 ? `${5 + i * 8}%` : `${75 + (i - 3) * 8}%`,
-              top: i < 3 ? `${10 + i * 15}%` : `${60 + (i - 3) * 15}%`,
-            }}
-            animate={{
-              y: [0, -15, 0],
-              opacity: [0.4, 0.8, 0.4],
-              scale: [0.8, 1.1, 0.8],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: i * 0.5,
-              ease: "easeInOut",
-            }}
-          >
-            <Sparkles className="w-3 h-3 text-yellow-400 drop-shadow-lg" />
-          </motion.div>
-        ))}
-
         {/* Left Side Icons */}
         <motion.div
           className="absolute top-1/4 left-8"
