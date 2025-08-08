@@ -27,7 +27,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { parseISO } from "date-fns";
+import { toLocalDbDate } from "@questly/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function PerformanceDetailPage() {
   const params = useParams();
@@ -36,7 +42,12 @@ export default function PerformanceDetailPage() {
   const queryClient = useQueryClient();
   const date = params.date as string;
   const period = searchParams.get("period") || "daily";
-  const label = searchParams.get("label") || date;
+  // Convert date to day name for display
+  const defaultDayName = parseISO(date + "T00:00:00").toLocaleDateString(
+    "en-US",
+    { weekday: "long" }
+  );
+  const label = searchParams.get("label") || defaultDayName;
 
   // For now, we'll fetch the period data and find the specific date
   // Later you might want to create a specific endpoint for detailed day/period data
@@ -68,6 +79,9 @@ export default function PerformanceDetailPage() {
       completed: boolean;
     }) => questApi.completeQuest(questId, completed),
     onMutate: async ({ questId, completed }) => {
+      // Add quest to pending set
+      setPendingQuests((prev) => new Set(prev).add(questId));
+
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["quest-details", date] });
 
@@ -77,14 +91,19 @@ export default function PerformanceDetailPage() {
         date,
       ]);
 
-      // Optimistically update to the new value
+      // Optimistically update using functional update to avoid race conditions
       queryClient.setQueryData(["quest-details", date], (old: any) => {
         if (!old?.quests) return old;
 
-        const updatedQuests = old.quests.map((quest: any) =>
-          quest.id === questId ? { ...quest, completed } : quest
-        );
+        // Create a new object to avoid mutations
+        const updatedQuests = old.quests.map((quest: any) => {
+          if (quest.id === questId) {
+            return { ...quest, completed };
+          }
+          return quest;
+        });
 
+        // Recalculate stats based on updated quests
         const newCompletedQuests = updatedQuests.filter(
           (q: any) => q.completed
         ).length;
@@ -105,10 +124,17 @@ export default function PerformanceDetailPage() {
         };
       });
 
-      // Return a context object with the snapshotted value
-      return { previousQuestDetails };
+      // Return a context object with the snapshotted value and questId
+      return { previousQuestDetails, questId };
     },
     onError: (err, variables, context) => {
+      // Remove quest from pending set
+      setPendingQuests((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(variables.questId);
+        return newSet;
+      });
+
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousQuestDetails) {
         queryClient.setQueryData(
@@ -119,6 +145,13 @@ export default function PerformanceDetailPage() {
       toast.error("Failed to update quest status");
     },
     onSuccess: (data, variables) => {
+      // Remove quest from pending set
+      setPendingQuests((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(variables.questId);
+        return newSet;
+      });
+
       if (variables.completed) {
         toast.success("Quest completed!");
       } else {
@@ -130,6 +163,14 @@ export default function PerformanceDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["performance"] });
       queryClient.invalidateQueries({ queryKey: ["userStats"] });
     },
+    onSettled: (data, error, variables) => {
+      // Ensure quest is removed from pending set even if onSuccess/onError don't run
+      setPendingQuests((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(variables.questId);
+        return newSet;
+      });
+    },
   });
 
   const specificDayData = performanceData?.performanceData?.find(
@@ -138,19 +179,48 @@ export default function PerformanceDetailPage() {
 
   // Build available dates list (sorted ascending) from performance data (prefer overall)
   const dateItems = (
-    ((allPerformance?.performanceData || performanceData?.performanceData) || []) as Array<{ date?: string }>
+    (allPerformance?.performanceData ||
+      performanceData?.performanceData ||
+      []) as Array<{ date?: string }>
   )
     .map((d) => d.date)
     .filter((d): d is string => typeof d === "string" && d.length > 0);
-  const availableDates: string[] = Array.from(new Set<string>(dateItems)).sort();
+  const availableDates: string[] = Array.from(
+    new Set<string>(dateItems)
+  ).sort();
 
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [calendarMonth, setCalendarMonth] = useState(new Date(date));
+  const [pendingQuests, setPendingQuests] = useState<Set<string>>(new Set());
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    // Parse date safely to avoid timezone shifts
+    const parsedDate = parseISO(date + "T00:00:00");
+    return parsedDate;
+  });
 
   // Update calendar month when date changes
   useEffect(() => {
-    setCalendarMonth(new Date(date));
+    // Parse date safely to avoid timezone shifts
+    const parsedDate = parseISO(date + "T00:00:00");
+    setCalendarMonth(parsedDate);
   }, [date]);
+
+  // Clear pending quests when date changes
+  useEffect(() => {
+    setPendingQuests(new Set());
+  }, [date]);
+
+  // Helper function to safely handle quest completion toggle
+  const handleQuestToggle = (questId: string, currentCompleted: boolean) => {
+    // Prevent duplicate mutations for the same quest
+    if (pendingQuests.has(questId)) {
+      return;
+    }
+
+    completeQuestMutation.mutate({
+      questId,
+      completed: !currentCompleted,
+    });
+  };
 
   // Utilities
   const formatDate = (d: Date) => {
@@ -170,6 +240,10 @@ export default function PerformanceDetailPage() {
 
   const goToDate = (target: string) => {
     const sp = new URLSearchParams(searchParams.toString());
+    // Convert date to day name for the label
+    const targetDate = parseISO(target + "T00:00:00");
+    const dayName = targetDate.toLocaleDateString("en-US", { weekday: "long" });
+    sp.set("label", dayName);
     router.push(`/performance/${target}?${sp.toString()}`);
   };
 
@@ -282,7 +356,7 @@ export default function PerformanceDetailPage() {
             <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-700">
               <Calendar
                 mode="single"
-                selected={new Date(date)}
+                selected={parseISO(date + "T00:00:00")}
                 onSelect={(d) => {
                   if (!d) return;
                   const yyyy = d.getFullYear();
@@ -416,7 +490,9 @@ export default function PerformanceDetailPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(categoryStats)
-              .filter(([questType]) => questType === "daily" || questType === "side")
+              .filter(
+                ([questType]) => questType === "daily" || questType === "side"
+              )
               .map(([questType, stats]: [string, any]) => (
                 <div
                   key={questType}
@@ -475,34 +551,29 @@ export default function PerformanceDetailPage() {
               >
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() =>
-                      completeQuestMutation.mutate({
-                        questId: quest.id,
-                        completed: !quest.completed,
-                      })
-                    }
+                    onClick={() => handleQuestToggle(quest.id, quest.completed)}
                     className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all hover:scale-110 ${
                       quest.completed
                         ? "border-green-500 bg-green-500"
                         : "border-zinc-600 hover:border-green-400"
                     } ${
-                      completeQuestMutation.isPending
+                      pendingQuests.has(quest.id)
                         ? "opacity-50 cursor-not-allowed"
                         : "cursor-pointer"
                     }`}
-                    disabled={completeQuestMutation.isPending}
+                    disabled={pendingQuests.has(quest.id)}
                     title={
-                      completeQuestMutation.isPending
+                      pendingQuests.has(quest.id)
                         ? "Updating..."
                         : quest.completed
                           ? "Mark as incomplete"
                           : "Mark as completed"
                     }
                   >
-                    {quest.completed && !completeQuestMutation.isPending && (
+                    {quest.completed && !pendingQuests.has(quest.id) && (
                       <Check className="h-3 w-3 text-white" />
                     )}
-                    {completeQuestMutation.isPending && (
+                    {pendingQuests.has(quest.id) && (
                       <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
                     )}
                   </button>
