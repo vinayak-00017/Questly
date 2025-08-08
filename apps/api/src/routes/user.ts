@@ -363,6 +363,7 @@ router.get("/questDetails", requireAuth, async (req, res) => {
     const quests = await db
       .select({
         id: questInstance.id,
+        type: questInstance.type,
         basePoints: questInstance.basePoints,
         completed: questInstance.completed,
         date: questInstance.date,
@@ -381,7 +382,9 @@ router.get("/questDetails", requireAuth, async (req, res) => {
       title: quest.title || `Quest ${quest.id}`,
       completed: quest.completed,
       points: quest.basePoints,
-      category: "General", // You could determine this based on templateId later
+      type: quest.type,
+      // Backward-compatible category label derived from type
+      category: quest.type === "daily" ? "Daily" : "Side",
       templateId: quest.templateId,
       description: quest.description,
     }));
