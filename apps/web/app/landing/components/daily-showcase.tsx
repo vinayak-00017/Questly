@@ -37,7 +37,10 @@ const DailyShowcase = () => {
       <div className="relative z-10 container mx-auto px-6 py-20">
         <div className="text-center mb-16">
           <motion.h2
-            className="text-4xl md:text-6xl font-bold font-medieval bg-gradient-to-r from-orange-400 via-red-400 to-orange-400 bg-clip-text text-transparent mb-6"
+            className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-orange-400 via-red-400 to-orange-400 bg-clip-text text-transparent mb-6 title-heading"
+            style={{
+              fontFamily: 'var(--font-eb-garamond), "Times New Roman", serif',
+            }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}

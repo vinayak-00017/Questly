@@ -138,7 +138,7 @@ export const Footer = () => {
         </div>
 
         {/* Newsletter signup */}
-        <div className="py-8 border-t border-border/50">
+        {/* <div className="py-8 border-t border-border/50">
           <div className="max-w-md mx-auto lg:mx-0 text-center lg:text-left">
             <h3 className="font-semibold mb-4">Stay Updated on Your Quest</h3>
             <p className="text-muted-foreground text-sm mb-4">
@@ -156,7 +156,7 @@ export const Footer = () => {
               </Button>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Bottom section */}
         <div className="py-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">

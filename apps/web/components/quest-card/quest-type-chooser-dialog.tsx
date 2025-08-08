@@ -24,7 +24,7 @@ export const QuestTypeChooserDialog: React.FC<QuestTypeChooserDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md bg-gradient-to-b from-zinc-900 to-black border-zinc-800 p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-3">
-          <DialogTitle className="text-xl font-medieval text-white/90">
+          <DialogTitle className="text-xl text-white/90">
             Choose Quest Type
           </DialogTitle>
           <DialogDescription className="text-zinc-400 text-sm">
@@ -40,9 +40,7 @@ export const QuestTypeChooserDialog: React.FC<QuestTypeChooserDialogProps> = ({
             <div className="bg-black/40 w-12 h-12 rounded-full flex items-center justify-center mb-3 ring-amber-500/30">
               <Flame className="h-6 w-6 text-amber-500" />
             </div>
-            <span className="text-white font-medieval text-lg">
-              Daily Quest
-            </span>
+            <span className="text-white text-lg">Daily Quest</span>
             <span className="text-zinc-400 text-xs mt-1">
               Repeats every day
             </span>
@@ -55,7 +53,7 @@ export const QuestTypeChooserDialog: React.FC<QuestTypeChooserDialogProps> = ({
             <div className="bg-black/40 w-12 h-12 rounded-full flex items-center justify-center mb-3 ring-sky-500/30">
               <Compass className="h-6 w-6 text-sky-500" />
             </div>
-            <span className="text-white font-medieval text-lg">Side Quest</span>
+            <span className="text-white text-lg">Side Quest</span>
             <span className="text-zinc-400 text-xs mt-1">
               Custom Schedule activities
             </span>

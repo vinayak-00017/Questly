@@ -179,7 +179,11 @@ export const MockQuestProgressRing = () => {
             {/* Center content */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <motion.div
-                className="text-2xl font-bold font-medieval text-white"
+                className="text-2xl font-bold text-white"
+                style={{
+                  fontFamily:
+                    'var(--font-eb-garamond), "Times New Roman", serif',
+                }}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.5, duration: 0.5, type: "spring" }}

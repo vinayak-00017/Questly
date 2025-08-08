@@ -91,7 +91,7 @@ export const RankCard: React.FC<RankCardProps> = ({
 
       {/* Rank Info */}
       <h3
-        className="text-xl font-bold font-medieval mb-2"
+        className="text-xl font-bold mb-2"
         style={{ color: isUnlocked ? rank.color : "#64748b" }}
       >
         {rank.name}

@@ -43,7 +43,10 @@ const TrackingSection = () => {
         {/* Header Section */}
         <div className="text-center mb-16">
           <motion.h1
-            className="text-5xl md:text-6xl font-bold font-medieval bg-gradient-to-r from-blue-400 via-purple-400 to-amber-400 bg-clip-text text-transparent mb-8"
+            className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-amber-400 bg-clip-text text-transparent mb-8 title-heading"
+            style={{
+              fontFamily: 'var(--font-eb-garamond), "Times New Roman", serif',
+            }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}

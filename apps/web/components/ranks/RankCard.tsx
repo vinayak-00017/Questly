@@ -46,14 +46,14 @@ export const RankCard: React.FC<RankCardProps> = ({
         isUnlocked ? "hover:scale-105 hover:shadow-lg" : "opacity-60 grayscale"
       }`}
       style={{
-        background: isUnlocked 
+        background: isUnlocked
           ? `linear-gradient(135deg, ${rank.color}08, ${rank.color}03)`
           : "linear-gradient(135deg, #64748b08, #64748b03)",
         borderColor: isCurrentRank
           ? rank.color + "60"
           : isUnlocked
-          ? rank.color + "25"
-          : "#64748b25",
+            ? rank.color + "25"
+            : "#64748b25",
         boxShadow: isCurrentRank ? `0 0 20px ${rank.color}30` : undefined,
       }}
     >
@@ -95,15 +95,15 @@ export const RankCard: React.FC<RankCardProps> = ({
 
       {/* Rank Info */}
       <h3
-        className="text-xl font-bold font-medieval mb-2"
+        className="text-xl font-bold mb-2"
         style={{ color: isUnlocked ? rank.color : "#64748b" }}
       >
         {rank.name}
       </h3>
 
       <div className="flex items-center gap-2 mb-3 text-sm">
-        <Star 
-          className="w-4 h-4" 
+        <Star
+          className="w-4 h-4"
           style={{ color: isUnlocked ? rank.color + "80" : "#64748b" }}
         />
         <span style={{ color: isUnlocked ? rank.color + "CC" : "#94a3b8" }}>
@@ -111,12 +111,12 @@ export const RankCard: React.FC<RankCardProps> = ({
           {rank.maxLevel !== rank.minLevel && rank.maxLevel !== 999
             ? ` - ${rank.maxLevel}`
             : rank.maxLevel === 999
-            ? "+"
-            : ""}
+              ? "+"
+              : ""}
         </span>
       </div>
 
-      <p 
+      <p
         className="text-sm leading-relaxed"
         style={{ color: isUnlocked ? rank.color + "99" : "#a1a1aa" }}
       >
@@ -128,7 +128,9 @@ export const RankCard: React.FC<RankCardProps> = ({
         <div className="mt-4 text-center">
           <div className="inline-flex items-center gap-2 bg-slate-700/60 px-3 py-2 rounded-lg text-sm">
             <Shield className="w-4 h-4 text-zinc-400" />
-            <span className="text-zinc-400">Unlock at Level {rank.minLevel}</span>
+            <span className="text-zinc-400">
+              Unlock at Level {rank.minLevel}
+            </span>
           </div>
         </div>
       )}

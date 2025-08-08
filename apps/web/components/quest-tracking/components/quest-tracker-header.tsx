@@ -7,12 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  TrendingUp,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp, TrendingUp } from "lucide-react";
 import { ViewType } from "../types";
 import { AddQuestDialog } from "./add-quest-dialog";
 
@@ -52,7 +47,7 @@ export const QuestTrackerHeader: React.FC<QuestTrackerHeaderProps> = ({
           <TrendingUp className="h-5 w-5 text-amber-400" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-white font-medieval">
+          <h3 className="text-lg font-semibold text-white">
             Quest Activity Tracker
           </h3>
           <p className="text-sm text-slate-400">
@@ -60,7 +55,7 @@ export const QuestTrackerHeader: React.FC<QuestTrackerHeaderProps> = ({
           </p>
         </div>
       </div>
-      
+
       {trackedQuestsCount > 0 && (
         <div className="flex items-center gap-2">
           <Button
@@ -86,7 +81,7 @@ export const QuestTrackerHeader: React.FC<QuestTrackerHeaderProps> = ({
           </Button>
         </div>
       )}
-      
+
       <div className="flex gap-3">
         {trackedQuestsCount > 0 && (
           <Select value={selectedView} onValueChange={onViewChange}>

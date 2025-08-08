@@ -21,11 +21,11 @@ const mockRanks = [
   },
   {
     id: "2",
-    name: "Adventurer",
-    icon: "🛡️",
-    color: "#3b82f6", // Blue
-    minLevel: 6,
-    maxLevel: 8,
+    name: "Pathfinder",
+    icon: "🧭",
+    color: "#20B2AA", // Light Sea Green
+    minLevel: 9,
+    maxLevel: 11,
     currentLevel: null,
     description:
       "You've proven yourself capable. The path ahead grows more challenging.",
@@ -146,8 +146,12 @@ export const RankProgression = () => {
               </div>
 
               <h3
-                className="text-xl font-bold font-medieval mb-2"
-                style={{ color: rank.color }}
+                className="text-xl font-bold mb-2"
+                style={{
+                  fontFamily:
+                    'var(--font-eb-garamond), "Times New Roman", serif',
+                  color: rank.color,
+                }}
               >
                 {rank.name}
               </h3>
@@ -159,8 +163,7 @@ export const RankProgression = () => {
                 />
                 <span style={{ color: rank.color + "CC" }}>
                   Level {rank.minLevel}
-                  {rank.maxLevel !== rank.minLevel &&
-                  rank.maxLevel !== 999
+                  {rank.maxLevel !== rank.minLevel && rank.maxLevel !== 999
                     ? ` - ${rank.maxLevel}`
                     : rank.maxLevel === 999
                       ? "+"

@@ -269,9 +269,7 @@ const QuestCard: React.FC<QuestCardProps> = ({
               <EmptyIcon
                 className={`h-12 w-12 ${colorStyles.iconColor}/30 mx-auto mb-3`}
               />
-              <h3 className="text-white/90 font-medieval text-lg mb-1">
-                {emptyStateTitle}
-              </h3>
+              <h3 className="text-white/90 text-lg mb-1">{emptyStateTitle}</h3>
               <p className="text-zinc-400 text-sm mb-4">
                 {emptyStateDescription}
               </p>

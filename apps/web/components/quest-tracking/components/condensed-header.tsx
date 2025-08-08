@@ -33,7 +33,7 @@ export const CondensedHeader: React.FC<CondensedHeaderProps> = ({
             <TrendingUp className="h-4 w-4 text-amber-400" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white font-medieval">
+            <h3 className="text-sm font-semibold text-white">
               Quest Activity Tracker
             </h3>
             <p className="text-xs text-slate-400">No quests tracked</p>

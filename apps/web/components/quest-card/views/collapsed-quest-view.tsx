@@ -89,7 +89,7 @@ const CollapsedQuestView = ({
               <div className="flex items-center mb-1 gap-2">
                 <span
                   className={cn(
-                    "text-base font-medieval tracking-wide capitalize",
+                    "text-base tracking-wide capitalize",
                     isCompleted
                       ? `${colorStyles.iconColor}/60`
                       : colorStyles.iconColor

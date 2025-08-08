@@ -27,6 +27,7 @@ import {
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useSession } from "@/lib/auth-client";
 import { AddMainQuestOnboarding } from "./add-main-quest-onboarding";
+import { AddDailyQuestDialog } from "../quest-dialog/add-daily-quest-dialog";
 import Image from "next/image";
 
 interface OnboardingStep {
@@ -49,6 +50,7 @@ export function OnboardingWizard() {
   } = useOnboarding();
 
   const [localStep, setLocalStep] = useState(currentStep);
+  const [dailyDialogOpen, setDailyDialogOpen] = useState(false);
 
   // Create steps with dynamic user name
   const steps: OnboardingStep[] = [
@@ -163,6 +165,68 @@ export function OnboardingWizard() {
       description: "Start your adventure with a main quest",
       icon: SwordsIcon,
       content: <AddMainQuestOnboarding />,
+    },
+    {
+      id: 3,
+      title: "Add a Daily Quest",
+      description: "Set up a daily habit to support your main quest",
+      icon: Flame,
+      content: (
+        <div className="w-full">
+          <div className="mx-auto max-w-md text-center space-y-5">
+            <div className="relative mx-auto w-16 h-16 mb-1">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-amber-500/20 rounded-full animate-pulse"></div>
+              <div className="absolute inset-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center">
+                <Flame className="h-7 w-7 text-white" />
+              </div>
+            </div>
+
+            <p className="text-slate-300 text-sm">
+              Daily quests help you build consistent habits that push your main quest forward.
+            </p>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-lg border border-orange-500/20 bg-orange-500/5 p-3">
+                <div className="flex flex-col items-center gap-2">
+                  <Calendar className="h-4 w-4 text-orange-400" />
+                  <span className="text-[11px] text-orange-200/90">Flexible Schedule</span>
+                </div>
+              </div>
+              <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+                <div className="flex flex-col items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-amber-300" />
+                  <span className="text-[11px] text-amber-100/90">Habit Builder</span>
+                </div>
+              </div>
+              <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-3">
+                <div className="flex flex-col items-center gap-2">
+                  <Trophy className="h-4 w-4 text-yellow-300" />
+                  <span className="text-[11px] text-yellow-100/90">Track Progress</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Button
+                onClick={() => setDailyDialogOpen(true)}
+                className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-semibold"
+              >
+                <Flame className="h-4 w-4 mr-2" />
+                Add Daily Quest
+              </Button>
+              <p className="text-xs text-slate-400 mt-2">
+                You can change the schedule or details anytime.
+              </p>
+            </div>
+
+            <AddDailyQuestDialog
+              open={dailyDialogOpen}
+              onOpenChange={setDailyDialogOpen}
+              onSuccess={() => setDailyDialogOpen(false)}
+            />
+          </div>
+        </div>
+      ),
     },
   ];
 

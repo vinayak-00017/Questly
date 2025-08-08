@@ -90,11 +90,7 @@ export default function RanksPage() {
           className="text-center mt-16 py-8 border-t border-slate-700/60"
         >
           <p className="text-zinc-400 text-lg">
-            🌟{" "}
-            <span className="font-medieval">
-              Every quest completed brings you closer to legend
-            </span>{" "}
-            🌟
+            🌟 <span className="">RANK {rank?.id}</span> 🌟
           </p>
         </motion.div>
       </div>

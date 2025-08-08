@@ -173,7 +173,7 @@ export default function MainQuestsPage() {
       <div className="max-w-6xl mx-auto p-6 h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <Scroll className="w-16 h-16 text-purple-400 mx-auto animate-pulse" />
-          <p className="text-xl font-medieval">Loading your epic journey...</p>
+          <p className="text-xl">Loading your epic journey...</p>
         </div>
       </div>
     );

@@ -118,7 +118,7 @@ export default function PerformanceDetailPage() {
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-amber-400 font-medieval">
+            <h1 className="text-3xl font-bold text-amber-400">
               Performance Details
             </h1>
             <p className="text-zinc-400 flex items-center gap-2">

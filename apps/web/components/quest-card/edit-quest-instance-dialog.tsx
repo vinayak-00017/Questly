@@ -298,7 +298,7 @@ const EditQuestInstanceDialog: React.FC<EditQuestInstanceDialogProps> = ({
               >
                 <Edit3 className={`h-4 w-4 ${colorStyles.iconColor}`} />
               </div>
-              <DialogTitle className="text-xl font-medieval text-white/90">
+              <DialogTitle className="text-xl text-white/90">
                 Edit {questInstance.type === "daily" ? "Daily" : "Side"} Quest
                 Instance
               </DialogTitle>

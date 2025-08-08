@@ -36,7 +36,7 @@ export function UserAvatar({ session, userStats, onClick }: UserAvatarProps) {
         )}
       </div>
       <div>
-        <h1 className="text-lg font-bold text-white font-medieval tracking-wide">
+        <h1 className="text-lg font-bold text-white tracking-wide">
           {isClient && session
             ? session.user?.name || "Adventurer"
             : "Noble Adventurer"}

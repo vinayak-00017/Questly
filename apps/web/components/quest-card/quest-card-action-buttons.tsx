@@ -285,7 +285,7 @@ const QuestCardActionButtons = ({
     return (
       <div className="absolute left-1/2 -top-8 transform -translate-x-1/2 flex items-center justify-center">
         <div className="relative">
-          <div className="text-lg font-medieval font-bold xp-float">
+          <div className="text-lg font-bold xp-float">
             <QuestXpTag
               xpReward={quest.xpReward ?? 50}
               isCompleted={false}

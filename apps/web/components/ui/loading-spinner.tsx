@@ -106,7 +106,7 @@ const LoadingSpinner = ({
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-2xl font-bold font-medieval tracking-wide text-white"
+            className="text-2xl font-bold tracking-wide text-white"
           >
             Loading Your Quest
           </motion.h2>

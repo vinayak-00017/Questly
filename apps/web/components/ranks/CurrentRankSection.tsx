@@ -111,7 +111,7 @@ export const CurrentRankSection: React.FC<CurrentRankSectionProps> = ({
             {/* Rank Info */}
             <div className="flex-1 text-center lg:text-left">
               <motion.h2
-                className="text-4xl font-bold font-medieval mb-2"
+                className="text-4xl font-bold mb-2"
                 style={{
                   backgroundImage: `linear-gradient(135deg, ${currentRankColor}, #fbbf24)`,
                   WebkitBackgroundClip: "text",

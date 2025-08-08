@@ -66,18 +66,21 @@ const PerformanceChart = memo(function PerformanceChart() {
   });
 
   // Handle click on chart data points - memoized to prevent re-creation
-  const handleChartClick = useCallback((data: any) => {
-    if (data && data.activePayload && data.activePayload[0]) {
-      const clickedData = data.activePayload[0].payload;
-      const date = clickedData.date;
-      const label = clickedData.day;
+  const handleChartClick = useCallback(
+    (data: any) => {
+      if (data && data.activePayload && data.activePayload[0]) {
+        const clickedData = data.activePayload[0].payload;
+        const date = clickedData.date;
+        const label = clickedData.day;
 
-      // Navigate to detailed performance page
-      router.push(
-        `/performance/${date}?period=${selectedPeriod}&label=${encodeURIComponent(label)}`
-      );
-    }
-  }, [router, selectedPeriod]);
+        // Navigate to detailed performance page
+        router.push(
+          `/performance/${date}?period=${selectedPeriod}&label=${encodeURIComponent(label)}`
+        );
+      }
+    },
+    [router, selectedPeriod]
+  );
 
   // Calculate trend line using linear regression - memoized for performance
   const calculateTrendLine = useCallback((data: any[]) => {
@@ -151,7 +154,7 @@ const PerformanceChart = memo(function PerformanceChart() {
     return (
       <Card className="bg-black/20 border-amber-500/20 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-amber-400 font-medieval flex items-center">
+          <CardTitle className="text-amber-400 flex items-center">
             <Crown className="h-5 w-5 mr-2" />
             Quest Completion Analytics
           </CardTitle>
@@ -171,7 +174,7 @@ const PerformanceChart = memo(function PerformanceChart() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-amber-400 font-medieval flex items-center">
+            <CardTitle className="text-amber-400 flex items-center">
               <Crown className="h-5 w-5 mr-2" />
               Quest Completion Analytics
             </CardTitle>

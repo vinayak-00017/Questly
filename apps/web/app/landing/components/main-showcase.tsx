@@ -27,7 +27,10 @@ const MainShowcase = () => {
         {/* Header Section */}
         <div className="text-center mb-16">
           <motion.h1
-            className="text-5xl md:text-7xl font-bold font-medieval bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent mb-8"
+            className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent mb-8 title-heading"
+            style={{
+              fontFamily: 'var(--font-eb-garamond), "Times New Roman", serif',
+            }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -57,7 +60,13 @@ const MainShowcase = () => {
             className="grid lg:grid-cols-2 gap-16"
           >
             <div>
-              <h2 className="text-4xl font-bold font-medieval text-blue-300 mb-4">
+              <h2
+                className="text-4xl font-bold text-blue-300 mb-4"
+                style={{
+                  fontFamily:
+                    'var(--font-eb-garamond), "Times New Roman", serif',
+                }}
+              >
                 Rank Progression
               </h2>
               <p className="text-zinc-400 text-lg">
@@ -66,7 +75,13 @@ const MainShowcase = () => {
             </div>
 
             <div>
-              <h2 className="text-4xl font-bold font-medieval text-purple-300 mb-4">
+              <h2
+                className="text-4xl font-bold text-purple-300 mb-4"
+                style={{
+                  fontFamily:
+                    'var(--font-eb-garamond), "Times New Roman", serif',
+                }}
+              >
                 Epic Achievements
               </h2>
               <p className="text-zinc-400 text-lg">
@@ -99,7 +114,7 @@ const MainShowcase = () => {
           ease: "linear",
         }}
       >
-        <SwordsIcon size={120} />
+        <SwordsIcon size={60} />
       </motion.div>
 
       <motion.div

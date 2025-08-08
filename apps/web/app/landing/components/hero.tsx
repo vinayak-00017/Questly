@@ -1,10 +1,12 @@
 "use client";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-const RealHero = () => {
+const Hero = () => {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [starData, setStarData] = useState<
@@ -58,14 +60,16 @@ const RealHero = () => {
     }));
     setShootingData(shooting);
   }, []);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pb-0">
-      {/* Background Image */}
+    <section
+      className="relative min-h-screen w-full overflow-hidden"
+      aria-label="Questly hero"
+    >
+      {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110"
-        style={{
-          backgroundImage: "url('/questly_hero.png')",
-        }}
+        style={{ backgroundImage: "url('/ql_hr.png')" }}
       />
 
       {/* Logo Section - Top Left */}
@@ -141,16 +145,14 @@ const RealHero = () => {
         </motion.a>
       </motion.nav>
 
-      {/* Dark Overlay for text readability */}
+      {/* Dark vignette and subtle gradient for readability */}
       <div className="absolute inset-0 bg-black/50" />
-
-      {/* Gradient overlay for extra depth */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
 
-      {/* Particle Animation (similar to login page) */}
+      {/* Particle Animation */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Fantasy background overlay with subtle texture */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMDAwMDAwMDUiPjwvcmVjdD4KPHBhdGggZD0iTTAgNUw1IDBaTTYgNEw0IDZaTS0xIDFMMSAtMVoiIHN0cm9rZT0iIzg4ODg4ODA1IiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc=')] opacity-20 z-0"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMDAwMDAwMDUiPjwvcmVjdD4KPHBhdGggZD0iTTAgNUw1IDBaTTYgNEw0IDZaTS0xIDFMMSAtMVoiIHN0cm9rZT0iIzg4ODg4ODA1IiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc+')] opacity-20 z-0"></div>
 
         {/* Decorative stars */}
         {isClient &&
@@ -210,100 +212,112 @@ const RealHero = () => {
           ))}
       </div>
 
-      {/* Hero Content */}
+      {/* Content */}
       <motion.div
-        className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-3xl ml-auto mr-30 mb- mt-16"
+        className="relative z-10 mx-auto flex min-h-screen max-w-6xl items-center px-6 sm:px-8"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
       >
-        {/* Main Headline */}
-        <motion.h1
-          className="text-5xl sm:text-6xl lg:text-7xl xl:text-7xl font-bold mb-6 leading-tight"
-          style={{
-            fontFamily: 'var(--font-eb-garamond), "Times New Roman", serif',
-          }}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
-        >
-          <motion.span
-            className="bg-gradient-to-r from-amber-600 via-orange-700 to-yellow-600 bg-clip-text text-transparent drop-shadow-2xl"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
+        <div className="w-full text-center md:text-left md:ml-auto md:max-w-3xl">
+          {/* Headline */}
+          <motion.h1
+            className="font-bold leading-tight text-5xl sm:text-6xl lg:text-7xl xl:text-8xl mb-6 title-heading"
+            style={{
+              fontFamily: 'var(--font-eb-garamond), "Times New Roman", serif',
+            }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
           >
-            Turn Your Life
-          </motion.span>
-          <br />
-          <motion.span
-            className="bg-gradient-to-r from-amber-600 via-orange-700 to-yellow-600 bg-clip-text text-transparent drop-shadow-2xl"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.9 }}
-          >
-            Into a
-          </motion.span>
-          <br />
-          <motion.span
-            className="bg-gradient-to-r from-amber-600 via-orange-700 to-yellow-600 bg-clip-text text-transparent drop-shadow-2xl"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 1.1 }}
-          >
-            Legendary Quest
-          </motion.span>
-        </motion.h1>
+            <motion.span
+              className="bg-gradient-to-r from-amber-600 via-orange-700 to-yellow-600 bg-clip-text text-transparent drop-shadow-2xl"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+            >
+              LEVEL UP
+            </motion.span>
+            <br />
+            <motion.span
+              className="bg-gradient-to-r from-amber-600 via-orange-700 to-yellow-600 bg-clip-text text-transparent drop-shadow-2xl"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.9 }}
+            >
+              YOUR LIFE
+            </motion.span>
+          </motion.h1>
 
-        {/* Subtitle */}
-        <motion.p
-          className="text-xl sm:text-2xl lg:text-3xl text-gray-200 mb-8 font-light leading-relaxed max-w-3xl mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.3, ease: "easeOut" }}
-        >
-          Transform boring habits into exciting adventures. Earn XP, unlock
-          achievements,
-          <br />
-          and level up your real life with gamified goal tracking.
-        </motion.p>
-
-        {/* Call to Action Buttons */}
-        <motion.div
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.5, ease: "easeOut" }}
-        >
-          {/* Primary CTA Button */}
-          <motion.button
-            onClick={() => router.push("/register")}
-            className="group relative px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold text-base rounded-lg shadow-xl hover:shadow-orange-500/25 transform hover:scale-105 transition-all duration-300"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 1.7, ease: "easeOut" }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          {/* Subheadline */}
+          <motion.h2
+            className="text-2xl sm:text-3xl lg:text-4xl text-amber-200/90 font-semibold mb-6 leading-relaxed"
+            style={{
+              fontFamily: 'var(--font-eb-garamond), "Times New Roman", serif',
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.1, ease: "easeOut" }}
           >
-            <span className="relative z-10">Start Your Journey</span>
-            <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg blur opacity-30 group-hover:opacity-60 transition-opacity duration-300" />
-          </motion.button>
+            Turn Goals into{" "}
+            <span className="bg-gradient-to-r from-amber-600 via-orange-700 to-yellow-600 bg-clip-text text-transparent">
+              Legendary Quests
+            </span>
+          </motion.h2>
 
-          {/* Secondary Button */}
-          <motion.button
-            className="group relative px-8 py-4 bg-transparent hover:bg-white/10 text-white font-semibold text-base rounded-lg border-2 border-orange-500/50 hover:border-orange-400 backdrop-blur-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 1.9, ease: "easeOut" }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          {/* Supporting copy */}
+          <motion.p
+            className="text-xl sm:text-2xl lg:text-2xl leading-relaxed text-gray-200 mb-8 font-light max-w-3xl mx-auto md:mx-0"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.3, ease: "easeOut" }}
           >
-            <span className="relative z-10">Video Story</span>
-          </motion.button>
-        </motion.div>
+            Stop grinding through life's daily routine. Transform it into an
+            epic journey - earn XP, unlock rare achievements, and become the
+            hero of your own legendary story.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start items-center"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.5, ease: "easeOut" }}
+          >
+            <motion.button
+              onClick={() => router.push("/register")}
+              className="group relative px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold text-base rounded-lg shadow-xl hover:shadow-orange-500/25 transform hover:scale-105 transition-all duration-300"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.7, ease: "easeOut" }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="relative z-10">Start Your Quest</span>
+              <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg blur opacity-30 group-hover:opacity-60 transition-opacity duration-300" />
+            </motion.button>
+
+            <motion.button
+              onClick={() =>
+                toast.info("Demo in the forge 🔨", {
+                  description:
+                    "Our trailer is being crafted by the guild. Check back soon, adventurer!",
+                })
+              }
+              className="group relative px-8 py-4 bg-transparent hover:bg-white/10 text-white font-semibold text-base rounded-lg border-2 border-orange-500/50 hover:border-orange-400 backdrop-blur-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.9, ease: "easeOut" }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="relative z-10">Watch Demo</span>
+            </motion.button>
+          </motion.div>
+        </div>
       </motion.div>
     </section>
   );
 };
 
-export default RealHero;
+export default Hero;

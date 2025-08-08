@@ -2,7 +2,16 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Clock, Anchor, Sword, Sparkles, Telescope, BookOpen, Radio, Shield } from "lucide-react";
+import {
+  Clock,
+  Anchor,
+  Sword,
+  Sparkles,
+  Telescope,
+  BookOpen,
+  Radio,
+  Shield,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +24,7 @@ const mockMainQuest = {
   title: "Master the Art of Productivity",
   description: "Transform your daily habits and achieve peak performance",
   importance: "Legendary",
-  category: "Challenge",
+  category: "Creation",
   dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
   progress: 65,
 };
@@ -116,12 +125,15 @@ export const MainQuestCard = () => {
       transition={{ duration: 0.8, delay: 0.4 }}
     >
       <div className="text-center mb-12">
-        <h2 className="text-4xl md:text-5xl font-bold font-medieval text-amber-300 mb-4">
+        <h2
+          className="text-4xl md:text-5xl font-bold text-amber-300 mb-4"
+          style={{
+            fontFamily: 'var(--font-eb-garamond), "Times New Roman", serif',
+          }}
+        >
           Current Main Quest
         </h2>
-        <p className="text-zinc-400 text-xl">
-          Your epic storyline adventure
-        </p>
+        <p className="text-zinc-400 text-xl">Your epic storyline adventure</p>
       </div>
 
       <motion.div

@@ -109,7 +109,7 @@ const ExpandedQuestView = ({
               />
               <span
                 className={cn(
-                  "text-xs font-medieval tracking-wide",
+                  "text-xs tracking-wide",
                   isCompleted ? colorStyles.iconColor : colorStyles.typeLabel
                 )}
               >

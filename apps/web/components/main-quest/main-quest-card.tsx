@@ -76,23 +76,24 @@ const MainQuestCard = () => {
       case Heroic:
         return {
           cardClass:
-            "bg-gradient-to-br from-purple-950/40 via-slate-950/35 to-purple-950/35 border-purple-900/50 ring-2 ring-purple-800/25 hover:ring-purple-700/35 hover:shadow-purple-950/30 shadow-purple-950/20",
+            "bg-gradient-to-br from-[#4a432b]/30 via-[#2b2a25]/25 to-[#8a7a4f]/25 border-[#b5a46a]/40 ring-2 ring-[#b5a46a]/20 hover:ring-[#d2c091]/30 hover:shadow-[rgba(63,58,43,0.3)] shadow-[rgba(63,58,43,0.2)]",
           accentClass:
-            "bg-gradient-to-b from-purple-800/45 to-purple-900/55 group-hover:w-2",
+            "bg-gradient-to-b from-[#b5a46a]/50 to-[#8a7a4f]/60 group-hover:w-2",
           glowClass:
-            "shadow-lg shadow-purple-950/40 hover:shadow-purple-950/50",
+            "shadow-lg shadow-[rgba(181,164,106,0.35)] hover:shadow-[rgba(181,164,106,0.5)]",
           iconBg:
-            "bg-gradient-to-br from-purple-900/40 to-slate-950/35 border-purple-800/40",
+            "bg-gradient-to-br from-[#5a5234]/40 to-[#2b2a25]/35 border-[#b5a46a]/40",
         };
       case Rare:
         return {
           cardClass:
-            "bg-gradient-to-br from-blue-950/40 via-slate-950/35 to-blue-950/35 border-blue-900/50 ring-2 ring-blue-800/25 hover:ring-blue-700/35 hover:shadow-blue-950/30 shadow-blue-950/20",
+            "bg-gradient-to-br from-[#0f3f3d]/30 via-[#0b2b29]/25 to-[#20B2AA]/25 border-[#20B2AA]/40 ring-2 ring-[#20B2AA]/20 hover:ring-[#20B2AA]/30 hover:shadow-[rgba(15,63,61,0.35)] shadow-[rgba(15,63,61,0.2)]",
           accentClass:
-            "bg-gradient-to-b from-blue-800/45 to-blue-900/55 group-hover:w-2",
-          glowClass: "shadow-lg shadow-blue-950/40 hover:shadow-blue-950/50",
+            "bg-gradient-to-b from-[#20B2AA]/45 to-[#178a84]/60 group-hover:w-2",
+          glowClass:
+            "shadow-lg shadow-[rgba(32,178,170,0.35)] hover:shadow-[rgba(32,178,170,0.5)]",
           iconBg:
-            "bg-gradient-to-br from-blue-900/40 to-slate-950/35 border-blue-800/40",
+            "bg-gradient-to-br from-[#178a84]/40 to-[#0b2b29]/35 border-[#20B2AA]/40",
         };
       case Common:
       default:
@@ -272,12 +273,12 @@ const MainQuestCard = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        className="w-full"
+                        whileHover={{ y: -2 }}
+                        className="w-full transform-gpu will-change-transform"
                       >
                         <Card
                           className={cn(
-                            "border transition-all duration-300 cursor-pointer group overflow-hidden relative backdrop-blur-sm w-full p-0 rounded-2xl hover:scale-[1.01]",
+                            "border transition-all duration-300 cursor-pointer group overflow-hidden relative backdrop-blur-sm w-full p-0 rounded-2xl transform-gpu will-change-transform",
                             rarityStyles.cardClass,
                             rarityStyles.glowClass,
                             urgencyStyles
@@ -313,9 +314,9 @@ const MainQuestCard = () => {
                                           quest.importance === Legendary &&
                                             "from-red-900/80 to-stone-900/80 text-red-200/90 border-red-800/50 shadow-red-950/40 animate-pulse",
                                           quest.importance === Heroic &&
-                                            "from-purple-900/80 to-slate-900/80 text-purple-200/90 border-purple-800/50 shadow-purple-950/40",
+                                            "from-[#4a432b]/80 to-[#1f1e19]/80 text-[#e6ddae]/90 border-[#b5a46a]/50 shadow-[rgba(181,164,106,0.35)]",
                                           quest.importance === Rare &&
-                                            "from-blue-900/80 to-slate-900/80 text-blue-200/90 border-blue-800/50 shadow-blue-950/40",
+                                            "from-[#0f3f3d]/80 to-[#0b2b29]/80 text-[#b8f3ef]/90 border-[#20B2AA]/50 shadow-[rgba(32,178,170,0.35)]",
                                           quest.importance === Common &&
                                             "from-slate-600/90 to-slate-700/90 text-slate-50 border-slate-400/60 shadow-slate-900/50"
                                         )}
