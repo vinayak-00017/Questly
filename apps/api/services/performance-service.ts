@@ -117,7 +117,8 @@ export class PerformanceService {
       yearly: 365,
       overall:
         Math.floor(
-          (today.getTime() - userCreatedMidnight.getTime()) / (1000 * 60 * 60 * 24)
+          (today.getTime() - userCreatedMidnight.getTime()) /
+            (1000 * 60 * 60 * 24)
         ) + 1,
     };
 
@@ -146,16 +147,24 @@ export class PerformanceService {
   /**
    * Format date label based on period type
    */
-  private formatDateLabel(date: Date, period: PeriodType): string {
+  private formatDateLabel(
+    date: Date,
+    period: PeriodType,
+    userTimezone?: string
+  ): string {
     const formatters = {
-      weekly: { weekday: "short" },
-      monthly: { month: "short", day: "numeric" },
-      quarterly: { month: "short", day: "numeric" },
-      yearly: { month: "short", day: "numeric" },
-      overall: { month: "short", day: "numeric", year: "2-digit" },
+      weekly: { weekday: "short" } as const,
+      monthly: { month: "short", day: "numeric" } as const,
+      quarterly: { month: "short", day: "numeric" } as const,
+      yearly: { month: "short", day: "numeric" } as const,
+      overall: { month: "short", day: "numeric", year: "2-digit" } as const,
     } as const;
 
-    return date.toLocaleDateString("en-US", formatters[period]);
+    // Ensure labels are formatted in the user's timezone to prevent day shifting in UTC environments
+    return date.toLocaleDateString("en-US", {
+      ...(formatters[period] as Intl.DateTimeFormatOptions),
+      timeZone: userTimezone,
+    });
   }
 
   /**
@@ -223,7 +232,7 @@ export class PerformanceService {
       dates.map(async (date) => {
         const dateStr = this.formatLocalDateString(date, userTimezone);
         const quests = await this.fetchQuestData(userId, dateStr);
-        const label = this.formatDateLabel(date, period);
+        const label = this.formatDateLabel(date, period, userTimezone);
         return this.calculateDayMetrics(quests, label, dateStr);
       })
     );
@@ -232,19 +241,77 @@ export class PerformanceService {
   }
 
   /**
-   * Group dates by week (Sunday to Saturday)
+   * Format week range label
    */
-  private groupByWeek(dates: Date[]): Date[][] {
+  private formatWeekLabel(
+    startDate: Date,
+    endDate: Date,
+    userTimezone?: string
+  ): string {
+    const start = startDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      timeZone: userTimezone,
+    });
+
+    const sameMonth =
+      new Date(
+        startDate.toLocaleString("en-US", { timeZone: userTimezone })
+      ).getMonth() ===
+      new Date(
+        endDate.toLocaleString("en-US", { timeZone: userTimezone })
+      ).getMonth();
+
+    if (sameMonth) {
+      const endDay = endDate.toLocaleDateString("en-US", {
+        day: "numeric",
+        timeZone: userTimezone,
+      });
+      return `${start}-${endDay}`;
+    } else {
+      const end = endDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        timeZone: userTimezone,
+      });
+      return `${start} - ${end}`;
+    }
+  }
+
+  /**
+   * Format month label
+   */
+  private formatMonthLabel(date: Date, userTimezone?: string): string {
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      year: "2-digit",
+      timeZone: userTimezone,
+    });
+  }
+
+  /**
+   * Group dates by week (Sunday to Saturday) in the user's timezone
+   */
+  private groupByWeek(dates: Date[], userTimezone: string): Date[][] {
     const weeks: Map<string, Date[]> = new Map();
 
     dates.forEach((date) => {
-      const weekStart = new Date(date);
-      weekStart.setDate(date.getDate() - date.getDay()); // Go to Sunday
-      const weekKey = weekStart.toISOString().split("T")[0];
+      const local = new Date(
+        date.toLocaleString("en-US", { timeZone: userTimezone })
+      );
+      // Compute Sunday start in user's local time
+      const weekStartLocal = new Date(local);
+      weekStartLocal.setHours(0, 0, 0, 0);
+      weekStartLocal.setDate(
+        weekStartLocal.getDate() - weekStartLocal.getDay()
+      );
+      // Key by local Sunday (YYYY-MM-DD in user's TZ)
+      const weekKey = toLocalDbDate(
+        getLocalDateMidnight(weekStartLocal, userTimezone),
+        userTimezone
+      );
 
-      if (!weeks.has(weekKey)) {
-        weeks.set(weekKey, []);
-      }
+      if (!weeks.has(weekKey)) weeks.set(weekKey, []);
       weeks.get(weekKey)!.push(date);
     });
 
@@ -254,53 +321,23 @@ export class PerformanceService {
   }
 
   /**
-   * Group dates by month
+   * Group dates by month in the user's timezone
    */
-  private groupByMonth(dates: Date[]): Date[][] {
+  private groupByMonth(dates: Date[], userTimezone: string): Date[][] {
     const months: Map<string, Date[]> = new Map();
 
     dates.forEach((date) => {
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-
-      if (!months.has(monthKey)) {
-        months.set(monthKey, []);
-      }
-      months.get(monthKey)!.push(date);
+      const local = new Date(
+        date.toLocaleString("en-US", { timeZone: userTimezone })
+      );
+      const key = `${local.getFullYear()}-${String(local.getMonth() + 1).padStart(2, "0")}`;
+      if (!months.has(key)) months.set(key, []);
+      months.get(key)!.push(date);
     });
 
     return Array.from(months.values()).map((month) =>
       month.sort((a, b) => a.getTime() - b.getTime())
     );
-  }
-
-  /**
-   * Format week range label
-   */
-  private formatWeekLabel(startDate: Date, endDate: Date): string {
-    const start = startDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-
-    if (startDate.getMonth() === endDate.getMonth()) {
-      return `${start}-${endDate.getDate()}`;
-    } else {
-      const end = endDate.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-      return `${start} - ${end}`;
-    }
-  }
-
-  /**
-   * Format month label
-   */
-  private formatMonthLabel(date: Date): string {
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      year: "2-digit",
-    });
   }
 
   /**
@@ -377,11 +414,12 @@ export class PerformanceService {
     userId: string,
     period: PeriodType
   ): Promise<PerformanceData[]> {
+    const userTimezone = await getUserTimezone(userId);
     const dates = await this.generateDateRange(userId, period);
-    const weekGroups = this.groupByWeek(dates);
+    const weekGroups = this.groupByWeek(dates, userTimezone);
 
     return this.aggregateDailyData(userId, weekGroups, (start, end) =>
-      this.formatWeekLabel(start, end)
+      this.formatWeekLabel(start, end, userTimezone)
     );
   }
 
@@ -392,11 +430,12 @@ export class PerformanceService {
     userId: string,
     period: PeriodType
   ): Promise<PerformanceData[]> {
+    const userTimezone = await getUserTimezone(userId);
     const dates = await this.generateDateRange(userId, period);
-    const monthGroups = this.groupByMonth(dates);
+    const monthGroups = this.groupByMonth(dates, userTimezone);
 
     return this.aggregateDailyData(userId, monthGroups, (start) =>
-      this.formatMonthLabel(start)
+      this.formatMonthLabel(start, userTimezone)
     );
   }
 
