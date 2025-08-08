@@ -67,10 +67,16 @@ const Hero = () => {
       aria-label="Questly hero"
     >
       {/* Background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110"
-        style={{ backgroundImage: "url('/ql_hr.png')" }}
-      />
+      <div className="absolute inset-0 scale-110">
+        <Image
+          src="/ql_hr.png"
+          alt="Questly hero background"
+          fill
+          className="object-cover object-center"
+          priority
+          quality={90}
+        />
+      </div>
 
       {/* Logo Section - Top Left */}
       <motion.div
