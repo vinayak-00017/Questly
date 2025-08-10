@@ -232,13 +232,8 @@ const QuestCardActionButtons = ({
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
-      if (
-        Array.isArray(queryKey) &&
-        queryKey.length === 1 &&
-        queryKey[0] !== "todaysQuests"
-      ) {
-        queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
-      }
+      // Invalidate all variants of todaysQuests (dated or not)
+      queryClient.invalidateQueries({ queryKey: ["todaysQuests"] });
       queryClient.invalidateQueries({ queryKey: ["userStats"] });
       queryClient.invalidateQueries({ queryKey: ["questActivity"] });
       queryClient.invalidateQueries({ queryKey: ["performance"] });
@@ -287,7 +282,7 @@ const QuestCardActionButtons = ({
         <div className="relative">
           <div className="text-lg font-bold xp-float">
             <QuestXpTag
-              xpReward={quest.xpReward ?? 50}
+              xpReward={quest.xpReward ?? 0}
               isCompleted={false}
               variant="full"
               className="text-zinc-100 border-zinc-500 bg-zinc-700/80 shadow-zinc-600/60 scale-110"

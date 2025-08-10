@@ -225,6 +225,7 @@ router.get("/userStats", requireAuth, async (req, res) => {
       hasCompletedOnboarding: currUser.hasCompletedOnboarding,
       onboardingStep: currUser.onboardingStep,
       hasCreatedFirstQuest: currUser.hasCreatedFirstQuest,
+      createdAt: currUser.createdAt, // expose account creation date
     };
 
     res.status(200).json({
@@ -359,7 +360,7 @@ router.get("/questDetails", requireAuth, async (req, res) => {
       return res.status(400).json({ message: "Date parameter is required" });
     }
 
-    // Fetch quest instances for the specific date
+    // Fetch quest instances for the specific date, including stored xpReward
     const quests = await db
       .select({
         id: questInstance.id,
@@ -370,14 +371,28 @@ router.get("/questDetails", requireAuth, async (req, res) => {
         templateId: questInstance.templateId,
         title: questInstance.title,
         description: questInstance.description,
+        xpReward: questInstance.xpReward,
       })
       .from(questInstance)
       .where(
         and(eq(questInstance.userId, userId), eq(questInstance.date, date))
       );
 
-    // Transform quest data
-    const questDetails = quests.map((quest) => ({
+    // Fetch user to determine current level
+    const [currUser] = await db.select().from(user).where(eq(user.id, userId));
+
+    // Determine player's level (default to 1 if user not found)
+    const playerLevel = currUser ? calculateLevelFromXp(currUser.xp).level : 1;
+
+    // Compute potential xp rewards for this set of quests using player's level
+    const computedRewards = calculateXpRewards(
+      quests.map((q) => ({ basePoints: q.basePoints, completed: q.completed })),
+      playerLevel,
+      false
+    );
+
+    // Transform quest data and attach xpReward (prefer stored xpReward when present)
+    const questDetails = quests.map((quest, idx) => ({
       id: quest.id,
       title: quest.title || `Quest ${quest.id}`,
       completed: quest.completed,
@@ -387,6 +402,7 @@ router.get("/questDetails", requireAuth, async (req, res) => {
       category: quest.type === "daily" ? "Daily" : "Side",
       templateId: quest.templateId,
       description: quest.description,
+      xpReward: quest.xpReward ?? computedRewards[idx]?.xpReward ?? 0,
     }));
 
     const totalQuests = quests.length;

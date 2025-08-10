@@ -8,7 +8,7 @@ import { Request, Response } from "express";
 import db from "../db";
 import { AuthenticatedRequest } from "../middleware/auth";
 import { questInstance, questTemplate, user } from "../db/schema";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { gte, lte } from "drizzle-orm";
 import {
   calculateLevelFromXp,
@@ -16,7 +16,9 @@ import {
   getTodayMidnight,
   toLocalDbDate,
 } from "@questly/utils";
+import type { Achievement } from "@questly/utils";
 import { getUserTimezone } from "../utils/dates";
+import { updateUserStreak } from "../utils/streak";
 import { achievementEventService } from "../services/achievement-events.service";
 
 export class QuestInstanceController {
@@ -193,13 +195,24 @@ export class QuestInstanceController {
   static async completeQuest(req: Request, res: Response) {
     try {
       const userId = (req as AuthenticatedRequest).userId;
-      const { done, id } = req.body;
-      const updatedFields = { completed: done, updatedAt: new Date() };
+      const { done, id } = req.body as { done: boolean; id: string };
+      // updatedFields may include xpReward only when toggling state
+      const updatedFields: {
+        completed: boolean;
+        updatedAt: Date;
+        xpReward?: number | null;
+      } = {
+        completed: done,
+        updatedAt: new Date(),
+      };
 
       // Get quest info before updating
       const questInfo = await db
         .select({
           type: questTemplate.type,
+          date: questInstance.date,
+          completed: questInstance.completed,
+          xpReward: questInstance.xpReward,
         })
         .from(questInstance)
         .innerJoin(
@@ -209,12 +222,150 @@ export class QuestInstanceController {
         .where(and(eq(questInstance.userId, userId), eq(questInstance.id, id)))
         .limit(1);
 
+      // Calculate XP delta for late completion/incompletion toggles
+      let xpDelta = 0;
+      let xpToPersist: number | null | undefined = undefined;
+      if (questInfo.length > 0) {
+        const q = questInfo[0];
+        const previouslyCompleted = q.completed;
+        // Only adjust XP if the completion state is actually toggled
+        if (done !== previouslyCompleted) {
+          // Fetch all quests for that date to mirror scheduler's proportional XP calc
+          const rawQuestsForDate = await db
+            .select({
+              id: questInstance.id,
+              basePoints: questInstance.basePoints,
+              completed: questInstance.completed,
+            })
+            .from(questInstance)
+            .where(
+              and(
+                eq(questInstance.userId, userId),
+                eq(questInstance.date, q.date)
+              )
+            );
+
+          type QuestForXp = {
+            id: string;
+            basePoints: number;
+            completed?: boolean;
+          };
+          const questsForXp: QuestForXp[] = rawQuestsForDate.map((qq) => ({
+            id: String(qq.id),
+            basePoints: qq.basePoints,
+            completed: qq.completed,
+          }));
+
+          // Make sure we compute XP as if this quest is toggled to the new state
+          const toggledQuestsForXp: QuestForXp[] = questsForXp.map((qx) =>
+            qx.id === String(id) ? { ...qx, completed: done } : qx
+          );
+          const previousQuestsForXp: QuestForXp[] = questsForXp.map((qx) =>
+            qx.id === String(id)
+              ? { ...qx, completed: previouslyCompleted }
+              : qx
+          );
+
+          // Determine user's current level from total XP
+          const [u] = await db
+            .select({ totalXp: user.xp, timezone: user.timezone })
+            .from(user)
+            .where(eq(user.id, userId));
+          const playerLevel = calculateLevelFromXp(u?.totalXp || 0).level;
+
+          // Calculate XP rewards proportionally like scheduler
+          const afterXpList = calculateXpRewards(
+            toggledQuestsForXp,
+            playerLevel,
+            true
+          );
+          const beforeXpList = calculateXpRewards(
+            previousQuestsForXp,
+            playerLevel,
+            true
+          );
+          const afterQuest = afterXpList.find((qi) => qi.id === String(id));
+          const beforeQuest = beforeXpList.find((qi) => qi.id === String(id));
+          const proportionalAfter = Math.round(afterQuest?.xpReward || 0);
+          const proportionalBefore = Math.round(beforeQuest?.xpReward || 0);
+
+          // Lateness multiplier (no reduction for today)
+          const userTimezone = u?.timezone || (await getUserTimezone(userId));
+          const todayStr = toLocalDbDate(
+            getTodayMidnight(userTimezone),
+            userTimezone
+          );
+          const questDateStr = String(q.date);
+          const msPerDay = 24 * 60 * 60 * 1000;
+          const todayMs = new Date(`${todayStr}T00:00:00Z`).getTime();
+          const questMs = new Date(`${questDateStr}T00:00:00Z`).getTime();
+          const rawDays = Math.round((todayMs - questMs) / msPerDay);
+          const daysLate = Math.max(0, rawDays);
+          const multiplier =
+            questDateStr === todayStr
+              ? 1
+              : daysLate <= 1
+                ? 1
+                : Math.max(0, 1 - 0.1 * (daysLate - 1));
+
+          const effectiveAfter = Math.max(
+            0,
+            Math.round(proportionalAfter * multiplier)
+          );
+          const effectiveBefore = Math.max(
+            0,
+            Math.round(proportionalBefore * multiplier)
+          );
+
+          // Net change equals after - before to make increase/decrease symmetric
+          xpDelta = effectiveAfter - effectiveBefore;
+
+          // Persist xpReward for this instance reflecting the new state
+          xpToPersist = done ? effectiveAfter : null;
+
+          // If nothing changes, keep xpDelta 0
+          if (xpDelta === 0) {
+            xpToPersist = undefined;
+          }
+        }
+      }
+
+      // Include xpReward in update only when we computed it due to a toggle
+      if (typeof xpToPersist !== "undefined") {
+        updatedFields.xpReward = xpToPersist;
+      }
+
+      // Update quest completion state (and xpReward if toggled)
       await db
         .update(questInstance)
         .set(updatedFields)
         .where(and(eq(questInstance.userId, userId), eq(questInstance.id, id)));
 
-      let newAchievements: any[] = [];
+      // Apply XP change if needed
+      if (xpDelta !== 0) {
+        await db
+          .update(user)
+          .set({ xp: sql`${user.xp} + ${xpDelta}` })
+          .where(eq(user.id, userId));
+      }
+
+      // Instantly update streak if this quest is for today in user's timezone
+      try {
+        const questDateStr = questInfo.length
+          ? String(questInfo[0].date)
+          : null;
+        if (questDateStr) {
+          const userTz = await getUserTimezone(userId);
+          const todayStr = toLocalDbDate(getTodayMidnight(userTz), userTz);
+          if (questDateStr === todayStr) {
+            await updateUserStreak(userId, userTz);
+          }
+        }
+      } catch (e) {
+        console.error("Error updating streak instantly:", e);
+      }
+
+      let newAchievements: Achievement[] = [];
 
       // Trigger achievement events if quest was completed
       if (done && questInfo.length > 0) {
@@ -268,7 +419,12 @@ export class QuestInstanceController {
       }
 
       // Prepare update fields
-      const updatedFields: any = {
+      const updatedFields: {
+        title: string;
+        updatedAt: Date;
+        description?: string | null;
+        basePoints?: number;
+      } = {
         title: title.trim(),
         updatedAt: new Date(),
       };
@@ -378,8 +534,16 @@ export class QuestInstanceController {
         );
 
       // Group the data by template ID and date
-      const activityData: { [templateId: string]: { [date: string]: any } } =
-        {};
+      const activityData: {
+        [templateId: string]: {
+          [date: string]: {
+            date: string | Date;
+            completed: boolean;
+            xpEarned: number;
+            instanceId: string;
+          };
+        };
+      } = {};
 
       questInstances.forEach((instance) => {
         const templateIdKey = String(instance.templateId);
@@ -391,7 +555,7 @@ export class QuestInstanceController {
           date: instance.date,
           completed: instance.completed,
           xpEarned: instance.xpReward || 0,
-          instanceId: instance.instanceId,
+          instanceId: String(instance.instanceId),
         };
       });
 

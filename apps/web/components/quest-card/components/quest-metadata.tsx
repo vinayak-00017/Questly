@@ -11,13 +11,28 @@ interface QuestMetadataProps {
   variant?: "full" | "compact";
 }
 
+// Helper to compare dates by YYYY-MM-DD
+const toYMD = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 const QuestMetadata = ({
   quest,
   isCompleted,
   colorStyles,
   variant = "full",
 }: QuestMetadataProps) => {
+  const questDate = quest.date ? new Date(quest.date) : null;
+  const todayStr = toYMD(new Date());
+  const questDateStr = questDate ? toYMD(questDate) : null;
+  const isToday = !questDateStr || questDateStr === todayStr;
+  const hideXp = !isToday && !isCompleted;
+
   if (variant === "compact") {
+    if (hideXp) return null;
     return (
       <QuestXpTag
         xpReward={quest.xpReward}
@@ -33,15 +48,17 @@ const QuestMetadata = ({
 
   return (
     <div className="flex items-center gap-4 pt-1">
-      <QuestXpTag
-        xpReward={quest.xpReward}
-        isCompleted={isCompleted}
-        variant="full"
-        className={cn(
-          "text-xs font-medium",
-          isCompleted ? "text-green-400" : colorStyles.xpColor
-        )}
-      />
+      {!hideXp && (
+        <QuestXpTag
+          xpReward={quest.xpReward}
+          isCompleted={isCompleted}
+          variant="full"
+          className={cn(
+            "text-xs font-medium",
+            isCompleted ? "text-green-400" : colorStyles.xpColor
+          )}
+        />
+      )}
 
       {quest.date && (
         <div
