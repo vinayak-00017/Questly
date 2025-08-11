@@ -245,7 +245,10 @@ const TodaysQuestsCard = () => {
               completed: q.completed,
               basePoints: q.points,
               type: q.type,
-              xpReward: q.xpReward ?? 0,
+              // Show rewarded xp for completed, potential for incomplete
+              xpReward: q.completed
+                ? (q.xpReward ?? 0)
+                : (q.potentialXp ?? q.xpReward ?? 0),
             }))
           }
           emptyStateTitle="No Quests For This Day"

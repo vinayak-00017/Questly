@@ -42,66 +42,7 @@ router.get("/dashboard", requireAuth, async (req, res) => {
       `Dashboard: Getting data for user ${userId} on ${todayString} (timezone: ${currUser.timezone})`
     );
 
-    // Batch all database queries
-    const [todaysQuests, allQuests] = await Promise.all([
-      // Today's quests for user stats
-      db
-        .select({
-          basePoints: questInstance.basePoints,
-          completed: questInstance.completed,
-          title: questInstance.title,
-          xpReward: questInstance.xpReward,
-          type: questInstance.type,
-          description: questInstance.description,
-          instanceId: questInstance.id,
-          date: questInstance.date,
-        })
-        .from(questInstance)
-        .where(
-          and(
-            eq(questInstance.userId, userId),
-            eq(questInstance.date, todayString)
-          )
-        ),
-
-      // All quests for today's quests card (same as above but with more fields)
-      db
-        .select({
-          instanceId: questInstance.id,
-          title: questInstance.title,
-          description: questInstance.description,
-          basePoints: questInstance.basePoints,
-          xpReward: questInstance.xpReward,
-          completed: questInstance.completed,
-          type: questInstance.type,
-          date: questInstance.date,
-          templateId: questInstance.templateId,
-        })
-        .from(questInstance)
-        .where(
-          and(
-            eq(questInstance.userId, userId),
-            eq(questInstance.date, todayString)
-          )
-        ),
-    ]);
-
-    console.log(`Dashboard: Found ${todaysQuests.length} quests for today`);
-
-    // Calculate user stats
-    const levelStats = calculateLevelFromXp(currUser.xp);
-
-    // Calculate today's potential XP (what will be awarded at midnight)
-    const todaysXp = calculateXpRewards(
-      todaysQuests,
-      levelStats.level,
-      true
-    ).reduce((sum, quest) => sum + quest.xpReward, 0);
-
-    // Calculate current streak
-    const streakData = await calculateUserStreak(userId, currUser.timezone);
-
-    // Get performance data
+    // Validate period
     const validPeriods = [
       "weekly",
       "monthly",
@@ -117,10 +58,72 @@ router.get("/dashboard", requireAuth, async (req, res) => {
       ? (period as ValidPeriod)
       : "weekly";
 
-    const performanceData = await performanceService.getPerformance(
+    // Run queries and heavy computations in parallel
+    const todaysQuestsPromise = db
+      .select({
+        basePoints: questInstance.basePoints,
+        completed: questInstance.completed,
+        title: questInstance.title,
+        xpReward: questInstance.xpReward,
+        type: questInstance.type,
+        description: questInstance.description,
+        instanceId: questInstance.id,
+        date: questInstance.date,
+      })
+      .from(questInstance)
+      .where(
+        and(
+          eq(questInstance.userId, userId),
+          eq(questInstance.date, todayString)
+        )
+      );
+
+    const allQuestsPromise = db
+      .select({
+        instanceId: questInstance.id,
+        title: questInstance.title,
+        description: questInstance.description,
+        basePoints: questInstance.basePoints,
+        xpReward: questInstance.xpReward,
+        completed: questInstance.completed,
+        type: questInstance.type,
+        date: questInstance.date,
+        templateId: questInstance.templateId,
+      })
+      .from(questInstance)
+      .where(
+        and(
+          eq(questInstance.userId, userId),
+          eq(questInstance.date, todayString)
+        )
+      );
+
+    const performancePromise = performanceService.getPerformance(
       userId,
       validPeriod
     );
+
+    const streakPromise = calculateUserStreak(userId, currUser.timezone);
+
+    const [todaysQuests, allQuests, performanceData, streakData] =
+      await Promise.all([
+        todaysQuestsPromise,
+        allQuestsPromise,
+        performancePromise,
+        streakPromise,
+      ]);
+
+    console.log(`Dashboard: Found ${todaysQuests.length} quests for today`);
+
+    // Calculate user stats
+    const levelStats = calculateLevelFromXp(currUser.xp);
+
+    // Calculate today's potential XP (what will be awarded at midnight)
+    const todaysXp = calculateXpRewards(
+      todaysQuests,
+      levelStats.level,
+      true
+    ).reduce((sum, quest) => sum + quest.xpReward, 0);
 
     // Separate quests by type for today's quests
     const dailyQuests = allQuests.filter((q) => q.type === "daily");
@@ -182,7 +185,8 @@ router.get("/userStats", requireAuth, async (req, res) => {
       `UserStats: Getting quests for user ${userId} on ${todayString} (timezone: ${currUser.timezone})`
     );
 
-    const quests = await db
+    // Run quest fetch and streak calculation in parallel
+    const questsPromise = db
       .select({
         basePoints: questInstance.basePoints,
         completed: questInstance.completed,
@@ -197,6 +201,13 @@ router.get("/userStats", requireAuth, async (req, res) => {
         )
       );
 
+    const streakPromise = calculateUserStreak(userId, currUser.timezone);
+
+    const [quests, streakData] = await Promise.all([
+      questsPromise,
+      streakPromise,
+    ]);
+
     const levelStats = calculateLevelFromXp(currUser.xp);
 
     // Calculate today's potential XP (what will be awarded at midnight)
@@ -204,9 +215,6 @@ router.get("/userStats", requireAuth, async (req, res) => {
       (sum, quest) => sum + quest.xpReward,
       0
     );
-
-    // Calculate current streak
-    const streakData = await calculateUserStreak(userId, currUser.timezone);
 
     console.log(
       `UserStats: Calculated today's XP: ${todaysXp} for user ${userId}`
@@ -360,8 +368,8 @@ router.get("/questDetails", requireAuth, async (req, res) => {
       return res.status(400).json({ message: "Date parameter is required" });
     }
 
-    // Fetch quest instances for the specific date, including stored xpReward
-    const quests = await db
+    // Fetch quests for the date and user in parallel with the user for level calc
+    const questsPromise = db
       .select({
         id: questInstance.id,
         type: questInstance.type,
@@ -378,8 +386,11 @@ router.get("/questDetails", requireAuth, async (req, res) => {
         and(eq(questInstance.userId, userId), eq(questInstance.date, date))
       );
 
-    // Fetch user to determine current level
-    const [currUser] = await db.select().from(user).where(eq(user.id, userId));
+    const userPromise = db.select().from(user).where(eq(user.id, userId));
+
+    const [quests, userRows] = await Promise.all([questsPromise, userPromise]);
+
+    const currUser = userRows[0];
 
     // Determine player's level (default to 1 if user not found)
     const playerLevel = currUser ? calculateLevelFromXp(currUser.xp).level : 1;
@@ -391,19 +402,24 @@ router.get("/questDetails", requireAuth, async (req, res) => {
       false
     );
 
-    // Transform quest data and attach xpReward (prefer stored xpReward when present)
-    const questDetails = quests.map((quest, idx) => ({
-      id: quest.id,
-      title: quest.title || `Quest ${quest.id}`,
-      completed: quest.completed,
-      points: quest.basePoints,
-      type: quest.type,
-      // Backward-compatible category label derived from type
-      category: quest.type === "daily" ? "Daily" : "Side",
-      templateId: quest.templateId,
-      description: quest.description,
-      xpReward: quest.xpReward ?? computedRewards[idx]?.xpReward ?? 0,
-    }));
+    // Transform quest data and attach xpReward (rewarded for completed, potential for incomplete)
+    const questDetails = quests.map((quest, idx) => {
+      const potentialXp = computedRewards[idx]?.xpReward ?? 0;
+      const rewardedXp = quest.xpReward ?? 0;
+      return {
+        id: quest.id,
+        title: quest.title || `Quest ${quest.id}`,
+        completed: quest.completed,
+        points: quest.basePoints,
+        type: quest.type,
+        // Backward-compatible category label derived from type
+        category: quest.type === "daily" ? "Daily" : "Side",
+        templateId: quest.templateId,
+        description: quest.description,
+        xpReward: quest.completed ? rewardedXp : potentialXp,
+        potentialXp, // expose separately for optimistic UI
+      };
+    });
 
     const totalQuests = quests.length;
     const completedQuests = quests.filter((q) => q.completed).length;
