@@ -1,4 +1,4 @@
-# 🏆 Questly - Gamified Productivity & Quest Management Platform
+# 🏆 Questly - Gamified Productivity & Goal Management Platform
 
 **Transform your daily tasks into epic quests with achievements, XP rewards, and streaks!**
 
