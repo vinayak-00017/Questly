@@ -4,7 +4,7 @@
 
 Questly is a modern, gamified productivity platform that turns mundane tasks into engaging quests. Build habits, track progress, and level up your productivity with a beautiful, responsive interface and powerful quest management system.
 
-![Questly Hero](./public/ql_hr.png)
+![Questly Hero](.apps/web/public/ql_hr.png)
 
 ## ✨ Overview
 
@@ -368,7 +368,7 @@ See [Deployment Guide](./deployment/docs/DEPLOYMENT.md) for detailed instruction
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the AGPL-3.0 license - see the [LICENSE](LICENSE) file for details.
 
 ## 📸 Screenshots
 
