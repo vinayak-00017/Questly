@@ -5,6 +5,8 @@
 Questly is a modern, gamified productivity platform that turns mundane tasks into engaging quests. Build habits, track progress, and level up your productivity with a beautiful, responsive interface and powerful quest management system.
 
 ![Questly Hero](https://res.cloudinary.com/de5d3uv1s/image/upload/v1755144894/Screenshot_from_2025-08-14_09-38-08_jbo7ym.png)
+![Questly Daily](https://res.cloudinary.com/de5d3uv1s/image/upload/v1755144894/Screenshot_from_2025-08-14_09-38-20_zyytnf.png)
+![Questly Main](https://res.cloudinary.com/de5d3uv1s/image/upload/v1755144894/Screenshot_from_2025-08-14_09-38-28_y783kn.png)
 
 ## ✨ Overview
 
@@ -374,23 +376,23 @@ This project is licensed under the AGPL-3.0 license - see the [LICENSE](LICENSE)
 
 ### Dashboard Overview
 
-![Dashboard](./screenshots/dashboard.png)
+![Dashboard](https://res.cloudinary.com/de5d3uv1s/image/upload/v1755145780/Screenshot_from_2025-08-14_09-36-35_x63nvs.png)
 _Main dashboard with today's quests, XP progress, and streak tracking_
 
-### Quest Management
+### Quest Tracking
 
-![Quest Management](./screenshots/quest-management.png)
-_Create and manage daily, side, and main quests with task breakdowns_
+![Questly Track](https://res.cloudinary.com/de5d3uv1s/image/upload/v1755144894/Screenshot_from_2025-08-14_09-39-13_nvlswd.png)
+_Create and manage daily, side, and main quests _
 
 ### Progress Analytics
 
-![Analytics](./screenshots/analytics.png)
+![Analytics](https://res.cloudinary.com/de5d3uv1s/image/upload/v1755145765/Screenshot_from_2025-08-14_09-35-09_jbmqci.png)
 _Beautiful charts and tracking for performance analysis_
 
-### Mobile Experience
+### Ranks
 
-![Mobile](./screenshots/mobile.png)
-_Fully responsive design works perfectly on mobile devices_
+![Questly Rank](https://res.cloudinary.com/de5d3uv1s/image/upload/v1755144894/Screenshot_from_2025-08-14_09-38-54_mgw4tr.png)
+_Climb the ranks of your personal journey_
 
 ---
 
