@@ -4,7 +4,7 @@
 
 Questly is a modern, gamified productivity platform that turns mundane tasks into engaging quests. Build habits, track progress, and level up your productivity with a beautiful, responsive interface and powerful quest management system.
 
-![Questly Hero](.apps/web/public/ql_hr.png)
+![Questly Hero](https://res.cloudinary.com/de5d3uv1s/image/upload/v1755144894/Screenshot_from_2025-08-14_09-38-08_jbo7ym.png)
 
 ## ✨ Overview
 
