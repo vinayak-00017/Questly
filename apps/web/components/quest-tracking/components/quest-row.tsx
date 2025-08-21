@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { TrackedQuest, ViewType, QuestActivityData } from "../types";
 import { QuestActivityGrid } from "./quest-activity-grid";
 import { QuestStats } from "./quest-stats";
+import { calculateQuestStreak } from "../utils";
 
 interface QuestRowProps {
   quest: TrackedQuest;
@@ -17,77 +18,92 @@ interface QuestRowProps {
   onRemoveQuest: (questId: string) => void;
 }
 
-export const QuestRow: React.FC<QuestRowProps> = memo(({
-  quest,
-  questIndex,
-  dateRange,
-  selectedView,
-  getQuestActivity,
-  onRemoveQuest,
-}) => {
-  return (
-    <motion.div
-      key={quest.id}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: questIndex * 0.1 }}
-      className="flex items-center"
-    >
-      {/* Quest Info */}
-      <div className="w-48 flex-shrink-0 flex items-center justify-between pr-4">
-        <div className="flex items-center gap-2 min-w-0">
-          <Badge
-            variant="outline"
-            className={cn(
-              "text-xs flex-shrink-0",
-              quest.type === "daily"
-                ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
-                : "bg-sky-500/20 text-sky-400 border-sky-500/30"
-            )}
-          >
-            {quest.type === "daily" ? (
-              <Flame className="h-3 w-3" />
-            ) : (
-              <Compass className="h-3 w-3" />
-            )}
-          </Badge>
+export const QuestRow: React.FC<QuestRowProps> = memo(
+  ({
+    quest,
+    questIndex,
+    dateRange,
+    selectedView,
+    getQuestActivity,
+    onRemoveQuest,
+  }) => {
+    const currentStreak = calculateQuestStreak(quest.id, getQuestActivity);
 
-          <span
-            className="text-white text-sm font-medium truncate"
-            title={quest.title}
-          >
-            {quest.title}
-          </span>
+    return (
+      <motion.div
+        key={quest.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: questIndex * 0.1 }}
+        className="flex items-center"
+      >
+        {/* Quest Info */}
+        <div className="w-48 flex-shrink-0 flex items-center justify-between pr-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-xs flex-shrink-0",
+                quest.type === "daily"
+                  ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                  : "bg-sky-500/20 text-sky-400 border-sky-500/30"
+              )}
+            >
+              {quest.type === "daily" ? (
+                <Flame className="h-3 w-3" />
+              ) : (
+                <Compass className="h-3 w-3" />
+              )}
+            </Badge>
+
+            <span
+              className="text-white text-sm font-medium truncate"
+              title={quest.title}
+            >
+              {quest.title}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Streak indicator - only show after 2+ days */}
+            {currentStreak >= 2 && (
+              <Badge
+                variant="outline"
+                className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-xs"
+              >
+                🔥 {currentStreak}x
+              </Badge>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onRemoveQuest(quest.id)}
+              className="text-slate-400 hover:text-red-400 hover:bg-red-900/20 h-6 w-6 p-0 flex-shrink-0"
+            >
+              ×
+            </Button>
+          </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onRemoveQuest(quest.id)}
-          className="text-slate-400 hover:text-red-400 hover:bg-red-900/20 h-6 w-6 p-0 flex-shrink-0"
-        >
-          ×
-        </Button>
-      </div>
 
-      {/* Activity Grid */}
-      <QuestActivityGrid
-        dateRange={dateRange}
-        selectedView={selectedView}
-        questId={quest.id}
-        questType={quest.type}
-        getQuestActivity={getQuestActivity}
-        questIndex={questIndex}
-      />
+        {/* Activity Grid */}
+        <QuestActivityGrid
+          dateRange={dateRange}
+          selectedView={selectedView}
+          questId={quest.id}
+          questType={quest.type}
+          getQuestActivity={getQuestActivity}
+          questIndex={questIndex}
+        />
 
-      {/* Quest Stats */}
-      <QuestStats
-        selectedView={selectedView}
-        dateRange={dateRange}
-        questId={quest.id}
-        getQuestActivity={getQuestActivity}
-      />
-    </motion.div>
-  );
-});
+        {/* Quest Stats */}
+        <QuestStats
+          selectedView={selectedView}
+          dateRange={dateRange}
+          questId={quest.id}
+          getQuestActivity={getQuestActivity}
+        />
+      </motion.div>
+    );
+  }
+);
 
-QuestRow.displayName = 'QuestRow';
+QuestRow.displayName = "QuestRow";

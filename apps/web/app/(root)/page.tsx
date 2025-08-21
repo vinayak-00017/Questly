@@ -174,9 +174,9 @@ export default function Home() {
                 <Suspense fallback={<TodaysQuestsSkeleton />}>
                   <TodaysQuestsCard />
                 </Suspense>
-                <Suspense fallback={<PerformanceChartSkeleton />}>
+                {/* <Suspense fallback={<PerformanceChartSkeleton />}>
                   <PerformanceChart />
-                </Suspense>
+                </Suspense> */}
               </div>
             </div>
           </div>

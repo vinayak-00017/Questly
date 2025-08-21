@@ -20,6 +20,11 @@ import type { Achievement } from "@questly/utils";
 import { getUserTimezone } from "../utils/dates";
 import { updateUserStreak } from "../utils/streak";
 import { achievementEventService } from "../services/achievement-events.service";
+import {
+  getValidatedXpReward,
+  calculateXpWithPoolLimit,
+  getXpBreakdown,
+} from "../utils/xp-pool";
 
 export class QuestInstanceController {
   /**
@@ -143,8 +148,6 @@ export class QuestInstanceController {
 
       const userTimezone = currentUser?.timezone;
       const today = getTodayMidnight(userTimezone);
-      const totalXp = currentUser?.totalXp || 0;
-      const levelInfo = calculateLevelFromXp(totalXp);
 
       const allQuestsData = await db
         .select({
@@ -167,16 +170,34 @@ export class QuestInstanceController {
           )
         );
 
-      const questsWithXp = calculateXpRewards(
-        allQuestsData,
-        levelInfo.level,
-        false
+      const questsWithXp = await calculateXpWithPoolLimit(
+        userId,
+        toLocalDbDate(today, userTimezone),
+        allQuestsData.map((q) => ({
+          id: q.instanceId,
+          basePoints: q.basePoints,
+          completed: q.completed,
+          currentXpReward: q.xpReward,
+        }))
       );
 
-      const dailyQuests = questsWithXp.filter(
+      // Map back to the original quest structure with XP rewards
+      const questsWithRewards = allQuestsData.map((quest) => {
+        const xpData = questsWithXp.find((xp) => xp.id === quest.instanceId);
+        return {
+          ...quest,
+          xpReward: quest.completed
+            ? quest.xpReward || 0 // For completed quests, show actual earned XP
+            : xpData?.xpReward || 0, // For incomplete quests, show potential XP
+        };
+      });
+
+      const dailyQuests = questsWithRewards.filter(
         (quest) => quest.type === "daily"
       );
-      const sideQuests = questsWithXp.filter((quest) => quest.type === "side");
+      const sideQuests = questsWithRewards.filter(
+        (quest) => quest.type === "side"
+      );
 
       res.status(200).json({
         message: "Today's quests retrieved successfully",
@@ -241,7 +262,7 @@ export class QuestInstanceController {
         const previouslyCompleted = q.completed;
         if (done !== previouslyCompleted) {
           if (done) {
-            // Completing: compute reward with proportional logic and lateness
+            // Completing: calculate proportional XP and validate against daily pool
             const rawQuestsForDate = await db
               .select({
                 id: questInstance.id,
@@ -278,9 +299,9 @@ export class QuestInstanceController {
               true
             );
             const afterQuest = afterXpList.find((qi) => qi.id === String(id));
-            const proportionalAfter = Math.round(afterQuest?.xpReward || 0);
+            const calculatedXp = Math.round(afterQuest?.xpReward || 0);
 
-            // Lateness multiplier
+            // Apply lateness multiplier
             const todayStr = toLocalDbDate(getTodayMidnight(userTz), userTz);
             const questDateStr = String(q.date);
             const msPerDay = 24 * 60 * 60 * 1000;
@@ -295,13 +316,20 @@ export class QuestInstanceController {
                   ? 1
                   : Math.max(0, 1 - 0.1 * (daysLate - 1));
 
-            const effective = Math.max(
+            const adjustedXp = Math.max(
               0,
-              Math.round(proportionalAfter * multiplier)
+              Math.round(calculatedXp * multiplier)
             );
 
-            xpDelta = effective;
-            xpToPersist = effective;
+            // Validate against daily XP pool to prevent exceeding cap
+            const validatedXp = await getValidatedXpReward(
+              userId,
+              questDateStr,
+              adjustedXp
+            );
+
+            xpDelta = validatedXp;
+            xpToPersist = validatedXp;
           } else {
             // Uncompleting: subtract stored reward if present
             const previouslyAwarded = Number(q.xpReward ?? 0);
@@ -309,62 +337,8 @@ export class QuestInstanceController {
               xpDelta = -previouslyAwarded;
               xpToPersist = 0;
             } else {
-              // Legacy fallback
-              const rawQuestsForDate = await db
-                .select({
-                  id: questInstance.id,
-                  basePoints: questInstance.basePoints,
-                  completed: questInstance.completed,
-                })
-                .from(questInstance)
-                .where(
-                  and(
-                    eq(questInstance.userId, userId),
-                    eq(questInstance.date, q.date)
-                  )
-                );
-
-              type QuestForXp = {
-                id: string;
-                basePoints: number;
-                completed?: boolean;
-              };
-              const questsForXp: QuestForXp[] = rawQuestsForDate.map((qq) => ({
-                id: String(qq.id),
-                basePoints: qq.basePoints,
-                completed: qq.completed,
-              }));
-
-              const playerLevel = calculateLevelFromXp(u?.totalXp || 0).level;
-              const beforeXpList = calculateXpRewards(
-                questsForXp,
-                playerLevel,
-                true
-              );
-              const beforeQuest = beforeXpList.find(
-                (qi) => qi.id === String(id)
-              );
-              const proportionalBefore = Math.round(beforeQuest?.xpReward || 0);
-
-              const todayStr = toLocalDbDate(getTodayMidnight(userTz), userTz);
-              const questDateStr = String(q.date);
-              const msPerDay = 24 * 60 * 60 * 1000;
-              const todayMs = new Date(`${todayStr}T00:00:00Z`).getTime();
-              const questMs = new Date(`${questDateStr}T00:00:00Z`).getTime();
-              const rawDays = Math.round((todayMs - questMs) / msPerDay);
-              const daysLate = Math.max(0, rawDays);
-              const multiplier =
-                questDateStr === todayStr
-                  ? 1
-                  : daysLate <= 1
-                    ? 1
-                    : Math.max(0, 1 - 0.1 * (daysLate - 1));
-
-              const effectiveBefore = Math.max(
-                0,
-                Math.round(proportionalBefore * multiplier)
-              );
-              xpDelta = -effectiveBefore;
+              // Legacy fallback for quests without stored XP
+              xpDelta = 0;
               xpToPersist = 0;
             }
           }
@@ -515,6 +489,29 @@ export class QuestInstanceController {
     } catch (err) {
       console.error("Error deleting quest instance:", err);
       res.status(500).json({ message: "Failed to delete quest instance" });
+    }
+  }
+
+  /**
+   * Get daily XP pool status for a user
+   */
+  static async getDailyXpPoolStatus(req: Request, res: Response) {
+    try {
+      const userId = (req as AuthenticatedRequest).userId;
+      const userTimezone = await getUserTimezone(userId);
+      const today = getTodayMidnight(userTimezone);
+      const todayStr = toLocalDbDate(today, userTimezone);
+
+      const breakdown = await getXpBreakdown(userId, todayStr);
+
+      res.status(200).json({
+        message: "Daily XP pool status retrieved successfully",
+        date: todayStr,
+        ...breakdown,
+      });
+    } catch (err) {
+      console.error("Error getting daily XP pool status:", err);
+      res.status(500).json({ message: "Failed to get daily XP pool status" });
     }
   }
 

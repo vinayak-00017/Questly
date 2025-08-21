@@ -262,6 +262,34 @@ export const taskInstance = pgTable(
   })
 );
 
+// Tracked Quests table: stores user's tracked quests for the quest tracker
+export const trackedQuest = pgTable(
+  "tracked_quest",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    templateId: text("template_id")
+      .notNull()
+      .references(() => questTemplate.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    type: text("type").$type<"daily" | "side">().notNull(),
+    priority: text("priority").default("standard"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    // Index for fetching user's tracked quests
+    userIdx: index("tracked_quest_user_idx").on(table.userId),
+    // Unique constraint to prevent duplicate tracked quests per user
+    userTemplateUnique: index("tracked_quest_user_template_unique").on(
+      table.userId,
+      table.templateId
+    ),
+  })
+);
+
 // Relations
 export const mainQuestRelations = relations(mainQuest, ({ many }) => ({
   questTemplates: many(questTemplate),
@@ -272,6 +300,7 @@ export const questTemplateRelations = relations(
   ({ many, one }) => ({
     taskTemplates: many(taskTemplate),
     instances: many(questInstance),
+    trackedQuests: many(trackedQuest),
     mainQuest: one(mainQuest, {
       fields: [questTemplate.parentQuestId],
       references: [mainQuest.id],
@@ -305,6 +334,17 @@ export const taskInstanceRelations = relations(taskInstance, ({ one }) => ({
   questInstance: one(questInstance, {
     fields: [taskInstance.questInstanceId],
     references: [questInstance.id],
+  }),
+}));
+
+export const trackedQuestRelations = relations(trackedQuest, ({ one }) => ({
+  user: one(user, {
+    fields: [trackedQuest.userId],
+    references: [user.id],
+  }),
+  template: one(questTemplate, {
+    fields: [trackedQuest.templateId],
+    references: [questTemplate.id],
   }),
 }));
 

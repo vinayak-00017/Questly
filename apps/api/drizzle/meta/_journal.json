@@ -162,6 +162,13 @@
       "when": 1754127880638,
       "tag": "0022_striped_sheva_callister",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1755780804470,
+      "tag": "0023_powerful_pride",
+      "breakpoints": true
     }
   ]
 }

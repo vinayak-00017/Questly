@@ -8,6 +8,7 @@ import {
   IconScript,
   IconSwords,
   IconAdjustmentsAlt,
+  IconChartBar,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { useSidebarState } from "@/contexts/sidebar-context";
@@ -62,6 +63,13 @@ export function AppSidebar() {
     //     <IconCompass className="h-5 w-5 shrink-0 text-cyan-500/70 hover:text-cyan-400/90 transition-colors" />
     //   ),
     // },
+    {
+      label: "Performance",
+      href: "/performance",
+      icon: (
+        <IconChartBar className="h-5 w-5 shrink-0 text-green-500/70 hover:text-green-400/90 transition-colors" />
+      ),
+    },
     {
       label: "Quest Manager",
       href: "/quest-manager",

@@ -39,8 +39,12 @@ const QuestTracker: React.FC = () => {
     return false;
   });
 
-  const { trackedQuests, addQuestToTracker, removeQuestFromTracker } =
-    useTrackedQuests();
+  const {
+    trackedQuests,
+    addQuestToTracker,
+    removeQuestFromTracker,
+    isLoading,
+  } = useTrackedQuests();
   const { availableTemplates } = useQuestTemplates(trackedQuests);
 
   // Generate date range based on view
@@ -136,7 +140,14 @@ const QuestTracker: React.FC = () => {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {trackedQuests.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="ml-2 text-slate-400">
+              Loading tracked quests...
+            </span>
+          </div>
+        ) : trackedQuests.length === 0 ? (
           <EmptyState />
         ) : (
           <div className="space-y-6">

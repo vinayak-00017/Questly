@@ -40,6 +40,17 @@ export const userApi = {
     return response.json();
   },
 
+  getTablePerformance: async (period: string = "daily") => {
+    const response = await fetch(
+      `${BASE_URL}/user/performance-table?period=${period}`,
+      {
+        credentials: "include",
+      }
+    );
+    if (!response.ok) throw new Error("Failed to fetch table performance data");
+    return response.json();
+  },
+
   updateTimezone: async ({ timezone }: { timezone: string }) => {
     const response = await fetch(`${BASE_URL}/user/updateTimezone`, {
       method: "PATCH",

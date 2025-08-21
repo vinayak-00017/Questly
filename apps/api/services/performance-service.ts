@@ -490,6 +490,352 @@ export class PerformanceService {
       message: "Weekly performance retrieved successfully",
     };
   }
+
+  /**
+   * New table performance endpoint with specific data ranges
+   */
+  async getTablePerformance(
+    userId: string,
+    period: "daily" | "weekly" | "monthly" | "yearly"
+  ): Promise<PerformanceResponse> {
+    const userTimezone = await getUserTimezone(userId);
+    const userCreationDate = await this.getUserCreationDate(userId);
+    let performanceData: PerformanceData[] = [];
+
+    switch (period) {
+      case "daily":
+        // Get last 12 days of daily data
+        performanceData = await this.getLastNDays(
+          userId,
+          userTimezone,
+          12,
+          userCreationDate
+        );
+        break;
+      case "weekly":
+        // Get last 12 weeks of weekly aggregated data
+        performanceData = await this.getLastNWeeks(
+          userId,
+          userTimezone,
+          12,
+          userCreationDate
+        );
+        break;
+      case "monthly":
+        // Get last 12 months of monthly aggregated data
+        performanceData = await this.getLastNMonths(
+          userId,
+          userTimezone,
+          12,
+          userCreationDate
+        );
+        break;
+      case "yearly":
+        // Get last 12 years of yearly aggregated data
+        performanceData = await this.getLastNYears(
+          userId,
+          userTimezone,
+          12,
+          userCreationDate
+        );
+        break;
+    }
+
+    const summary = this.calculateSummary(performanceData);
+    const periodName = period.charAt(0).toUpperCase() + period.slice(1);
+
+    return {
+      message: `${periodName} table performance retrieved successfully`,
+      period,
+      performanceData,
+      summary,
+    };
+  }
+
+  /**
+   * Get last N days of data
+   */
+  private async getLastNDays(
+    userId: string,
+    userTimezone: string,
+    n: number,
+    userCreationDate: Date
+  ): Promise<PerformanceData[]> {
+    const performanceData: PerformanceData[] = [];
+    const currentDate = getLocalDateMidnight(new Date(), userTimezone);
+
+    for (let i = 0; i < n; i++) {
+      const date = new Date(currentDate);
+      date.setDate(date.getDate() - i);
+
+      // Skip dates before user creation
+      if (date < userCreationDate) {
+        continue;
+      }
+
+      const dateString = toLocalDbDate(date);
+
+      const quests = await this.fetchQuestData(userId, dateString);
+      const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
+
+      performanceData.push(
+        this.calculateDayMetrics(quests, dayName, dateString)
+      );
+    }
+
+    return performanceData;
+  }
+
+  /**
+   * Get last N weeks of aggregated data
+   */
+  private async getLastNWeeks(
+    userId: string,
+    userTimezone: string,
+    n: number,
+    userCreationDate: Date
+  ): Promise<PerformanceData[]> {
+    const performanceData: PerformanceData[] = [];
+    const currentDate = getLocalDateMidnight(new Date(), userTimezone);
+
+    for (let i = 0; i < n; i++) {
+      const weekStartDate = new Date(currentDate);
+      weekStartDate.setDate(
+        weekStartDate.getDate() - i * 7 - weekStartDate.getDay()
+      );
+
+      const weekEndDate = new Date(weekStartDate);
+      weekEndDate.setDate(weekEndDate.getDate() + 6);
+
+      // Skip weeks that start before user creation
+      if (weekEndDate < userCreationDate) {
+        continue;
+      }
+
+      // Get all days in this week
+      const weekData: PerformanceData[] = [];
+      for (let day = 0; day < 7; day++) {
+        const dayDate = new Date(weekStartDate);
+        dayDate.setDate(dayDate.getDate() + day);
+        const dateString = toLocalDbDate(dayDate);
+
+        const quests = await this.fetchQuestData(userId, dateString);
+        const dayName = dayDate.toLocaleDateString("en-US", {
+          weekday: "short",
+        });
+
+        weekData.push(this.calculateDayMetrics(quests, dayName, dateString));
+      }
+
+      // Aggregate week data
+      const totalQuests = weekData.reduce(
+        (sum, day) => sum + day.questsCount,
+        0
+      );
+      const totalCompletedQuests = weekData.reduce(
+        (sum, day) => sum + day.completedQuestsCount,
+        0
+      );
+      const totalPoints = weekData.reduce(
+        (sum, day) => sum + day.totalPossiblePoints,
+        0
+      );
+      const totalCompletedPoints = weekData.reduce(
+        (sum, day) => sum + day.completedPoints,
+        0
+      );
+
+      const percentage =
+        totalPoints > 0
+          ? Math.round((totalCompletedPoints / totalPoints) * 100)
+          : 0;
+
+      performanceData.push({
+        day: `Week ${i + 1}`,
+        date: toLocalDbDate(weekStartDate),
+        percentage,
+        completedPoints: totalCompletedPoints,
+        totalPossiblePoints: totalPoints,
+        questsCount: totalQuests,
+        completedQuestsCount: totalCompletedQuests,
+      });
+    }
+
+    return performanceData;
+  }
+
+  /**
+   * Get last N months of aggregated data
+   */
+  private async getLastNMonths(
+    userId: string,
+    userTimezone: string,
+    n: number,
+    userCreationDate: Date
+  ): Promise<PerformanceData[]> {
+    const performanceData: PerformanceData[] = [];
+    const currentDate = getLocalDateMidnight(new Date(), userTimezone);
+
+    for (let i = 0; i < n; i++) {
+      const monthDate = new Date(currentDate);
+      monthDate.setMonth(monthDate.getMonth() - i);
+      monthDate.setDate(1); // Start of month
+
+      const monthEndDate = new Date(monthDate);
+      monthEndDate.setMonth(monthEndDate.getMonth() + 1);
+      monthEndDate.setDate(0); // Last day of month
+
+      // Skip months that end before user creation
+      if (monthEndDate < userCreationDate) {
+        continue;
+      }
+
+      // Get all days in this month
+      const monthData: PerformanceData[] = [];
+      const daysInMonth = monthEndDate.getDate();
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayDate = new Date(monthDate);
+        dayDate.setDate(day);
+        const dateString = toLocalDbDate(dayDate);
+
+        const quests = await this.fetchQuestData(userId, dateString);
+        const dayName = dayDate.toLocaleDateString("en-US", {
+          weekday: "short",
+        });
+
+        monthData.push(this.calculateDayMetrics(quests, dayName, dateString));
+      }
+
+      // Aggregate month data
+      const totalQuests = monthData.reduce(
+        (sum, day) => sum + day.questsCount,
+        0
+      );
+      const totalCompletedQuests = monthData.reduce(
+        (sum, day) => sum + day.completedQuestsCount,
+        0
+      );
+      const totalPoints = monthData.reduce(
+        (sum, day) => sum + day.totalPossiblePoints,
+        0
+      );
+      const totalCompletedPoints = monthData.reduce(
+        (sum, day) => sum + day.completedPoints,
+        0
+      );
+
+      const percentage =
+        totalPoints > 0
+          ? Math.round((totalCompletedPoints / totalPoints) * 100)
+          : 0;
+
+      performanceData.push({
+        day: monthDate.toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        }),
+        date: toLocalDbDate(monthDate),
+        percentage,
+        completedPoints: totalCompletedPoints,
+        totalPossiblePoints: totalPoints,
+        questsCount: totalQuests,
+        completedQuestsCount: totalCompletedQuests,
+      });
+    }
+
+    return performanceData;
+  }
+
+  /**
+   * Get last N years of aggregated data
+   */
+  private async getLastNYears(
+    userId: string,
+    userTimezone: string,
+    n: number,
+    userCreationDate: Date
+  ): Promise<PerformanceData[]> {
+    const performanceData: PerformanceData[] = [];
+    const currentDate = getLocalDateMidnight(new Date(), userTimezone);
+
+    for (let i = 0; i < n; i++) {
+      const yearDate = new Date(currentDate);
+      yearDate.setFullYear(yearDate.getFullYear() - i);
+      yearDate.setMonth(0, 1); // January 1st
+
+      const yearEndDate = new Date(yearDate);
+      yearEndDate.setFullYear(yearEndDate.getFullYear() + 1);
+      yearEndDate.setDate(0); // Last day of year
+
+      // Skip years that end before user creation
+      if (yearEndDate < userCreationDate) {
+        continue;
+      }
+
+      // Get all months in this year
+      const yearData: PerformanceData[] = [];
+
+      for (let month = 0; month < 12; month++) {
+        const monthDate = new Date(yearDate);
+        monthDate.setMonth(month, 1);
+
+        const monthEndDate = new Date(monthDate);
+        monthEndDate.setMonth(monthEndDate.getMonth() + 1);
+        monthEndDate.setDate(0);
+
+        // Get all days in this month
+        const daysInMonth = monthEndDate.getDate();
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dayDate = new Date(monthDate);
+          dayDate.setDate(day);
+          const dateString = toLocalDbDate(dayDate);
+
+          const quests = await this.fetchQuestData(userId, dateString);
+          const dayName = dayDate.toLocaleDateString("en-US", {
+            weekday: "short",
+          });
+
+          yearData.push(this.calculateDayMetrics(quests, dayName, dateString));
+        }
+      }
+
+      // Aggregate year data
+      const totalQuests = yearData.reduce(
+        (sum, day) => sum + day.questsCount,
+        0
+      );
+      const totalCompletedQuests = yearData.reduce(
+        (sum, day) => sum + day.completedQuestsCount,
+        0
+      );
+      const totalPoints = yearData.reduce(
+        (sum, day) => sum + day.totalPossiblePoints,
+        0
+      );
+      const totalCompletedPoints = yearData.reduce(
+        (sum, day) => sum + day.completedPoints,
+        0
+      );
+
+      const percentage =
+        totalPoints > 0
+          ? Math.round((totalCompletedPoints / totalPoints) * 100)
+          : 0;
+
+      performanceData.push({
+        day: yearDate.getFullYear().toString(),
+        date: toLocalDbDate(yearDate),
+        percentage,
+        completedPoints: totalCompletedPoints,
+        totalPossiblePoints: totalPoints,
+        questsCount: totalQuests,
+        completedQuestsCount: totalCompletedQuests,
+      });
+    }
+
+    return performanceData;
+  }
 }
 
 export const performanceService = new PerformanceService();

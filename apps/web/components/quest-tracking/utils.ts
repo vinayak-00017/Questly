@@ -1,4 +1,4 @@
-import { TrackedQuest, ViewType } from "./types";
+import { TrackedQuest, ViewType, QuestActivityData } from "./types";
 
 export const formatDateHeader = (currentDate: Date, selectedView: ViewType) => {
   if (selectedView === "week") {
@@ -24,7 +24,10 @@ export const formatDateHeader = (currentDate: Date, selectedView: ViewType) => {
   }
 };
 
-export const generateDateRange = (currentDate: Date, selectedView: ViewType): Date[] => {
+export const generateDateRange = (
+  currentDate: Date,
+  selectedView: ViewType
+): Date[] => {
   const dates: Date[] = [];
 
   if (selectedView === "week") {
@@ -52,7 +55,9 @@ export const generateDateRange = (currentDate: Date, selectedView: ViewType): Da
   return dates;
 };
 
-export const sortTrackedQuests = (trackedQuests: TrackedQuest[]): TrackedQuest[] => {
+export const sortTrackedQuests = (
+  trackedQuests: TrackedQuest[]
+): TrackedQuest[] => {
   return [...trackedQuests].sort((a, b) => {
     const priorityOrder = {
       critical: 0,
@@ -115,4 +120,34 @@ export const navigateDate = (
     newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : -1));
   }
   return newDate;
+};
+
+/**
+ * Calculate current streak for a quest based on recent activity
+ * A streak is the number of consecutive days the quest was completed, ending on the most recent day
+ */
+export const calculateQuestStreak = (
+  questId: string,
+  getQuestActivity: (questId: string, date: Date) => QuestActivityData | null
+): number => {
+  let streak = 0;
+  const today = new Date();
+
+  // Start from today and go backwards
+  for (let i = 0; i < 30; i++) {
+    // Check last 30 days
+    const checkDate = new Date(today);
+    checkDate.setDate(today.getDate() - i);
+
+    const activity = getQuestActivity(questId, checkDate);
+
+    if (activity?.completed) {
+      streak++;
+    } else {
+      // Streak is broken, stop counting
+      break;
+    }
+  }
+
+  return streak;
 };

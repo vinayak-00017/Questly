@@ -359,6 +359,30 @@ router.get("/performance", requireAuth, async (req, res) => {
   }
 });
 
+// New endpoint specifically for table performance data
+router.get("/performance-table", requireAuth, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).userId;
+    const periodQuery = (req.query.period as string) || "daily";
+
+    // Validate and cast the period to the correct type for table view
+    const validPeriods = ["daily", "weekly", "monthly", "yearly"] as const;
+    type ValidTablePeriod = (typeof validPeriods)[number];
+
+    const period: ValidTablePeriod = validPeriods.includes(
+      periodQuery as ValidTablePeriod
+    )
+      ? (periodQuery as ValidTablePeriod)
+      : "daily";
+
+    const result = await performanceService.getTablePerformance(userId, period);
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Error fetching table performance:", err);
+    res.status(500).json({ message: "Failed to fetch table performance data" });
+  }
+});
+
 router.get("/questDetails", requireAuth, async (req, res) => {
   try {
     const userId = (req as AuthenticatedRequest).userId;
