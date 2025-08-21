@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { ViewType, QuestActivityData } from "../types";
-import { calculateQuestStreak } from "../utils";
+import { Badge } from "@/components/ui/badge";
 
 interface QuestStatsProps {
   selectedView: ViewType;
@@ -21,7 +21,6 @@ export const QuestStats: React.FC<QuestStatsProps> = memo(
       (sum, a) => sum + (a?.xpEarned || 0),
       0
     );
-    const currentStreak = calculateQuestStreak(questId, getQuestActivity);
 
     return (
       <div className="flex-1 pl-8">
@@ -40,11 +39,6 @@ export const QuestStats: React.FC<QuestStatsProps> = memo(
                 Almost Perfect Week! 🔥
               </span>
             ) : null}
-            {currentStreak >= 2 && (
-              <span className="text-orange-400 font-medium ml-auto">
-                🔥 {currentStreak}x streak
-              </span>
-            )}
           </div>
         </div>
       </div>

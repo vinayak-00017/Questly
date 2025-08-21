@@ -125,6 +125,8 @@ export const navigateDate = (
 /**
  * Calculate current streak for a quest based on recent activity
  * A streak is the number of consecutive days the quest was completed, ending on the most recent day
+ *
+ * This function is limited by the data available in the current view
  */
 export const calculateQuestStreak = (
   questId: string,
@@ -134,16 +136,25 @@ export const calculateQuestStreak = (
   const today = new Date();
 
   // Start from today and go backwards
-  for (let i = 0; i < 30; i++) {
-    // Check last 30 days
+  // Note: This is limited by the data available in the current view
+  for (let i = 0; i < 365; i++) {
+    // Check up to 1 year back
     const checkDate = new Date(today);
     checkDate.setDate(today.getDate() - i);
 
     const activity = getQuestActivity(questId, checkDate);
 
+    // If we don't have data for this date, it might be outside the current view range
+    // In that case, we should stop calculating to avoid incorrect results
+    if (activity === null && i > 0) {
+      // If we're beyond today and have no data, assume the streak ends here
+      break;
+    }
+
     if (activity?.completed) {
       streak++;
-    } else {
+    } else if (activity !== null) {
+      // We have data for this date but quest wasn't completed
       // Streak is broken, stop counting
       break;
     }

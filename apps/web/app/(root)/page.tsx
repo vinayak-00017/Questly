@@ -16,7 +16,6 @@
 
 import { userApi } from "@/services/user-api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Star } from "lucide-react";
 
 import { useEffect, useState, lazy, Suspense } from "react";
 import { TimezoneSelectDialog } from "@/components/timezone-select-dialog";
@@ -32,9 +31,6 @@ const QuestTracker = lazy(
 );
 const TodaysQuestsCard = lazy(
   () => import("@/components/quest-card/todays-quests-card")
-);
-const PerformanceChart = lazy(
-  () => import("@/components/performance-chart-refined")
 );
 
 // Loading skeleton components
@@ -67,14 +63,14 @@ const TodaysQuestsSkeleton = () => (
   </div>
 );
 
-const PerformanceChartSkeleton = () => (
-  <div className="bg-card/80 border-border/50 backdrop-blur-sm rounded-2xl border p-6 shadow-lg">
-    <div className="animate-pulse">
-      <div className="h-6 bg-muted rounded-xl w-1/3 mb-4"></div>
-      <div className="h-96 bg-muted rounded-2xl"></div>
-    </div>
-  </div>
-);
+// const PerformanceChartSkeleton = () => (
+//   <div className="bg-card/80 border-border/50 backdrop-blur-sm rounded-2xl border p-6 shadow-lg">
+//     <div className="animate-pulse">
+//       <div className="h-6 bg-muted rounded-xl w-1/3 mb-4"></div>
+//       <div className="h-96 bg-muted rounded-2xl"></div>
+//     </div>
+//   </div>
+// );
 
 export default function Home() {
   const { data, isLoading } = useQuery({

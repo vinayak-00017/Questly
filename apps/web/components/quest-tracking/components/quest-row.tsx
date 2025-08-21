@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { TrackedQuest, ViewType, QuestActivityData } from "../types";
 import { QuestActivityGrid } from "./quest-activity-grid";
 import { QuestStats } from "./quest-stats";
-import { calculateQuestStreak } from "../utils";
 
 interface QuestRowProps {
   quest: TrackedQuest;
@@ -27,8 +26,6 @@ export const QuestRow: React.FC<QuestRowProps> = memo(
     getQuestActivity,
     onRemoveQuest,
   }) => {
-    const currentStreak = calculateQuestStreak(quest.id, getQuestActivity);
-
     return (
       <motion.div
         key={quest.id}
@@ -64,15 +61,6 @@ export const QuestRow: React.FC<QuestRowProps> = memo(
             </span>
           </div>
           <div className="flex items-center gap-2">
-            {/* Streak indicator - only show after 2+ days */}
-            {currentStreak >= 2 && (
-              <Badge
-                variant="outline"
-                className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-xs"
-              >
-                🔥 {currentStreak}x
-              </Badge>
-            )}
             <Button
               variant="ghost"
               size="sm"

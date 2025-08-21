@@ -517,6 +517,8 @@ export class QuestInstanceController {
 
   /**
    * Get quest activity for quest tracker
+   */ /**
+   * Get quest activity for quest tracker
    */
   static async getQuestActivity(req: Request, res: Response) {
     try {
