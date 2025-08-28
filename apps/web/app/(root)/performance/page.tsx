@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { userApi } from "@/services/user-api";
+import { getLocalDateMidnight } from "@questly/utils";
 import {
   Card,
   CardContent,
@@ -25,6 +26,14 @@ import {
 const PerformancePage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>("daily");
 
+  // Get user timezone for proper date handling
+  const { data: userStatsData } = useQuery({
+    queryKey: ["userStats"],
+    queryFn: userApi.getUserStats,
+    select: (data) => data.userStats,
+  });
+  const userTimezone = userStatsData?.timezone || "UTC";
+
   const {
     data: performanceData,
     isLoading,
@@ -35,11 +44,20 @@ const PerformancePage = () => {
     enabled: true,
   });
 
-  // Sort performance data in descending order (most recent first)
+  // Sort performance data in descending order (most recent first) with timezone awareness
   const sortedPerformanceData = performanceData?.performanceData
-    ? [...performanceData.performanceData].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      )
+    ? [...performanceData.performanceData].sort((a, b) => {
+        // Use timezone-aware date parsing for proper sorting
+        const dateA = getLocalDateMidnight(
+          new Date(a.date + "T00:00:00"),
+          userTimezone
+        );
+        const dateB = getLocalDateMidnight(
+          new Date(b.date + "T00:00:00"),
+          userTimezone
+        );
+        return dateB.getTime() - dateA.getTime();
+      })
     : [];
 
   const periodOptions: PeriodOption[] = [
@@ -59,16 +77,6 @@ const PerformancePage = () => {
 
       {/* Performance Chart */}
       <Card className="bg-zinc-900 border-zinc-800">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-white flex items-center gap-2">
-            <Crown className="h-4 w-4 text-amber-400" />
-            Quest Completion Analytics
-          </CardTitle>
-          <CardDescription className="text-zinc-400 text-sm">
-            Visual representation of your performance over time (click bars for
-            details)
-          </CardDescription>
-        </CardHeader>
         <CardContent className="pt-0">
           {isLoading ? (
             <div className="h-40 bg-zinc-800 rounded-lg animate-pulse" />
@@ -87,16 +95,6 @@ const PerformancePage = () => {
 
       {/* Performance Table */}
       <Card className="bg-zinc-900 border-zinc-800">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-white flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-blue-400" />
-            Detailed Performance Data
-          </CardTitle>
-          <CardDescription className="text-zinc-400 text-sm">
-            Comprehensive breakdown of completion rates and quest statistics
-            (click rows for details)
-          </CardDescription>
-        </CardHeader>
         <CardContent className="pt-0">
           {isLoading ? (
             <div className="space-y-3">

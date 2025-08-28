@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, memo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 
 interface PerformanceData {
@@ -25,6 +26,8 @@ export const PerformanceBarChart = memo(
       x: number;
       y: number;
       data: PerformanceData;
+      showOnSide?: boolean;
+      showOnLeft?: boolean;
     } | null>(null);
 
     const chartHeight = 160;
@@ -33,10 +36,47 @@ export const PerformanceBarChart = memo(
     const handleMouseEnter = useCallback(
       (event: React.MouseEvent, item: PerformanceData) => {
         const rect = event.currentTarget.getBoundingClientRect();
+        const topbarHeight = 80; // Increased to account for actual topbar height + padding
+        const tooltipHeight = 180; // More accurate tooltip height
+        const margin = 20;
+        const screenWidth = window.innerWidth;
+        const tooltipWidth = 200;
+        
+        // Calculate if tooltip would go above topbar
+        const wouldCrossTopbar = rect.top - tooltipHeight - margin < topbarHeight;
+        
+        console.log('Tooltip positioning:', {
+          rectTop: rect.top,
+          tooltipHeight,
+          margin,
+          topbarHeight,
+          wouldCrossTopbar
+        });
+        
+        let showOnSide = wouldCrossTopbar;
+        let showOnLeft = false;
+        let xPosition = rect.left + rect.width / 2;
+        let yPosition = rect.top;
+        
+        if (showOnSide) {
+          // Check if tooltip would go off screen on the right
+          const wouldGoOffScreenRight = rect.right + tooltipWidth + margin > screenWidth;
+          showOnLeft = wouldGoOffScreenRight;
+          
+          if (showOnLeft) {
+            xPosition = rect.left - margin; // Position to the left of the bar
+          } else {
+            xPosition = rect.right + margin; // Position to the right of the bar
+          }
+          yPosition = rect.top + rect.height / 2; // Center vertically with the bar
+        }
+        
         setTooltip({
-          x: rect.left + rect.width / 2,
-          y: rect.top,
+          x: xPosition,
+          y: yPosition,
           data: item,
+          showOnSide,
+          showOnLeft,
         });
       },
       []
@@ -99,56 +139,65 @@ export const PerformanceBarChart = memo(
         </div>
 
         {/* Tooltip */}
-        {tooltip && (
-          <div
-            className="fixed z-50 bg-black/95 border border-amber-500/30 rounded-lg p-3 pointer-events-none backdrop-blur-sm shadow-lg"
-            style={{
-              left: tooltip.x,
-              top: tooltip.y - 10,
-              transform: "translate(-50%, -100%)",
-              minWidth: "200px",
-            }}
-          >
-            <div className="text-amber-300 font-semibold text-sm mb-2 border-b border-amber-500/20 pb-1">
-              📅 {tooltip.data.day}
-            </div>
-            <div className="text-white text-sm space-y-2">
-              <div className="flex justify-between items-center">
-                <span>Completion:</span>
-                <span className="text-amber-200 font-medium">
-                  {tooltip.data.percentage}%
-                </span>
+        {tooltip &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <div
+              className="fixed bg-black/95 border border-amber-500/30 rounded-lg p-3 pointer-events-none backdrop-blur-sm shadow-lg"
+              style={{
+                left: tooltip.x,
+                top: tooltip.y,
+                transform: tooltip.showOnSide 
+                  ? tooltip.showOnLeft 
+                    ? "translate(-100%, -50%)" // Show to the left, centered vertically
+                    : "translate(0, -50%)" // Show to the right, centered vertically
+                  : "translate(-50%, calc(-100% - 10px))", // Show above, centered horizontally
+                minWidth: "200px",
+                maxWidth: "250px",
+                zIndex: 99999,
+              }}
+            >
+              <div className="text-amber-300 font-semibold text-sm mb-2 border-b border-amber-500/20 pb-1">
+                📅 {tooltip.data.day}
               </div>
-              <div className="flex justify-between items-center">
-                <span>Points:</span>
-                <span>
-                  <span className="text-green-300 font-medium">
-                    {tooltip.data.completedPoints}
+              <div className="text-white text-sm space-y-2">
+                <div className="flex justify-between items-center">
+                  <span>Completion:</span>
+                  <span className="text-amber-200 font-medium">
+                    {tooltip.data.percentage}%
                   </span>
-                  <span className="text-zinc-400 mx-1">/</span>
-                  <span className="text-zinc-300">
-                    {tooltip.data.totalPossiblePoints}
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Points:</span>
+                  <span>
+                    <span className="text-green-300 font-medium">
+                      {tooltip.data.completedPoints}
+                    </span>
+                    <span className="text-zinc-400 mx-1">/</span>
+                    <span className="text-zinc-300">
+                      {tooltip.data.totalPossiblePoints}
+                    </span>
                   </span>
-                </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Quests:</span>
+                  <span>
+                    <span className="text-blue-300 font-medium">
+                      {tooltip.data.completedQuestsCount}
+                    </span>
+                    <span className="text-zinc-400 mx-1">/</span>
+                    <span className="text-zinc-300">
+                      {tooltip.data.questsCount}
+                    </span>
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span>Quests:</span>
-                <span>
-                  <span className="text-blue-300 font-medium">
-                    {tooltip.data.completedQuestsCount}
-                  </span>
-                  <span className="text-zinc-400 mx-1">/</span>
-                  <span className="text-zinc-300">
-                    {tooltip.data.questsCount}
-                  </span>
-                </span>
+              <div className="text-xs text-zinc-400 mt-2 pt-2 border-t border-amber-500/20">
+                Click to view detailed breakdown
               </div>
-            </div>
-            <div className="text-xs text-zinc-400 mt-2 pt-2 border-t border-amber-500/20">
-              Click to view detailed breakdown
-            </div>
-          </div>
-        )}
+            </div>,
+            document.body
+          )}
       </div>
     );
   }
